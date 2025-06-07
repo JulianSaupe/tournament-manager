@@ -141,26 +141,26 @@ components:
     Tournament:
       type: object
       properties:
-        ID:
+        id:
           type: string
-        Name:
+        name:
           type: string
-        Description:
+        description:
           type: string
-        StartDate:
-          type: string
-          format: date
-        EndDate:
+        startDate:
           type: string
           format: date
-        Status:
+        endDate:
+          type: string
+          format: date
+        status:
           $ref: '#/components/schemas/TournamentStatus'
       required:
-        - ID
-        - Name
-        - StartDate
-        - EndDate
-        - Status
+        - id
+        - name
+        - startDate
+        - endDate
+        - status
     TournamentStatus:
       type: string
       enum:

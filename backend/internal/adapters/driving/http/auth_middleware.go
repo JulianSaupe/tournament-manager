@@ -3,7 +3,6 @@ package http
 import (
 	"Tournament/internal/ports/input"
 	"context"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
@@ -15,18 +14,12 @@ func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handl
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := r.BasicAuth()
 
-			fmt.Printf("Header: %s\n", r.Header.Get("Authorization"))
-
 			if !ok {
 				basicAuthFailed(w)
 				return
 			}
 
 			user, err := userService.GetUserByUsername(username)
-
-			fmt.Printf("Given password: %s\n", password)
-			fmt.Printf("Given password hash: %s\n", hashPassword(password))
-			fmt.Printf("Stored password: %s\n", user.Password)
 
 			if err != nil || checkPasswordHash(password, user.Password) != true {
 				basicAuthFailed(w)
