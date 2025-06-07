@@ -2,7 +2,6 @@ package memory
 
 import (
 	"Tournament/internal/domain"
-	"Tournament/internal/ports/output"
 	"errors"
 	"github.com/google/uuid"
 	"sync"
@@ -12,13 +11,6 @@ import (
 type InMemoryTournamentRepository struct {
 	tournaments map[string]*domain.Tournament
 	mutex       sync.RWMutex
-}
-
-// NewInMemoryTournamentRepository creates a new in-memory tournament repository
-func NewInMemoryTournamentRepository() output.TournamentRepository {
-	return &InMemoryTournamentRepository{
-		tournaments: make(map[string]*domain.Tournament),
-	}
 }
 
 // FindByID retrieves a tournament by its ID
