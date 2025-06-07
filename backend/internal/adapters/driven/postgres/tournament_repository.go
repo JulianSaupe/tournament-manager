@@ -27,30 +27,9 @@ func NewPostgresTournamentRepository(connectionString string) (output.Tournament
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// Create the tournaments table if it doesn't exist
-	if err := createTournamentTable(db); err != nil {
-		return nil, fmt.Errorf("failed to create tournament table: %w", err)
-	}
-
 	return &TournamentRepository{
 		db: db,
 	}, nil
-}
-
-// createTournamentTable creates the tournaments table if it doesn't exist
-func createTournamentTable(db *sql.DB) error {
-	query := `
-	CREATE TABLE IF NOT EXISTS tournaments (
-		id VARCHAR(255) PRIMARY KEY,
-		name VARCHAR(255) NOT NULL,
-		description TEXT,
-		start_date VARCHAR(255),
-		end_date VARCHAR(255),
-		status VARCHAR(50) NOT NULL
-	);`
-
-	_, err := db.Exec(query)
-	return err
 }
 
 // FindByID retrieves a tournament by its ID

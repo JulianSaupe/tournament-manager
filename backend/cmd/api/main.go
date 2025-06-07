@@ -13,8 +13,13 @@ import (
 
 func main() {
 	dbConfig := config.NewDatabaseConfig()
-	tournamentRepository, err := postgres.NewPostgresTournamentRepository(dbConfig.ConnectionString())
 
+	// Run database migrations
+	if err := config.MigrateDatabase(dbConfig); err != nil {
+		log.Fatalf("Failed to run database migrations: %v", err)
+	}
+
+	tournamentRepository, err := postgres.NewPostgresTournamentRepository(dbConfig.ConnectionString())
 	if err != nil {
 		log.Fatalf("Failed to initialize repository: %v", err)
 	}
@@ -45,7 +50,6 @@ func main() {
 	log.Println("Starting server on :3000")
 
 	serverErr := http.ListenAndServe(":3000", router)
-
 	if serverErr != nil {
 		log.Fatal(serverErr)
 	}

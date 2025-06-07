@@ -7,8 +7,10 @@ This project follows the Hexagonal Architecture (Ports and Adapters) pattern.
 ```
 backend/
 ├── cmd/                    # Application entry points
-│   └── api/                # HTTP API entry point
-│       └── main.go         # Main application file
+│   ├── api/                # HTTP API entry point
+│   │   └── main.go         # Main application file
+│   └── migrate/            # Database migration script
+│       └── main.go         # Migration file generator
 ├── internal/               # Private application code
 │   ├── domain/             # Domain models and business logic
 │   ├── application/        # Application services and use cases
@@ -18,6 +20,9 @@ backend/
 │   └── adapters/           # Implementations of the ports
 │       ├── driving/        # Primary/driving adapters (e.g., HTTP handlers, CLI)
 │       └── driven/         # Secondary/driven adapters (e.g., database repositories)
+├── migrations/             # Database migration files
+│   ├── *.up.sql            # Migration files for upgrading the database
+│   └── *.down.sql          # Migration files for downgrading the database
 └── pkg/                    # Public libraries that can be used by other applications
 ```
 
@@ -169,6 +174,85 @@ The package directory contains public libraries that can be used by other applic
 - It should have clear documentation and examples
 
 **Note:** This directory is currently empty but can be populated as the application grows and common patterns emerge that can be extracted into reusable libraries.
+
+## Database Migrations
+
+This project uses [golang-migrate/migrate](https://github.com/golang-migrate/migrate) for database migrations. Migrations are SQL scripts that are used to create, modify, or drop database objects like tables, indexes, etc.
+
+### Migration Files
+
+Migration files are stored in the `migrations` directory and follow the naming convention:
+
+- `<version>_<description>.up.sql`: Scripts for upgrading the database
+- `<version>_<description>.down.sql`: Scripts for downgrading the database
+
+For example:
+- `000001_create_tournaments_table.up.sql`: Creates the tournaments table
+- `000001_create_tournaments_table.down.sql`: Drops the tournaments table
+
+### Migration Execution
+
+Migrations are automatically executed when the application starts. The migration process is handled by the `MigrateDatabase` function in the `config` package.
+
+### Migration Commands
+
+The project includes a migration script with several commands for managing database migrations.
+
+#### Generate a New Migration
+
+To create a new migration:
+
+1. Navigate to the project root directory
+2. Run the migration script with the `generate` command and a descriptive name for your migration:
+
+```bash
+# From the repository root
+go run backend/cmd/migrate/main.go generate create_users_table
+```
+
+This will create two files in the `migrations` directory:
+- `VersionYYYYMMDDHHMMSS.up.sql`: For upgrading the database
+- `VersionYYYYMMDDHHMMSS.down.sql`: For downgrading the database
+
+Where `YYYYMMDDHHMMSS` is the current timestamp (e.g., `20230607145623`).
+
+3. Edit the generated files to add your SQL statements
+
+#### Execute All Migrations
+
+To execute all pending migrations:
+
+```bash
+# From the repository root
+go run backend/cmd/migrate/main.go migrate
+```
+
+This will execute all migrations that haven't been applied to the database yet.
+
+#### Execute a Specific Migration
+
+To execute a specific migration:
+
+```bash
+# Execute in the up direction (apply the migration)
+go run backend/cmd/migrate/main.go execute <migration_name> --up
+
+# Execute in the down direction (revert the migration)
+go run backend/cmd/migrate/main.go execute <migration_name> --down
+```
+
+Replace `<migration_name>` with the name of the migration you want to execute.
+
+Note: Migrations are also automatically executed when the application starts.
+
+#### Manual Creation (Alternative)
+
+Alternatively, you can manually create migration files:
+
+1. Create a new migration file in the `migrations` directory with a higher version number than the existing migrations
+2. Write the SQL statements for the migration in the `.up.sql` file
+3. Write the SQL statements to revert the migration in the `.down.sql` file
+4. The migrations will be executed automatically when the application starts
 
 ## Benefits of Hexagonal Architecture
 
