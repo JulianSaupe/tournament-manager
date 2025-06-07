@@ -72,7 +72,7 @@ func (r *TournamentRepository) FindAll() ([]*domain.Tournament, error) {
 	}
 	defer rows.Close()
 
-	var tournaments []*domain.Tournament
+	tournaments := make([]*domain.Tournament, 0)
 	for rows.Next() {
 		var tournament domain.Tournament
 		err := rows.Scan(

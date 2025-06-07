@@ -8,19 +8,16 @@ import (
 	"net/http"
 )
 
-// TournamentHandler handles HTTP requests for tournament operations
 type TournamentHandler struct {
 	tournamentService input.TournamentService
 }
 
-// NewTournamentHandler creates a new tournament handler
 func NewTournamentHandler(tournamentService input.TournamentService) *TournamentHandler {
 	return &TournamentHandler{
 		tournamentService: tournamentService,
 	}
 }
 
-// RegisterRoutes registers the tournament routes
 func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	router.Route("/tournament", func(r chi.Router) {
 		r.Get("/list", h.ListTournaments)
@@ -30,7 +27,6 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	})
 }
 
-// CreateTournamentRequest represents the request body for creating a tournament
 type CreateTournamentRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
@@ -38,7 +34,6 @@ type CreateTournamentRequest struct {
 	EndDate     string `json:"endDate"`
 }
 
-// CreateTournament handles the creation of a new tournament
 func (h *TournamentHandler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 	var req CreateTournamentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -55,7 +50,6 @@ func (h *TournamentHandler) CreateTournament(w http.ResponseWriter, r *http.Requ
 	SendResponse(w, r, http.StatusCreated, tournament)
 }
 
-// GetTournament handles retrieving a tournament by ID
 func (h *TournamentHandler) GetTournament(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	tournament, err := h.tournamentService.GetTournament(id)
@@ -67,7 +61,6 @@ func (h *TournamentHandler) GetTournament(w http.ResponseWriter, r *http.Request
 	SendResponse(w, r, http.StatusOK, tournament)
 }
 
-// ListTournaments handles retrieving all tournaments
 func (h *TournamentHandler) ListTournaments(w http.ResponseWriter, r *http.Request) {
 	tournaments, err := h.tournamentService.ListTournaments()
 	if err != nil {
@@ -78,12 +71,10 @@ func (h *TournamentHandler) ListTournaments(w http.ResponseWriter, r *http.Reque
 	SendResponse(w, r, http.StatusOK, tournaments)
 }
 
-// UpdateTournamentStatusRequest represents the request body for updating a tournament status
 type UpdateTournamentStatusRequest struct {
 	Status string `json:"status"`
 }
 
-// UpdateTournamentStatus handles updating the status of a tournament
 func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
@@ -93,8 +84,6 @@ func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *htt
 		return
 	}
 
-	// Convert string status to domain.TournamentStatus
-	// This is a simplification; in a real application, you would validate the status
 	var status domain.TournamentStatus
 	switch req.Status {
 	case "DRAFT":
