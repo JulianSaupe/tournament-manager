@@ -2,12 +2,12 @@ package domain
 
 // Tournament represents a tournament entity
 type Tournament struct {
-	ID          string
-	Name        string
-	Description string
-	StartDate   string
-	EndDate     string
-	Status      TournamentStatus
+	ID          string           `json:"id"`
+	Name        string           `json:"name"`
+	Description string           `json:"description"`
+	StartDate   string           `json:"startDate"`
+	EndDate     string           `json:"endDate"`
+	Status      TournamentStatus `json:"status"`
 }
 
 // TournamentStatus represents the status of a tournament

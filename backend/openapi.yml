@@ -1,0 +1,183 @@
+openapi: 3.0.3
+info:
+  title: Tournament API
+  description: API for managing tournaments
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  /api/tournament/list:
+    get:
+      summary: List all tournaments
+      description: Retrieves a list of all tournaments
+      operationId: listTournaments
+      responses:
+        '200':
+          description: A list of tournaments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tournament'
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/tournament/create:
+    post:
+      summary: Create a new tournament
+      description: Creates a new tournament with DRAFT status
+      operationId: createTournament
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTournamentRequest'
+      responses:
+        '201':
+          description: Tournament created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/tournament/{id}:
+    get:
+      summary: Get a tournament by ID
+      description: Retrieves a tournament by its ID
+      operationId: getTournament
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the tournament to retrieve
+      responses:
+        '200':
+          description: Tournament found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '404':
+          description: Tournament not found
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/tournament/{id}/status:
+    put:
+      summary: Update tournament status
+      description: Updates the status of a tournament
+      operationId: updateTournamentStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the tournament to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTournamentStatusRequest'
+      responses:
+        '200':
+          description: Tournament status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tournament'
+        '400':
+          description: Bad request or invalid status
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Tournament not found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    Tournament:
+      type: object
+      properties:
+        ID:
+          type: string
+        Name:
+          type: string
+        Description:
+          type: string
+        StartDate:
+          type: string
+          format: date
+        EndDate:
+          type: string
+          format: date
+        Status:
+          $ref: '#/components/schemas/TournamentStatus'
+      required:
+        - ID
+        - Name
+        - StartDate
+        - EndDate
+        - Status
+    TournamentStatus:
+      type: string
+      enum:
+        - DRAFT
+        - ACTIVE
+        - COMPLETED
+        - CANCELLED
+    CreateTournamentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      required:
+        - name
+        - startDate
+        - endDate
+    UpdateTournamentStatusRequest:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/TournamentStatus'
+      required:
+        - status

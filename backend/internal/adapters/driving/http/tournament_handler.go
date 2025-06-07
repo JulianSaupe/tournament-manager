@@ -42,19 +42,17 @@ type CreateTournamentRequest struct {
 func (h *TournamentHandler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 	var req CreateTournamentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		SendErrorResponse(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	tournament, err := h.tournamentService.CreateTournament(req.Name, req.Description, req.StartDate, req.EndDate)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(tournament)
+	SendResponse(w, r, http.StatusCreated, tournament)
 }
 
 // GetTournament handles retrieving a tournament by ID
@@ -62,24 +60,22 @@ func (h *TournamentHandler) GetTournament(w http.ResponseWriter, r *http.Request
 	id := chi.URLParam(r, "id")
 	tournament, err := h.tournamentService.GetTournament(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		SendErrorResponse(w, r, http.StatusNotFound, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tournament)
+	SendResponse(w, r, http.StatusOK, tournament)
 }
 
 // ListTournaments handles retrieving all tournaments
 func (h *TournamentHandler) ListTournaments(w http.ResponseWriter, r *http.Request) {
 	tournaments, err := h.tournamentService.ListTournaments()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tournaments)
+	SendResponse(w, r, http.StatusOK, tournaments)
 }
 
 // UpdateTournamentStatusRequest represents the request body for updating a tournament status
@@ -93,7 +89,7 @@ func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *htt
 
 	var req UpdateTournamentStatusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		SendErrorResponse(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -110,16 +106,15 @@ func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *htt
 	case "CANCELLED":
 		status = domain.StatusCancelled
 	default:
-		http.Error(w, "Invalid status", http.StatusBadRequest)
+		SendErrorResponse(w, r, http.StatusBadRequest, "Invalid status")
 		return
 	}
 
 	tournament, err := h.tournamentService.UpdateTournamentStatus(id, status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tournament)
+	SendResponse(w, r, http.StatusOK, tournament)
 }

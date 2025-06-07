@@ -32,7 +32,8 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
+	router.Use(httpHandler.CustomRecoverer)
+	router.Use(httpHandler.RequestStartTimeMiddleware)
 
 	apiRouter := chi.NewRouter()
 	router.Mount("/api", apiRouter)
