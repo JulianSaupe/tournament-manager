@@ -19,9 +19,9 @@ import (
 
 func main() {
 	// Define subcommands
-	generateCmd := flag.NewFlagSet("generate", flag.ExitOnError)
-	migrateCmd := flag.NewFlagSet("migrate", flag.ExitOnError)
-	executeCmd := flag.NewFlagSet("execute", flag.ExitOnError)
+	generateCmd := flag.NewFlagSet("migrations:generate", flag.ExitOnError)
+	migrateCmd := flag.NewFlagSet("migrations:migrate", flag.ExitOnError)
+	executeCmd := flag.NewFlagSet("migrations:execute", flag.ExitOnError)
 
 	// Define flags for execute command
 	executeUp := executeCmd.Bool("up", false, "Execute migration in up direction")
@@ -38,33 +38,37 @@ func main() {
 
 	// Parse subcommand
 	switch os.Args[1] {
-	case "generate":
+	case "migrations:generate":
 		if generateCmd.NArg() != 0 {
-			fmt.Printf("Error: Expected 0 arguments but exacly %d passed", generateCmd.NArg())
-			fmt.Println("Usage: migrate generate")
+			fmt.Printf("Error: Expected 0 arguments but exactly %d passed", generateCmd.NArg())
+			fmt.Println("Usage: migrations:generate")
 			os.Exit(1)
 		}
 		generateMigration(migrationsDir)
 
-	case "migrate":
-		migrateCmd.Parse(os.Args[2:])
+	case "migrations:migrate":
+		if migrateCmd.NArg() != 0 {
+			fmt.Printf("Error: Expected 0 arguments but exactly %d passed", generateCmd.NArg())
+			fmt.Println("Usage: migrations:generate")
+			os.Exit(1)
+		}
 		runAllMigrations(migrationsDir)
 
-	case "execute":
+	case "migrations:execute":
 		executeCmd.Parse(os.Args[2:])
 		if executeCmd.NArg() == 0 {
 			fmt.Println("Error: Migration name is required")
-			fmt.Println("Usage: migrate execute <migration_name> --up|--down")
+			fmt.Println("Usage: migrations:execute <migration_name> --up|--down")
 			os.Exit(1)
 		}
 		if !*executeUp && !*executeDown {
 			fmt.Println("Error: Either --up or --down flag must be specified")
-			fmt.Println("Usage: migrate execute <migration_name> --up|--down")
+			fmt.Println("Usage: migrations:execute <migration_name> --up|--down")
 			os.Exit(1)
 		}
 		if *executeUp && *executeDown {
 			fmt.Println("Error: Only one of --up or --down can be specified")
-			fmt.Println("Usage: migrate execute <migration_name> --up|--down")
+			fmt.Println("Usage: migrations:execute <migration_name> --up|--down")
 			os.Exit(1)
 		}
 
@@ -80,9 +84,9 @@ func main() {
 // printUsage prints the usage information for the migrate command
 func printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("  migrations generate  					- Generate a new migration")
-	fmt.Println("  migrations migrate                   			- Execute all migrations")
-	fmt.Println("  migrations execute <migration_name> --up|--down 	- Execute a specific migration")
+	fmt.Println("  migrations:generate  					- Generate a new migration")
+	fmt.Println("  migrations:migrate                   			- Execute all migrations")
+	fmt.Println("  migrations:execute <migration_name> --up|--down 	- Execute a specific migration")
 }
 
 // getMigrationsDir determines the migrations directory path based on the current working directory
@@ -116,10 +120,9 @@ func getMigrationsDir() string {
 // generateMigration generates new migration files with the given name
 func generateMigration(migrationsDir string) {
 	timestamp := time.Now().Format("20060102150405") // Format: YYYYMMDDHHMMSS
-	migrationPrefix := fmt.Sprintf("Version%s", timestamp)
 
-	upMigrationPath := filepath.Join(migrationsDir, fmt.Sprintf("%s.up.sql", migrationPrefix))
-	downMigrationPath := filepath.Join(migrationsDir, fmt.Sprintf("%s.down.sql", migrationPrefix))
+	upMigrationPath := filepath.Join(migrationsDir, fmt.Sprintf("%s.up.sql", timestamp))
+	downMigrationPath := filepath.Join(migrationsDir, fmt.Sprintf("%s.down.sql", timestamp))
 
 	// Create up migration file with template content
 	upFile, err := os.Create(upMigrationPath)
@@ -130,7 +133,7 @@ func generateMigration(migrationsDir string) {
 	defer upFile.Close()
 
 	upTemplate := fmt.Sprintf("-- Migration: %s\n-- Created at: %s\n\n-- Write your UP migration SQL here\n\n",
-		migrationPrefix,
+		timestamp,
 		time.Now().Format("2006-01-02 15:04:05"))
 
 	if _, err := upFile.WriteString(upTemplate); err != nil {
@@ -147,7 +150,7 @@ func generateMigration(migrationsDir string) {
 	defer downFile.Close()
 
 	downTemplate := fmt.Sprintf("-- Migration: %s (revert)\n-- Created at: %s\n\n-- Write your DOWN migration SQL here\n\n",
-		migrationPrefix,
+		timestamp,
 		time.Now().Format("2006-01-02 15:04:05"))
 
 	if _, err := downFile.WriteString(downTemplate); err != nil {
@@ -167,7 +170,6 @@ func runAllMigrations(migrationsDir string) {
 		fmt.Printf("Error creating migrate instance: %v\n", err)
 		os.Exit(1)
 	}
-
 	// Run migrations
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		fmt.Printf("Error running migrations: %v\n", err)
