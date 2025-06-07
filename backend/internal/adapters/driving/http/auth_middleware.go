@@ -3,7 +3,8 @@ package http
 import (
 	"Tournament/internal/ports/input"
 	"context"
-	"crypto/subtle"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -14,6 +15,8 @@ func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handl
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := r.BasicAuth()
 
+			fmt.Printf("Header: %s\n", r.Header.Get("Authorization"))
+
 			if !ok {
 				basicAuthFailed(w)
 				return
@@ -21,7 +24,11 @@ func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handl
 
 			user, err := userService.GetUserByUsername(username)
 
-			if err != nil || subtle.ConstantTimeCompare([]byte(password), []byte(user.Password)) != 1 {
+			fmt.Printf("Given password: %s\n", password)
+			fmt.Printf("Given password hash: %s\n", hashPassword(password))
+			fmt.Printf("Stored password: %s\n", user.Password)
+
+			if err != nil || checkPasswordHash(password, user.Password) != true {
 				basicAuthFailed(w)
 				return
 			}
@@ -35,4 +42,14 @@ func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handl
 func basicAuthFailed(w http.ResponseWriter) {
 	w.Header().Add("WWW-Authenticate", `Basic realm="Tournament"`)
 	w.WriteHeader(http.StatusUnauthorized)
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+func hashPassword(password string) string {
+	bytes, _ := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes)
 }

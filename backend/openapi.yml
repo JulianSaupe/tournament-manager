@@ -9,7 +9,7 @@ servers:
     description: Local development server
 
 security:
-  - BasicAuth: []
+  - basicAuth: []
 
 paths:
   /api/tournament/list:
@@ -133,9 +133,10 @@ paths:
 
 components:
   securitySchemes:
-    BasicAuth:
+    basicAuth:
       type: http
       scheme: basic
+
   schemas:
     Tournament:
       type: object
