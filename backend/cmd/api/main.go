@@ -24,8 +24,15 @@ func main() {
 		log.Fatalf("Failed to initialize repository: %v", err)
 	}
 
+	// Create repositories
+	userRepository, err := postgres.NewPostgresUserRepository(dbConfig.ConnectionString())
+	if err != nil {
+		log.Fatalf("Failed to initialize user repository: %v", err)
+	}
+
 	// Create services
 	tournamentService := application.NewTournamentService(tournamentRepository)
+	userService := application.NewUserService(userRepository)
 
 	// Create handlers
 	tournamentHandler := httpHandler.NewTournamentHandler(tournamentService)
@@ -37,13 +44,14 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
+	router.Use(httpHandler.AuthMiddleware(userService))
 	router.Use(httpHandler.CustomRecoverer)
 	router.Use(httpHandler.RequestStartTimeMiddleware)
 
 	apiRouter := chi.NewRouter()
 	router.Mount("/api", apiRouter)
 
-	// Register routes
+	// Register protected routes
 	tournamentHandler.RegisterRoutes(apiRouter)
 
 	// Start server

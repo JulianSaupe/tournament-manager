@@ -3,9 +3,14 @@ info:
   title: Tournament API
   description: API for managing tournaments
   version: 1.0.0
+
 servers:
   - url: http://localhost:3000
     description: Local development server
+
+security:
+  - BasicAuth: []
+
 paths:
   /api/tournament/list:
     get:
@@ -125,7 +130,12 @@ paths:
             text/plain:
               schema:
                 type: string
+
 components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
   schemas:
     Tournament:
       type: object

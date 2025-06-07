@@ -1,0 +1,11 @@
+-- Migration: create_table_users
+-- Created at: 2025-06-08 00:00:00
+
+CREATE TABLE IF NOT EXISTS users
+(
+    id          SERIAL PRIMARY KEY,
+    username    VARCHAR(255) NOT NULL UNIQUE,
+    password    VARCHAR(255) NOT NULL,
+    created_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
