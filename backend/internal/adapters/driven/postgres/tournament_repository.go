@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 )
 
@@ -98,12 +97,6 @@ func (r *TournamentRepository) FindAll() ([]*domain.Tournament, error) {
 
 // Save persists a tournament
 func (r *TournamentRepository) Save(tournament *domain.Tournament) (*domain.Tournament, error) {
-	// If the tournament doesn't have an ID, generate one
-	if tournament.ID == "" {
-		// Generate a UUID
-		tournament.ID = generateUniqueID()
-	}
-
 	query := `
 	INSERT INTO tournaments (id, name, description, start_date, end_date, status)
 	VALUES ($1, $2, $3, $4, $5, $6)
@@ -160,9 +153,4 @@ func (r *TournamentRepository) Delete(id string) error {
 // Close closes the database connection
 func (r *TournamentRepository) Close() error {
 	return r.db.Close()
-}
-
-// generateUniqueID generates a UUID string
-func generateUniqueID() string {
-	return uuid.New().String()
 }

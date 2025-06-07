@@ -4,6 +4,7 @@ import (
 	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
+	"github.com/google/uuid"
 )
 
 // TournamentServiceImpl implements the TournamentService interface
@@ -21,6 +22,7 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 // CreateTournament creates a new tournament
 func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, endDate string) (*domain.Tournament, error) {
 	tournament := &domain.Tournament{
+		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
 		StartDate:   startDate,
