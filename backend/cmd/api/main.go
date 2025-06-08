@@ -2,11 +2,13 @@ package main
 
 import (
 	"Tournament/internal/adapters/driven/postgres"
-	httpHandler "Tournament/internal/adapters/driving/http"
+	"Tournament/internal/adapters/driving/middleware"
+	"Tournament/internal/adapters/driving/response"
+	httpHandler "Tournament/internal/adapters/driving/tournament"
 	"Tournament/internal/application"
 	"Tournament/internal/config"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
 )
@@ -43,12 +45,12 @@ func main() {
 	router := chi.NewRouter()
 
 	// Middleware
-	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.Logger)
-	router.Use(httpHandler.AuthMiddleware(userService))
-	router.Use(httpHandler.CustomRecoverer)
-	router.Use(httpHandler.RequestStartTimeMiddleware)
+	router.Use(chiMiddleware.RequestID)
+	router.Use(chiMiddleware.RealIP)
+	router.Use(chiMiddleware.Logger)
+	router.Use(middleware.AuthMiddleware(userService))
+	router.Use(middleware.CustomRecoverer)
+	router.Use(response.RequestStartTimeMiddleware)
 
 	apiRouter := chi.NewRouter()
 	router.Mount("/api", apiRouter)
