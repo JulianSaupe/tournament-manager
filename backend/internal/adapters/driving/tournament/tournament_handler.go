@@ -28,18 +28,21 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 	participantsHandler := participants.NewParticipantsHandler(h.participantsService)
 	participantsHandler.RegisterRoutes(participantsRouter)
 
-	router.Route("/tournament", func(r chi.Router) {
-		r.Get("/", h.ListTournaments)
-		r.Post("/", h.CreateTournament)
+	router.Route("/tournament", func(router chi.Router) {
+		router.Get("/", h.ListTournaments)
+		router.Post("/", h.CreateTournament)
 
-		r.Route("/{id}", func(r chi.Router) {
-			r.Use(middleware.TournamentMiddleware(h.tournamentService))
+		router.Route("/{id}", func(router chi.Router) {
+			router.Use(middleware.TournamentMiddleware(h.tournamentService))
+			router.Patch("/status", h.UpdateTournamentStatus)
+			router.Get("/", h.GetTournament)
 
-			r.Get("/", h.GetTournament)
-			r.Patch("/status", h.UpdateTournamentStatus)
-			r.Delete("/", h.DeleteTournament)
+			router.Group(func(router chi.Router) {
+				router.Use(middleware.TournamentActiveMiddleware())
+				router.Delete("/", h.DeleteTournament)
+			})
 
-			r.Mount("/participants", participantsRouter)
+			router.Mount("/participants", participantsRouter)
 		})
 	})
 }

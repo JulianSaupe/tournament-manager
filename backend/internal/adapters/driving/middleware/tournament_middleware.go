@@ -16,12 +16,22 @@ func TournamentMiddleware(tournamentService input.TournamentService) func(http.H
 			id := chi.URLParam(r, "id")
 			tournament := tournamentService.GetTournament(id)
 
-			if tournament.Status == "ACTIVE" && r.Method != "GET" {
+			ctx := context.WithValue(r.Context(), TournamentKey{}, tournament)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func TournamentActiveMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tournament := r.Context().Value(TournamentKey{}).(*domain.Tournament)
+
+			if tournament.Status == "ACTIVE" {
 				panic(domain.NewNotAllowedError("Tournament is active."))
 			}
 
-			ctx := context.WithValue(r.Context(), TournamentKey{}, tournament)
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(w, r)
 		})
 	}
 }

@@ -23,9 +23,13 @@ func NewParticipantsHandler(participantsService input.ParticipantsService) *Hand
 func (h *Handler) RegisterRoutes(router chi.Router) {
 	router.Get("/", h.ListParticipant)
 	router.Get("/{id}", h.GetParticipant)
-	router.Post("/", h.CreateParticipant)
-	router.Patch("/{id}", h.UpdateParticipant)
-	router.Delete("/{id}", h.DeleteParticipant)
+
+	router.Group(func(router chi.Router) {
+		router.Use(middleware.TournamentActiveMiddleware())
+		router.Post("/", h.CreateParticipant)
+		router.Patch("/{id}", h.UpdateParticipant)
+		router.Delete("/{id}", h.DeleteParticipant)
+	})
 }
 
 func (h *Handler) ListParticipant(w http.ResponseWriter, r *http.Request) {
