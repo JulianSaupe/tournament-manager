@@ -8,6 +8,7 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bundebug"
 )
 
 // DatabaseConfig holds the configuration for the database connection
@@ -56,6 +57,7 @@ func (c *DatabaseConfig) NewBunDB() (*bun.DB, error) {
 
 	// Create a Bun DB instance
 	db := bun.NewDB(sqlDB, pgdialect.New())
+	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 
 	return db, nil
 }

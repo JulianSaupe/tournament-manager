@@ -27,7 +27,7 @@ func TournamentActiveMiddleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tournament := r.Context().Value(TournamentKey{}).(*domain.Tournament)
 
-			if tournament.Status == "ACTIVE" {
+			if tournament.Status == domain.StatusActive {
 				panic(domain.NewNotAllowedError("Tournament is active."))
 			}
 

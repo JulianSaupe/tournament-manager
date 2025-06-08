@@ -37,6 +37,13 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 	err := r.db.NewSelect().
 		Model(tournament).
 		Where("id = ?", id).
+		Column("tournament.*").
+		ColumnExpr(`(
+            SELECT count(*)
+            FROM participants p
+            WHERE p.tournament_id = tournament.id
+        ) AS participants_count`).
+		Relation("Participants").
 		Scan(context.Background())
 
 	if err != nil {
