@@ -21,13 +21,11 @@ func NewParticipantsHandler(participantsService input.ParticipantsService) *Hand
 }
 
 func (h *Handler) RegisterRoutes(router chi.Router) {
-	router.Route("/participants", func(r chi.Router) {
-		r.Get("/", h.ListParticipant)
-		r.Get("/{id}", h.GetParticipant)
-		r.Post("/", h.CreateParticipant)
-		r.Patch("/{id}", h.UpdateParticipant)
-		r.Delete("/{id}", h.DeleteParticipant)
-	})
+	router.Get("/", h.ListParticipant)
+	router.Get("/{id}", h.GetParticipant)
+	router.Post("/", h.CreateParticipant)
+	router.Patch("/{id}", h.UpdateParticipant)
+	router.Delete("/{id}", h.DeleteParticipant)
 }
 
 func (h *Handler) ListParticipant(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +33,9 @@ func (h *Handler) ListParticipant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetParticipant(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handler) CreateParticipant(w http.ResponseWriter, r *http.Request) {
 	tournament := r.Context().Value(middleware.TournamentKey{}).(*domain.Tournament)
 
 	var req CreateParticipantRequest
@@ -43,11 +44,8 @@ func (h *Handler) GetParticipant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.participantsService.CreateParticipant(req.Name, tournament.Id)
-}
-
-func (h *Handler) CreateParticipant(w http.ResponseWriter, r *http.Request) {
-
+	participant := h.participantsService.CreateParticipant(req.Name, tournament.Id)
+	response.Send(w, r, http.StatusCreated, participant)
 }
 
 func (h *Handler) UpdateParticipant(w http.ResponseWriter, r *http.Request) {

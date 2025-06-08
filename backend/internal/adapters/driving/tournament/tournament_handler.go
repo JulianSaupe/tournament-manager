@@ -24,6 +24,10 @@ func NewTournamentHandler(tournamentService input.TournamentService, participant
 }
 
 func (h *Handler) RegisterRoutes(router chi.Router) {
+	participantsRouter := chi.NewRouter()
+	participantsHandler := participants.NewParticipantsHandler(h.participantsService)
+	participantsHandler.RegisterRoutes(participantsRouter)
+
 	router.Route("/tournament", func(r chi.Router) {
 		r.Get("/list", h.ListTournaments)
 		r.Post("/create", h.CreateTournament)
@@ -35,10 +39,7 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 			r.Patch("/status", h.UpdateTournamentStatus)
 			r.Delete("/", h.DeleteTournament)
 
-			r.Route("/participants", func(r chi.Router) {
-				participantsHandler := participants.NewParticipantsHandler(h.participantsService)
-				participantsHandler.RegisterRoutes(r)
-			})
+			r.Mount("/participants", participantsRouter)
 		})
 	})
 }

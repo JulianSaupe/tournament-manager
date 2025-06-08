@@ -18,6 +18,7 @@ func NewParticipantsRepository(db *bun.DB) (*ParticipantsRepository, error) {
 	}
 
 	db.RegisterModel((*domain.Participant)(nil))
+	db.NewCreateTable().Model((*domain.Participant)(nil)).IfNotExists().Exec(context.Background())
 
 	return &ParticipantsRepository{
 		db: db,

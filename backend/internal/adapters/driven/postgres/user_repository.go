@@ -21,8 +21,8 @@ func NewPostgresUserRepository(db *bun.DB) (output.UserRepository, error) {
 		return nil, errors.New("db cannot be nil")
 	}
 
-	// Register models with Bun
 	db.RegisterModel((*domain.User)(nil))
+	db.NewCreateTable().Model((*domain.User)(nil)).IfNotExists().Exec(context.Background())
 
 	return &UserRepository{
 		db: db,

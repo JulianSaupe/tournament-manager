@@ -22,8 +22,8 @@ func NewTournamentRepository(db *bun.DB) (output.TournamentRepository, error) {
 		return nil, errors.New("db cannot be nil")
 	}
 
-	// Register models with Bun
 	db.RegisterModel((*domain.Tournament)(nil))
+	db.NewCreateTable().Model((*domain.Tournament)(nil)).IfNotExists().Exec(context.Background())
 
 	return &TournamentRepository{
 		db: db,
