@@ -1,8 +1,13 @@
 package config
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
+
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 // DatabaseConfig holds the configuration for the database connection
@@ -33,6 +38,26 @@ func (c *DatabaseConfig) ConnectionString() string {
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		c.Host, c.Port, c.User, c.Password, c.DBName, c.SSLMode,
 	)
+}
+
+// NewBunDB creates a new Bun DB instance
+func (c *DatabaseConfig) NewBunDB() (*bun.DB, error) {
+	dsn := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		c.User, c.Password, c.Host, c.Port, c.DBName, c.SSLMode,
+	)
+
+	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+
+	// Test the connection
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+
+	// Create a Bun DB instance
+	db := bun.NewDB(sqlDB, pgdialect.New())
+
+	return db, nil
 }
 
 // getEnv gets an environment variable or returns a default value

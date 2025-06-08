@@ -22,8 +22,11 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	router.Route("/tournament", func(r chi.Router) {
 		r.Get("/list", h.ListTournaments)
 		r.Post("/create", h.CreateTournament)
-		r.Get("/{id}", h.GetTournament)
-		r.Put("/{id}/status", h.UpdateTournamentStatus)
+
+		r.Route("/{id}", func(r chi.Router) {
+			r.Get("/", h.GetTournament)
+			r.Patch("/status", h.UpdateTournamentStatus)
+		})
 	})
 }
 

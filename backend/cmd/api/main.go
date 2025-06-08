@@ -14,18 +14,20 @@ import (
 func main() {
 	dbConfig := config.NewDatabaseConfig()
 
-	// Run database migrations
-	if err := config.MigrateDatabase(dbConfig); err != nil {
-		log.Fatalf("Failed to run database migrations: %v", err)
+	// Initialize Bun DB
+	db, err := dbConfig.NewBunDB()
+	if err != nil {
+		log.Fatalf("Failed to initialize Bun DB: %v", err)
 	}
+	defer db.Close()
 
-	tournamentRepository, err := postgres.NewPostgresTournamentRepository(dbConfig.ConnectionString())
+	// Create repositories
+	tournamentRepository, err := postgres.NewPostgresTournamentRepository(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize repository: %v", err)
 	}
 
-	// Create repositories
-	userRepository, err := postgres.NewPostgresUserRepository(dbConfig.ConnectionString())
+	userRepository, err := postgres.NewPostgresUserRepository(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize user repository: %v", err)
 	}

@@ -51,5 +51,5 @@ func (s *TournamentServiceImpl) UpdateTournamentStatus(id string, status domain.
 	}
 
 	tournament.Status = status
-	return s.tournamentRepository.Save(tournament)
+	return s.tournamentRepository.Update(tournament)
 }
