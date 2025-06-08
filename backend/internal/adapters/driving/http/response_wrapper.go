@@ -1,8 +1,10 @@
 package http
 
 import (
+	"Tournament/internal/domain"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -75,6 +77,24 @@ func SendErrorResponse(w http.ResponseWriter, r *http.Request, status int, messa
 	SendResponse(w, r, status, errorData)
 }
 
+// inferStatusCode determines the appropriate HTTP status code based on the error type
+func inferStatusCode(err error) int {
+	if domain.IsNotFound(err) {
+		return http.StatusNotFound
+	}
+	if domain.IsInvalidParameter(err) {
+		return http.StatusBadRequest
+	}
+	if domain.IsUnauthorized(err) {
+		return http.StatusUnauthorized
+	}
+	if domain.IsForbidden(err) {
+		return http.StatusForbidden
+	}
+
+	return http.StatusInternalServerError
+}
+
 func CustomRecoverer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
@@ -83,18 +103,25 @@ func CustomRecoverer(next http.Handler) http.Handler {
 				if logEntry != nil {
 					logEntry.Panic(rvr, debug.Stack())
 				} else {
-					fmt.Fprintf(os.Stderr, "Panic: %+v\n", rvr)
+					_, _ = fmt.Fprintf(os.Stderr, "Panic: %+v\n", rvr)
 					debug.PrintStack()
 				}
 
 				errorMessage := "Internal server error"
-				if err, ok := rvr.(error); ok {
-					errorMessage = err.Error()
+				var err error
+
+				if e, ok := rvr.(error); ok {
+					err = e
+					errorMessage = e.Error()
 				} else if str, ok := rvr.(string); ok {
+					err = errors.New(str)
 					errorMessage = str
+				} else {
+					err = errors.New(errorMessage)
 				}
 
-				SendErrorResponse(w, r, http.StatusInternalServerError, errorMessage)
+				statusCode := inferStatusCode(err)
+				SendErrorResponse(w, r, statusCode, errorMessage)
 			}
 		}()
 

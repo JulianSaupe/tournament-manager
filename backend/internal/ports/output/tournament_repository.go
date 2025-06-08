@@ -18,5 +18,6 @@ type TournamentRepository interface {
 	// Delete removes a tournament
 	Delete(id string) error
 
+	// Update updates a tournament
 	Update(tournament *domain.Tournament) (*domain.Tournament, error)
 }

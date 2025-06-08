@@ -26,6 +26,7 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 		r.Route("/{id}", func(r chi.Router) {
 			r.Get("/", h.GetTournament)
 			r.Patch("/status", h.UpdateTournamentStatus)
+			r.Delete("/", h.DeleteTournament)
 		})
 	})
 }
@@ -44,32 +45,20 @@ func (h *TournamentHandler) CreateTournament(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	tournament, err := h.tournamentService.CreateTournament(req.Name, req.Description, req.StartDate, req.EndDate)
-	if err != nil {
-		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
-		return
-	}
+	tournament := h.tournamentService.CreateTournament(req.Name, req.Description, req.StartDate, req.EndDate)
 
 	SendResponse(w, r, http.StatusCreated, tournament)
 }
 
 func (h *TournamentHandler) GetTournament(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	tournament, err := h.tournamentService.GetTournament(id)
-	if err != nil {
-		SendErrorResponse(w, r, http.StatusNotFound, err.Error())
-		return
-	}
+	tournament := h.tournamentService.GetTournament(id)
 
 	SendResponse(w, r, http.StatusOK, tournament)
 }
 
 func (h *TournamentHandler) ListTournaments(w http.ResponseWriter, r *http.Request) {
-	tournaments, err := h.tournamentService.ListTournaments()
-	if err != nil {
-		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
-		return
-	}
+	tournaments := h.tournamentService.ListTournaments()
 
 	SendResponse(w, r, http.StatusOK, tournaments)
 }
@@ -102,11 +91,13 @@ func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *htt
 		return
 	}
 
-	tournament, err := h.tournamentService.UpdateTournamentStatus(id, status)
-	if err != nil {
-		SendErrorResponse(w, r, http.StatusInternalServerError, err.Error())
-		return
-	}
+	tournament := h.tournamentService.UpdateTournamentStatus(id, status)
 
 	SendResponse(w, r, http.StatusOK, tournament)
+}
+
+func (h *TournamentHandler) DeleteTournament(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	h.tournamentService.DeleteTournament(id)
 }

@@ -20,7 +20,7 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 }
 
 // CreateTournament creates a new tournament
-func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, endDate string) (*domain.Tournament, error) {
+func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, endDate string) *domain.Tournament {
 	tournament := &domain.Tournament{
 		ID:          uuid.New().String(),
 		Name:        name,
@@ -30,26 +30,58 @@ func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, e
 		Status:      domain.StatusDraft,
 	}
 
-	return s.tournamentRepository.Save(tournament)
+	tournament, err := s.tournamentRepository.Save(tournament)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return tournament
 }
 
 // GetTournament retrieves a tournament by ID
-func (s *TournamentServiceImpl) GetTournament(id string) (*domain.Tournament, error) {
-	return s.tournamentRepository.FindByID(id)
+func (s *TournamentServiceImpl) GetTournament(id string) *domain.Tournament {
+	tournament, err := s.tournamentRepository.FindByID(id)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return tournament
 }
 
 // ListTournaments retrieves all tournaments
-func (s *TournamentServiceImpl) ListTournaments() ([]*domain.Tournament, error) {
-	return s.tournamentRepository.FindAll()
+func (s *TournamentServiceImpl) ListTournaments() []*domain.Tournament {
+	tournaments, err := s.tournamentRepository.FindAll()
+
+	if err != nil {
+		panic(err)
+	}
+
+	return tournaments
 }
 
 // UpdateTournamentStatus updates the status of a tournament
-func (s *TournamentServiceImpl) UpdateTournamentStatus(id string, status domain.TournamentStatus) (*domain.Tournament, error) {
+func (s *TournamentServiceImpl) UpdateTournamentStatus(id string, status domain.TournamentStatus) *domain.Tournament {
 	tournament, err := s.tournamentRepository.FindByID(id)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	tournament.Status = status
-	return s.tournamentRepository.Update(tournament)
+	tournament, err = s.tournamentRepository.Update(tournament)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return tournament
+}
+
+func (s *TournamentServiceImpl) DeleteTournament(id string) {
+	err := s.tournamentRepository.Delete(id)
+
+	if err != nil {
+		panic(err)
+	}
 }

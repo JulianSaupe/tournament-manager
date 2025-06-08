@@ -7,14 +7,17 @@ import (
 // TournamentService defines the interface for tournament business operations
 type TournamentService interface {
 	// CreateTournament creates a new tournament
-	CreateTournament(name, description, startDate, endDate string) (*domain.Tournament, error)
-	
+	CreateTournament(name, description, startDate, endDate string) *domain.Tournament
+
 	// GetTournament retrieves a tournament by ID
-	GetTournament(id string) (*domain.Tournament, error)
-	
+	GetTournament(id string) *domain.Tournament
+
 	// ListTournaments retrieves all tournaments
-	ListTournaments() ([]*domain.Tournament, error)
-	
+	ListTournaments() []*domain.Tournament
+
 	// UpdateTournamentStatus updates the status of a tournament
-	UpdateTournamentStatus(id string, status domain.TournamentStatus) (*domain.Tournament, error)
+	UpdateTournamentStatus(id string, status domain.TournamentStatus) *domain.Tournament
+
+	// DeleteTournament removes a tournament
+	DeleteTournament(id string)
 }

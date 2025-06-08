@@ -41,7 +41,7 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("tournament not found")
+			return nil, domain.NewNotFoundError("tournament not found")
 		}
 		return nil, fmt.Errorf("error finding tournament: %w", err)
 	}
@@ -92,7 +92,7 @@ func (r *TournamentRepository) Delete(id string) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New("tournament not found")
+		return domain.NewNotFoundError("tournament not found")
 	}
 
 	return nil
@@ -116,7 +116,7 @@ func (r *TournamentRepository) Update(tournament *domain.Tournament) (*domain.To
 	}
 
 	if rowsAffected == 0 {
-		return nil, errors.New("tournament not found")
+		return nil, domain.NewNotFoundError("tournament not found")
 	}
 
 	return tournament, nil
