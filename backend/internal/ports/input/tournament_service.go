@@ -9,7 +9,7 @@ type TournamentService interface {
 	// CreateTournament creates a new tournament
 	CreateTournament(name, description, startDate, endDate string) *domain.Tournament
 
-	// GetTournament retrieves a tournament by ID
+	// GetTournament retrieves a tournament by Id
 	GetTournament(id string) *domain.Tournament
 
 	// ListTournaments retrieves all tournaments

@@ -6,7 +6,7 @@ import (
 
 // TournamentRepository defines the interface for tournament data access
 type TournamentRepository interface {
-	// FindByID retrieves a tournament by its ID
+	// FindByID retrieves a tournament by its Id
 	FindByID(id string) (*domain.Tournament, error)
 
 	// FindAll retrieves all tournaments

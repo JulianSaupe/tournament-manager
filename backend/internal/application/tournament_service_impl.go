@@ -22,7 +22,7 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 // CreateTournament creates a new tournament
 func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, endDate string) *domain.Tournament {
 	tournament := &domain.Tournament{
-		ID:          uuid.New().String(),
+		Id:          uuid.New().String(),
 		Name:        name,
 		Description: description,
 		StartDate:   startDate,
@@ -39,7 +39,7 @@ func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, e
 	return tournament
 }
 
-// GetTournament retrieves a tournament by ID
+// GetTournament retrieves a tournament by Id
 func (s *TournamentServiceImpl) GetTournament(id string) *domain.Tournament {
 	tournament, err := s.tournamentRepository.FindByID(id)
 

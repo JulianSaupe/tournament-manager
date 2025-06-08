@@ -1,6 +1,8 @@
 package tournament
 
 import (
+	"Tournament/internal/adapters/driving/middleware"
+	"Tournament/internal/adapters/driving/participants"
 	. "Tournament/internal/adapters/driving/response"
 	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
@@ -10,12 +12,14 @@ import (
 )
 
 type Handler struct {
-	tournamentService input.TournamentService
+	tournamentService   input.TournamentService
+	participantsService input.ParticipantsService
 }
 
-func NewTournamentHandler(tournamentService input.TournamentService) *Handler {
+func NewTournamentHandler(tournamentService input.TournamentService, participantsService input.ParticipantsService) *Handler {
 	return &Handler{
-		tournamentService: tournamentService,
+		tournamentService:   tournamentService,
+		participantsService: participantsService,
 	}
 }
 
@@ -25,14 +29,15 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 		r.Post("/create", h.CreateTournament)
 
 		r.Route("/{id}", func(r chi.Router) {
+			r.Use(middleware.TournamentMiddleware(h.tournamentService))
+
 			r.Get("/", h.GetTournament)
 			r.Patch("/status", h.UpdateTournamentStatus)
 			r.Delete("/", h.DeleteTournament)
 
 			r.Route("/participants", func(r chi.Router) {
-				participantsRouter := chi.NewRouter()
-				r.Mount("/", participantsRouter)
-
+				participantsHandler := participants.NewParticipantsHandler(h.participantsService)
+				participantsHandler.RegisterRoutes(r)
 			})
 		})
 	})
@@ -51,9 +56,7 @@ func (h *Handler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetTournament(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	tournament := h.tournamentService.GetTournament(id)
-
+	tournament := r.Context().Value(middleware.TournamentKey{}).(*domain.Tournament)
 	Send(w, r, http.StatusOK, tournament)
 }
 

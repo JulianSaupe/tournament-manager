@@ -12,6 +12,8 @@ require (
 	golang.org/x/crypto v0.21.0
 )
 
+require go.uber.org/dig v1.19.0 // indirect
+
 require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect

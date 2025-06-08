@@ -16,8 +16,8 @@ type TournamentRepository struct {
 	db *bun.DB
 }
 
-// NewPostgresTournamentRepository creates a new PostgreSQL tournament repository
-func NewPostgresTournamentRepository(db *bun.DB) (output.TournamentRepository, error) {
+// NewTournamentRepository creates a new PostgreSQL tournament repository
+func NewTournamentRepository(db *bun.DB) (output.TournamentRepository, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}
@@ -30,7 +30,7 @@ func NewPostgresTournamentRepository(db *bun.DB) (output.TournamentRepository, e
 	}, nil
 }
 
-// FindByID retrieves a tournament by its ID
+// FindByID retrieves a tournament by its Id
 func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 	tournament := new(domain.Tournament)
 

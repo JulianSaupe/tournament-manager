@@ -2,7 +2,7 @@ package domain
 
 // Tournament represents a tournament entity
 type Tournament struct {
-	ID          string           `bun:"id,pk" json:"id"`
+	Id          string           `bun:"id,pk" json:"id"`
 	Name        string           `bun:"name" json:"name"`
 	Description string           `bun:"description" json:"description"`
 	StartDate   string           `bun:"start_date" json:"startDate"`
