@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
 	"context"
 	"github.com/go-chi/chi/v5"
@@ -14,6 +15,10 @@ func TournamentMiddleware(tournamentService input.TournamentService) func(http.H
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			id := chi.URLParam(r, "id")
 			tournament := tournamentService.GetTournament(id)
+
+			if tournament.Status == "ACTIVE" && r.Method != "GET" {
+				panic(domain.NewNotAllowedError("Tournament is active."))
+			}
 
 			ctx := context.WithValue(r.Context(), TournamentKey{}, tournament)
 			next.ServeHTTP(w, r.WithContext(ctx))

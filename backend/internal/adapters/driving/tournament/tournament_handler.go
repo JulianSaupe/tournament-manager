@@ -29,8 +29,8 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 	participantsHandler.RegisterRoutes(participantsRouter)
 
 	router.Route("/tournament", func(r chi.Router) {
-		r.Get("/list", h.ListTournaments)
-		r.Post("/create", h.CreateTournament)
+		r.Get("/", h.ListTournaments)
+		r.Post("/", h.CreateTournament)
 
 		r.Route("/{id}", func(r chi.Router) {
 			r.Use(middleware.TournamentMiddleware(h.tournamentService))

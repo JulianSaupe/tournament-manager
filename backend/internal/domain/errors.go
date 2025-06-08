@@ -30,6 +30,11 @@ type ErrForbidden interface {
 	Forbidden()
 }
 
+type ErrNotAllowed interface {
+	error
+	NotAllowed()
+}
+
 // Error implementations
 
 type errNotFound struct{ error }
@@ -52,6 +57,11 @@ type errForbidden struct{ error }
 func (errForbidden) Forbidden()      {}
 func (e errForbidden) Unwrap() error { return e.error }
 
+type errNotAllowed struct{ error }
+
+func (errNotAllowed) NotAllowed()     {}
+func (e errNotAllowed) Unwrap() error { return e.error }
+
 // Helper functions to create errors
 
 // NewNotFoundError creates a new ErrNotFound from the given error or message
@@ -73,6 +83,9 @@ func NewUnauthorizedError(msg string) error {
 func NewForbiddenError(msg string) error {
 	return errForbidden{errors.New(msg)}
 }
+
+// NewNotAllowedError creates a new ErrNotAllowed from the given error or message
+func NewNotAllowedError(msg string) error { return errNotAllowed{errors.New(msg)} }
 
 // Helper functions to check error types
 
@@ -98,4 +111,9 @@ func IsUnauthorized(err error) bool {
 func IsForbidden(err error) bool {
 	var forbidden ErrForbidden
 	return errors.As(err, &forbidden)
+}
+
+func IsNotAllowed(err error) bool {
+	var notAllowed ErrNotAllowed
+	return errors.As(err, &notAllowed)
 }

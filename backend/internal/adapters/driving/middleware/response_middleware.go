@@ -59,6 +59,9 @@ func inferStatusCode(err error) int {
 	if domain.IsForbidden(err) {
 		return http.StatusForbidden
 	}
+	if domain.IsNotAllowed(err) {
+		return http.StatusMethodNotAllowed
+	}
 
 	return http.StatusInternalServerError
 }

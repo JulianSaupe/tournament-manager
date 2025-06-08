@@ -12,7 +12,7 @@ security:
   - basicAuth: []
 
 paths:
-  /api/tournament/list:
+  /api/tournament:
     get:
       summary: List all tournaments
       description: Retrieves a list of all tournaments
@@ -32,7 +32,7 @@ paths:
             text/plain:
               schema:
                 type: string
-  /api/tournament/create:
+
     post:
       summary: Create a new tournament
       description: Creates a new tournament with DRAFT status
