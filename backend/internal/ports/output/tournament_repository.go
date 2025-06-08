@@ -10,7 +10,7 @@ type TournamentRepository interface {
 	FindByID(id string) (*domain.Tournament, error)
 
 	// FindAll retrieves all tournaments
-	FindAll() ([]*domain.Tournament, error)
+	FindAll() ([]*domain.IndexTournament, error)
 
 	// Save persists a tournament
 	Save(tournament *domain.Tournament) (*domain.Tournament, error)

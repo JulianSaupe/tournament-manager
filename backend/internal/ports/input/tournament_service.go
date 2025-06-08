@@ -13,7 +13,7 @@ type TournamentService interface {
 	GetTournament(id string) *domain.Tournament
 
 	// ListTournaments retrieves all tournaments
-	ListTournaments() []*domain.Tournament
+	ListTournaments() []*domain.IndexTournament
 
 	// UpdateTournamentStatus updates the status of a tournament
 	UpdateTournamentStatus(id string, status domain.TournamentStatus) *domain.Tournament

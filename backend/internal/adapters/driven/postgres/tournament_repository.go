@@ -57,8 +57,8 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 }
 
 // FindAll retrieves all tournaments
-func (r *TournamentRepository) FindAll() ([]*domain.Tournament, error) {
-	tournaments := make([]*domain.Tournament, 0)
+func (r *TournamentRepository) FindAll() ([]*domain.IndexTournament, error) {
+	tournaments := make([]*domain.IndexTournament, 0)
 
 	err := r.db.NewSelect().
 		Model(&tournaments).

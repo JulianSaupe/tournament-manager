@@ -51,7 +51,7 @@ func (s *TournamentServiceImpl) GetTournament(id string) *domain.Tournament {
 }
 
 // ListTournaments retrieves all tournaments
-func (s *TournamentServiceImpl) ListTournaments() []*domain.Tournament {
+func (s *TournamentServiceImpl) ListTournaments() []*domain.IndexTournament {
 	tournaments, err := s.tournamentRepository.FindAll()
 
 	if err != nil {

@@ -1,5 +1,7 @@
 package domain
 
+import "github.com/uptrace/bun"
+
 // Tournament represents a tournament entity
 type Tournament struct {
 	Id                string           `bun:"id,pk" json:"id"`
@@ -10,6 +12,17 @@ type Tournament struct {
 	Status            TournamentStatus `bun:"status" json:"status"`
 	Participants      []Participant    `bun:"rel:has-many,join:id=tournament_id" json:"participants"`
 	ParticipantsCount int              `bun:"participants_count" json:"participantsCount"`
+}
+
+type IndexTournament struct {
+	bun.BaseModel `bun:"table:tournaments"`
+
+	Id          string           `bun:"id,pk" json:"id"`
+	Name        string           `bun:"name" json:"name"`
+	Description string           `bun:"description" json:"description"`
+	StartDate   string           `bun:"start_date" json:"startDate"`
+	EndDate     string           `bun:"end_date" json:"endDate"`
+	Status      TournamentStatus `bun:"status" json:"status"`
 }
 
 // TournamentStatus represents the status of a tournament
