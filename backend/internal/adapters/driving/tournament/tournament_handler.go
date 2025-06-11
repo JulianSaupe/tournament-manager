@@ -1,10 +1,10 @@
 package tournament
 
 import (
-	"Tournament/internal/adapters/driving/middleware"
 	"Tournament/internal/adapters/driving/participants"
 	. "Tournament/internal/adapters/driving/response"
 	"Tournament/internal/domain"
+	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
