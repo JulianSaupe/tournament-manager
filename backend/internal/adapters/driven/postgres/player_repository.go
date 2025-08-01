@@ -7,21 +7,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/uptrace/bun"
 	"time"
 )
 
 type PlayerRepository struct {
-	db *bun.DB
+	db *sql.DB
 }
 
-func NewPlayerRepository(db *bun.DB) (output.PlayerRepository, error) {
+func NewPlayerRepository(db *sql.DB) (output.PlayerRepository, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}
-
-	db.RegisterModel((*domain.Player)(nil))
-	db.NewCreateTable().Model((*domain.Player)(nil)).IfNotExists().Exec(context.Background())
 
 	return &PlayerRepository{
 		db: db,
@@ -29,7 +25,17 @@ func NewPlayerRepository(db *bun.DB) (output.PlayerRepository, error) {
 }
 
 func (r *PlayerRepository) Save(ctx context.Context, player *domain.Player) (*domain.Player, error) {
-	_, err := r.db.NewInsert().Model(player).Exec(ctx)
+	query := `
+		INSERT INTO players (id, name, tournament_id)
+		VALUES ($1, $2, $3)
+	`
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
+		player.Id,
+		player.Name,
+		player.TournamentId,
+	)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving player: %w", err)
@@ -39,10 +45,8 @@ func (r *PlayerRepository) Save(ctx context.Context, player *domain.Player) (*do
 }
 
 func (r *PlayerRepository) Delete(ctx context.Context, id string) error {
-	result, err := r.db.NewDelete().
-		Model((*domain.Player)(nil)).
-		Where("id = ?", id).
-		Exec(ctx)
+	query := `DELETE FROM players WHERE id = $1`
+	result, err := r.db.ExecContext(ctx, query, id)
 
 	if err != nil {
 		return fmt.Errorf("error deleting player: %w", err)
@@ -61,15 +65,33 @@ func (r *PlayerRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *PlayerRepository) FindAll(ctx context.Context, tournamentId string) ([]*domain.Player, error) {
-	players := make([]*domain.Player, 0)
-
-	err := r.db.NewSelect().
-		Model(&players).
-		Where("tournament_id = ?", tournamentId).
-		Scan(ctx)
-
+	query := `
+		SELECT id, name, tournament_id
+		FROM players
+		WHERE tournament_id = $1
+	`
+	rows, err := r.db.QueryContext(ctx, query, tournamentId)
 	if err != nil {
 		return nil, fmt.Errorf("error querying players: %w", err)
+	}
+	defer rows.Close()
+
+	players := make([]*domain.Player, 0)
+	for rows.Next() {
+		player := new(domain.Player)
+		err := rows.Scan(
+			&player.Id,
+			&player.Name,
+			&player.TournamentId,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning player: %w", err)
+		}
+		players = append(players, player)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating players: %w", err)
 	}
 
 	return players, nil
@@ -79,12 +101,19 @@ func (r *PlayerRepository) FindByID(ctx context.Context, id string) (*domain.Pla
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	player := new(domain.Player)
+	query := `
+		SELECT id, name, tournament_id
+		FROM players
+		WHERE id = $1
+	`
+	row := r.db.QueryRowContext(ctx, query, id)
 
-	err := r.db.NewSelect().
-		Model(player).
-		Where("id = ?", id).
-		Scan(ctx)
+	player := new(domain.Player)
+	err := row.Scan(
+		&player.Id,
+		&player.Name,
+		&player.TournamentId,
+	)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -100,31 +129,38 @@ func (r *PlayerRepository) FindByID(ctx context.Context, id string) (*domain.Pla
 }
 
 func (r *PlayerRepository) UpdateName(ctx context.Context, player *domain.Player) (*domain.Player, error) {
-	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
-		result, err := tx.NewUpdate().
-			Model(player).
-			Set("name = ?", player.Name).
-			WherePK().
-			Exec(ctx)
-
-		if err != nil {
-			return fmt.Errorf("error updating player: %w", err)
-		}
-
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("error getting rows affected: %w", err)
-		}
-
-		if rowsAffected == 0 {
-			return domain.NewNotFoundError("player not found")
-		}
-
-		return nil
-	})
-
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error starting transaction: %w", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	query := `
+		UPDATE players
+		SET name = $1
+		WHERE id = $2
+	`
+	result, err := tx.ExecContext(ctx, query, player.Name, player.Id)
+	if err != nil {
+		return nil, fmt.Errorf("error updating player: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("error getting rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return nil, domain.NewNotFoundError("player not found")
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
 	return player, nil

@@ -7,10 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/driver/pgdriver"
-	"github.com/uptrace/bun/extra/bundebug"
+	_ "github.com/lib/pq"
 )
 
 // DatabaseConfig holds the configuration for the database connection
@@ -52,31 +49,30 @@ func (c *DatabaseConfig) ConnectionString() string {
 	)
 }
 
-// NewBunDB creates a new Bun DB instance
-func (c *DatabaseConfig) NewBunDB() (*bun.DB, error) {
-	dsn := fmt.Sprintf(
+// NewDB creates a new PostgreSQL database connection
+func (c *DatabaseConfig) NewDB() (*sql.DB, error) {
+	// Create connection string
+	connStr := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		c.User, c.Password, c.Host, c.Port, c.DBName, c.SSLMode,
 	)
 
-	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
-
-	// Configure connection pool
-	sqlDB.SetMaxOpenConns(25)
-	sqlDB.SetMaxIdleConns(25)
-	sqlDB.SetConnMaxLifetime(5 * time.Minute)
-
-	// Set query timeout
-	sqlDB.SetConnMaxIdleTime(c.QueryTimeout)
-
-	// Test the connection
-	if err := sqlDB.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+	// Open database connection
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open database connection: %w", err)
 	}
 
-	// Create a Bun DB instance
-	db := bun.NewDB(sqlDB, pgdialect.New())
-	db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
+	// Configure connection pool
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxIdleTime(c.QueryTimeout)
+
+	// Test the connection
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
 
 	return db, nil
 }

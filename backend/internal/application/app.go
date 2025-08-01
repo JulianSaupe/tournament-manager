@@ -10,10 +10,10 @@ import (
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/uptrace/bun"
 	"log"
 	"net/http"
 )
@@ -23,7 +23,7 @@ type App struct {
 	config *config.Config
 	server *http.Server
 	router *chi.Mux
-	db     *bun.DB
+	db     *sql.DB
 
 	// Repositories
 	tournamentRepository output.TournamentRepository
@@ -90,7 +90,7 @@ func (a *App) initializeDependencies() error {
 	var err error
 
 	// Initialize database
-	a.db, err = a.config.Database.NewBunDB()
+	a.db, err = a.config.Database.NewDB()
 	if err != nil {
 		return fmt.Errorf("failed to initialize database: %w", err)
 	}

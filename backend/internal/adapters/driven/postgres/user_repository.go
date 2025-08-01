@@ -7,22 +7,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/uptrace/bun"
+	"time"
 )
 
 // UserRepository is a PostgreSQL implementation of the UserRepository interface
 type UserRepository struct {
-	db *bun.DB
+	db *sql.DB
 }
 
 // NewPostgresUserRepository creates a new PostgreSQL user repository
-func NewPostgresUserRepository(db *bun.DB) (output.UserRepository, error) {
+func NewPostgresUserRepository(db *sql.DB) (output.UserRepository, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}
-
-	db.RegisterModel((*domain.User)(nil))
-	db.NewCreateTable().Model((*domain.User)(nil)).IfNotExists().Exec(context.Background())
 
 	return &UserRepository{
 		db: db,
@@ -31,12 +28,26 @@ func NewPostgresUserRepository(db *bun.DB) (output.UserRepository, error) {
 
 // FindByUsername retrieves a user by their username
 func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
-	user := new(domain.User)
+	query := `
+		SELECT id, username, password, created_at, updated_at
+		FROM users
+		WHERE username = $1
+	`
+	row := r.db.QueryRowContext(ctx, query, username)
 
-	err := r.db.NewSelect().
-		Model(user).
-		Where("username = ?", username).
-		Scan(ctx)
+	user := new(domain.User)
+	var createdAt, updatedAt time.Time
+
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Password,
+		&createdAt,
+		&updatedAt,
+	)
+
+	user.CreatedAt = createdAt
+	user.UpdatedAt = updatedAt
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
