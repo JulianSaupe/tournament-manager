@@ -1,74 +1,47 @@
 package main
 
 import (
-	"Tournament/internal/adapters/driven/postgres"
-	"Tournament/internal/adapters/driving/response"
-	httpHandler "Tournament/internal/adapters/driving/tournament"
 	"Tournament/internal/application"
 	"Tournament/internal/config"
-	middleware2 "Tournament/internal/middleware"
-	"github.com/go-chi/chi/v5"
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"context"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	dbConfig := config.NewDatabaseConfig()
+	// Load configuration
+	cfg := config.Load()
 
-	// Initialize Bun DB
-	db, err := dbConfig.NewBunDB()
+	// Initialize app
+	app, err := application.NewApp(cfg)
 	if err != nil {
-		log.Fatalf("Failed to initialize Bun DB: %v", err)
-	}
-	defer db.Close()
-
-	// Create repositories
-	tournamentRepository, err := postgres.NewTournamentRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize repository: %v", err)
+		log.Fatalf("Failed to initialize app: %v", err)
 	}
 
-	userRepository, err := postgres.NewPostgresUserRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize user repository: %v", err)
+	// Start app in a goroutine
+	go func() {
+		if err := app.Start(); err != nil {
+			log.Fatalf("Failed to start server: %v", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shut down the server
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Received shutdown signal")
+
+	// Create a deadline to wait for
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.Server.ShutdownTimeout)
+	defer cancel()
+
+	// Doesn't block if no connections, but will otherwise wait
+	// until the timeout deadline
+	if err := app.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	playerRepository, err := postgres.NewPlayerRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to initialize player repository: %v", err)
-	}
-
-	// Create services
-	tournamentService := application.NewTournamentService(tournamentRepository)
-	userService := application.NewUserService(userRepository)
-	playerService := application.NewPlayerService(playerRepository)
-
-	// Create handlers
-	tournamentHandler := httpHandler.NewTournamentHandler(tournamentService, playerService)
-
-	// Create router
-	router := chi.NewRouter()
-
-	// Middleware
-	router.Use(chiMiddleware.RequestID)
-	router.Use(chiMiddleware.RealIP)
-	router.Use(chiMiddleware.Logger)
-	router.Use(middleware2.AuthMiddleware(userService))
-	router.Use(middleware2.CustomRecoverer)
-	router.Use(response.RequestStartTimeMiddleware)
-
-	apiRouter := chi.NewRouter()
-	router.Mount("/api", apiRouter)
-
-	// Register protected routes
-	tournamentHandler.RegisterRoutes(apiRouter)
-
-	// Start server
-	log.Println("Starting server on :3000")
-
-	serverErr := http.ListenAndServe(":3000", router)
-	if serverErr != nil {
-		log.Fatal(serverErr)
-	}
+	log.Println("Server exited gracefully")
 }

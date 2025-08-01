@@ -106,24 +106,31 @@ func (r *TournamentRepository) Delete(id string) error {
 }
 
 func (r *TournamentRepository) Update(tournament *domain.Tournament) (*domain.Tournament, error) {
-	result, err := r.db.NewUpdate().
-		Model(tournament).
-		Set("status = ?", tournament.Status).
-		WherePK().
-		Exec(context.Background())
+	err := r.db.RunInTx(context.Background(), &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+		result, err := tx.NewUpdate().
+			Model(tournament).
+			Set("status = ?", tournament.Status).
+			WherePK().
+			Exec(ctx)
+
+		if err != nil {
+			return fmt.Errorf("error updating tournament: %w", err)
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("error getting rows affected: %w", err)
+		}
+
+		if rowsAffected == 0 {
+			return domain.NewNotFoundError("tournament not found")
+		}
+
+		return nil
+	})
 
 	if err != nil {
-		return nil, fmt.Errorf("error updating tournament: %w", err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-
-	if err != nil {
-		return nil, fmt.Errorf("error getting rows affected: %w", err)
-	}
-
-	if rowsAffected == 0 {
-		return nil, domain.NewNotFoundError("tournament not found")
+		return nil, err
 	}
 
 	return tournament, nil
