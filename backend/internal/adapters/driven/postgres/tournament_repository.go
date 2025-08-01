@@ -12,7 +12,6 @@ import (
 	"github.com/uptrace/bun"
 )
 
-// TournamentRepository is a PostgreSQL implementation of the TournamentRepository interface
 type TournamentRepository struct {
 	db *bun.DB
 }
@@ -33,7 +32,6 @@ func NewTournamentRepository(db *bun.DB) (output.TournamentRepository, error) {
 
 // FindByID retrieves a tournament by its Id
 func (r *TournamentRepository) FindByID(ctx context.Context, id string) (*domain.Tournament, error) {
-	// Add timeout for database operations
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 

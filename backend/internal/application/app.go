@@ -4,6 +4,7 @@ import (
 	"Tournament/internal/adapters/driven/postgres"
 	"Tournament/internal/adapters/driving/response"
 	httpHandler "Tournament/internal/adapters/driving/tournament"
+	"Tournament/internal/application/service"
 	"Tournament/internal/config"
 	middleware2 "Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
@@ -111,9 +112,9 @@ func (a *App) initializeDependencies() error {
 	}
 
 	// Initialize services
-	a.tournamentService = NewTournamentService(a.tournamentRepository)
-	a.userService = NewUserService(a.userRepository)
-	a.playerService = NewPlayerService(a.playerRepository)
+	a.tournamentService = service.NewTournamentService(a.tournamentRepository)
+	a.userService = service.NewUserService(a.userRepository)
+	a.playerService = service.NewPlayerService(a.playerRepository)
 
 	// Initialize handlers
 	a.tournamentHandler = httpHandler.NewTournamentHandler(a.tournamentService, a.playerService)

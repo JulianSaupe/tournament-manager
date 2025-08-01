@@ -2,7 +2,7 @@ package tournament
 
 import (
 	"Tournament/internal/adapters/driving/player"
-	. "Tournament/internal/adapters/driving/response"
+	"Tournament/internal/adapters/driving/response"
 	"Tournament/internal/domain"
 	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
@@ -50,27 +50,27 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 func (h *Handler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 	var req CreateTournamentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		SendError(w, r, http.StatusBadRequest, err.Error())
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	ctx := r.Context()
 	tournament := h.tournamentService.CreateTournament(ctx, req.Name, req.Description, req.StartDate, req.EndDate)
 
-	Send(w, r, http.StatusCreated, tournament)
+	response.Send(w, r, http.StatusCreated, tournament)
 }
 
 func (h *Handler) GetTournament(w http.ResponseWriter, r *http.Request) {
 	// The tournament is already retrieved by middleware and stored in context
 	tournament := r.Context().Value(middleware.TournamentKey{}).(*domain.Tournament)
-	Send(w, r, http.StatusOK, tournament)
+	response.Send(w, r, http.StatusOK, tournament)
 }
 
 func (h *Handler) ListTournaments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tournaments := h.tournamentService.ListTournaments(ctx)
 
-	Send(w, r, http.StatusOK, tournaments)
+	response.Send(w, r, http.StatusOK, tournaments)
 }
 
 func (h *Handler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +78,7 @@ func (h *Handler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request)
 
 	var req UpdateTournamentStatusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		SendError(w, r, http.StatusBadRequest, err.Error())
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -93,14 +93,14 @@ func (h *Handler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request)
 	case "CANCELLED":
 		status = domain.StatusCancelled
 	default:
-		SendError(w, r, http.StatusBadRequest, "Invalid status")
+		response.SendError(w, r, http.StatusBadRequest, "Invalid status")
 		return
 	}
 
 	ctx := r.Context()
 	tournament := h.tournamentService.UpdateTournamentStatus(ctx, id, status)
 
-	Send(w, r, http.StatusOK, tournament)
+	response.Send(w, r, http.StatusOK, tournament)
 }
 
 func (h *Handler) DeleteTournament(w http.ResponseWriter, r *http.Request) {

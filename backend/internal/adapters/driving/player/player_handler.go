@@ -33,10 +33,18 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 }
 
 func (h *Handler) ListPlayers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	tournament := ctx.Value(middleware.TournamentKey{}).(*domain.Tournament)
 
+	players := h.playerService.ListPlayers(ctx, tournament.Id)
+	response.Send(w, r, http.StatusOK, players)
 }
 
 func (h *Handler) GetPlayer(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	player := h.playerService.GetPlayer(r.Context(), id)
+
+	response.Send(w, r, http.StatusOK, player)
 }
 
 func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
@@ -54,9 +62,27 @@ func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
 
+	var req UpdatePlayerRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	player := h.playerService.UpdatePlayerName(r.Context(), id, req.Name)
+	response.Send(w, r, http.StatusOK, player)
 }
 
 func (h *Handler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
+	var req DeletePlayerRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	h.playerService.DeletePlayer(ctx, req.Id)
+	response.Send(w, r, http.StatusOK, nil)
 }
