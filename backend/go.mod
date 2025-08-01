@@ -6,10 +6,11 @@ toolchain go1.23.10
 
 require (
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/uptrace/bun v1.2.12
-	github.com/uptrace/bun/dialect/pgdialect v1.2.12
-	github.com/uptrace/bun/driver/pgdriver v1.2.12
-	github.com/uptrace/bun/extra/bundebug v1.2.12
+	github.com/lib/pq v1.10.9
+	github.com/uptrace/bun v1.2.13
+	github.com/uptrace/bun/dialect/pgdialect v1.2.13
+	github.com/uptrace/bun/driver/pgdriver v1.2.13
+	github.com/uptrace/bun/extra/bundebug v1.2.13
 	golang.org/x/crypto v0.39.0
 )
 

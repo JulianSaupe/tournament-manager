@@ -34,18 +34,18 @@ func main() {
 		log.Fatalf("Failed to initialize user repository: %v", err)
 	}
 
-	participantsRepository, err := postgres.NewParticipantsRepository(db)
+	playerRepository, err := postgres.NewPlayerRepository(db)
 	if err != nil {
-		log.Fatalf("Failed to initialize participants repository: %v", err)
+		log.Fatalf("Failed to initialize player repository: %v", err)
 	}
 
 	// Create services
 	tournamentService := application.NewTournamentService(tournamentRepository)
 	userService := application.NewUserService(userRepository)
-	participantsService := application.NewParticipantsService(participantsRepository)
+	playerService := application.NewPlayerService(playerRepository)
 
 	// Create handlers
-	tournamentHandler := httpHandler.NewTournamentHandler(tournamentService, participantsService)
+	tournamentHandler := httpHandler.NewTournamentHandler(tournamentService, playerService)
 
 	// Create router
 	router := chi.NewRouter()

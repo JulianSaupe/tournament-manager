@@ -1,7 +1,7 @@
 package tournament
 
 import (
-	"Tournament/internal/adapters/driving/participants"
+	"Tournament/internal/adapters/driving/player"
 	. "Tournament/internal/adapters/driving/response"
 	"Tournament/internal/domain"
 	"Tournament/internal/middleware"
@@ -12,21 +12,21 @@ import (
 )
 
 type Handler struct {
-	tournamentService   input.TournamentService
-	participantsService input.ParticipantsService
+	tournamentService input.TournamentService
+	playerService     input.PlayerService
 }
 
-func NewTournamentHandler(tournamentService input.TournamentService, participantsService input.ParticipantsService) *Handler {
+func NewTournamentHandler(tournamentService input.TournamentService, playerService input.PlayerService) *Handler {
 	return &Handler{
-		tournamentService:   tournamentService,
-		participantsService: participantsService,
+		tournamentService: tournamentService,
+		playerService:     playerService,
 	}
 }
 
 func (h *Handler) RegisterRoutes(router chi.Router) {
-	participantsRouter := chi.NewRouter()
-	participantsHandler := participants.NewParticipantsHandler(h.participantsService)
-	participantsHandler.RegisterRoutes(participantsRouter)
+	playerRouter := chi.NewRouter()
+	playerHandler := player.NewPlayerHandler(h.playerService)
+	playerHandler.RegisterRoutes(playerRouter)
 
 	router.Route("/tournament", func(router chi.Router) {
 		router.Get("/", h.ListTournaments)
@@ -42,7 +42,7 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 				router.Delete("/", h.DeleteTournament)
 			})
 
-			router.Mount("/participants", participantsRouter)
+			router.Mount("/player", playerRouter)
 		})
 	})
 }

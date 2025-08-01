@@ -131,11 +131,11 @@ paths:
               schema:
                 type: string
 
-  /api/tournament/{id}/participants:
+  /api/tournament/{id}/player:
     post:
-      summary: Create a new participant
-      description: Create a new participant and links them to the tournament
-      operationId: createTournamentParticipant
+      summary: Create a new player
+      description: Create a new player and links them to the tournament
+      operationId: createTournamentPlayer
       parameters:
         - name: id
           in: path
@@ -148,14 +148,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTournamentParticipantRequest'
+              $ref: '#/components/schemas/CreateTournamentPlayerRequest'
       responses:
         '200':
-          description: Participant created successfully
+          description: Player created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Participant'
+                $ref: '#/components/schemas/Player'
 
 components:
   securitySchemes:
@@ -194,7 +194,7 @@ components:
         - ACTIVE
         - COMPLETED
         - CANCELLED
-    Participant:
+    Player:
       type: object
       properties:
         id:
@@ -227,7 +227,7 @@ components:
           $ref: '#/components/schemas/TournamentStatus'
       required:
         - status
-    CreateTournamentParticipantRequest:
+    CreateTournamentPlayerRequest:
       type: object
       properties:
         name:

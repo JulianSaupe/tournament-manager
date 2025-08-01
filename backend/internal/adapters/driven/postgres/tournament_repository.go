@@ -40,10 +40,10 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 		Column("tournament.*").
 		ColumnExpr(`(
             SELECT count(*)
-            FROM participants p
+            FROM player p
             WHERE p.tournament_id = tournament.id
-        ) AS participants_count`).
-		Relation("Participants").
+        ) AS player_count`).
+		Relation("players").
 		Scan(context.Background())
 
 	if err != nil {
