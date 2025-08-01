@@ -13,10 +13,11 @@ type TournamentKey struct{}
 func TournamentMiddleware(tournamentService input.TournamentService) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := r.Context()
 			id := chi.URLParam(r, "id")
-			tournament := tournamentService.GetTournament(id)
+			tournament := tournamentService.GetTournament(ctx, id)
 
-			ctx := context.WithValue(r.Context(), TournamentKey{}, tournament)
+			ctx = context.WithValue(ctx, TournamentKey{}, tournament)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

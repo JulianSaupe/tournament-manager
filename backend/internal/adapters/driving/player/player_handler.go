@@ -40,7 +40,8 @@ func (h *Handler) GetPlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
-	tournament := r.Context().Value(middleware.TournamentKey{}).(*domain.Tournament)
+	ctx := r.Context()
+	tournament := ctx.Value(middleware.TournamentKey{}).(*domain.Tournament)
 
 	var req CreatePlayerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -48,7 +49,7 @@ func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player := h.playerService.CreatePlayer(req.Name, tournament.Id)
+	player := h.playerService.CreatePlayer(ctx, req.Name, tournament.Id)
 	response.Send(w, r, http.StatusCreated, player)
 }
 

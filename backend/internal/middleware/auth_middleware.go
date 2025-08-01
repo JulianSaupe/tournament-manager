@@ -19,14 +19,15 @@ func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handl
 				return
 			}
 
-			user, err := userService.GetUserByUsername(username)
+			ctx := r.Context()
+			user, err := userService.GetUserByUsername(ctx, username)
 
 			if err != nil || checkPasswordHash(password, user.Password) != true {
 				basicAuthFailed(w)
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userKey{}, user)
+			ctx = context.WithValue(ctx, userKey{}, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

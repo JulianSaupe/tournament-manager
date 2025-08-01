@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -13,23 +15,32 @@ import (
 
 // DatabaseConfig holds the configuration for the database connection
 type DatabaseConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  string
+	Host         string
+	Port         string
+	User         string
+	Password     string
+	DBName       string
+	SSLMode      string
+	QueryTimeout time.Duration // Timeout for database queries
 }
 
 // NewDatabaseConfig creates a new database configuration with default values
 func NewDatabaseConfig() *DatabaseConfig {
+	// Default query timeout is 30 seconds
+	queryTimeoutStr := getEnv("DB_QUERY_TIMEOUT", "30")
+	queryTimeoutSec, err := strconv.Atoi(queryTimeoutStr)
+	if err != nil {
+		queryTimeoutSec = 30 // Default to 30 seconds if parsing fails
+	}
+
 	return &DatabaseConfig{
-		Host:     getEnv("DB_HOST", "localhost"),
-		Port:     getEnv("DB_PORT", "5432"),
-		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "postgres"),
-		DBName:   getEnv("DB_NAME", "tournament"),
-		SSLMode:  getEnv("DB_SSLMODE", "disable"),
+		Host:         getEnv("DB_HOST", "localhost"),
+		Port:         getEnv("DB_PORT", "5432"),
+		User:         getEnv("DB_USER", "postgres"),
+		Password:     getEnv("DB_PASSWORD", "postgres"),
+		DBName:       getEnv("DB_NAME", "tournament"),
+		SSLMode:      getEnv("DB_SSLMODE", "disable"),
+		QueryTimeout: time.Duration(queryTimeoutSec) * time.Second,
 	}
 }
 
@@ -49,6 +60,14 @@ func (c *DatabaseConfig) NewBunDB() (*bun.DB, error) {
 	)
 
 	sqlDB := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+
+	// Configure connection pool
+	sqlDB.SetMaxOpenConns(25)
+	sqlDB.SetMaxIdleConns(25)
+	sqlDB.SetConnMaxLifetime(5 * time.Minute)
+
+	// Set query timeout
+	sqlDB.SetConnMaxIdleTime(c.QueryTimeout)
 
 	// Test the connection
 	if err := sqlDB.Ping(); err != nil {

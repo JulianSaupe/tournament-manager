@@ -4,6 +4,7 @@ import (
 	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
+	"context"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +21,7 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 }
 
 // CreateTournament creates a new tournament
-func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, endDate string) *domain.Tournament {
+func (s *TournamentServiceImpl) CreateTournament(ctx context.Context, name, description, startDate, endDate string) *domain.Tournament {
 	tournament := &domain.Tournament{
 		Id:          uuid.New().String(),
 		Name:        name,
@@ -30,7 +31,7 @@ func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, e
 		Status:      domain.StatusDraft,
 	}
 
-	tournament, err := s.tournamentRepository.Save(tournament)
+	tournament, err := s.tournamentRepository.Save(ctx, tournament)
 
 	if err != nil {
 		panic(err)
@@ -40,8 +41,8 @@ func (s *TournamentServiceImpl) CreateTournament(name, description, startDate, e
 }
 
 // GetTournament retrieves a tournament by Id
-func (s *TournamentServiceImpl) GetTournament(id string) *domain.Tournament {
-	tournament, err := s.tournamentRepository.FindByID(id)
+func (s *TournamentServiceImpl) GetTournament(ctx context.Context, id string) *domain.Tournament {
+	tournament, err := s.tournamentRepository.FindByID(ctx, id)
 
 	if err != nil {
 		panic(err)
@@ -51,8 +52,8 @@ func (s *TournamentServiceImpl) GetTournament(id string) *domain.Tournament {
 }
 
 // ListTournaments retrieves all tournaments
-func (s *TournamentServiceImpl) ListTournaments() []*domain.IndexTournament {
-	tournaments, err := s.tournamentRepository.FindAll()
+func (s *TournamentServiceImpl) ListTournaments(ctx context.Context) []*domain.IndexTournament {
+	tournaments, err := s.tournamentRepository.FindAll(ctx)
 
 	if err != nil {
 		panic(err)
@@ -62,14 +63,14 @@ func (s *TournamentServiceImpl) ListTournaments() []*domain.IndexTournament {
 }
 
 // UpdateTournamentStatus updates the status of a tournament
-func (s *TournamentServiceImpl) UpdateTournamentStatus(id string, status domain.TournamentStatus) *domain.Tournament {
-	tournament, err := s.tournamentRepository.FindByID(id)
+func (s *TournamentServiceImpl) UpdateTournamentStatus(ctx context.Context, id string, status domain.TournamentStatus) *domain.Tournament {
+	tournament, err := s.tournamentRepository.FindByID(ctx, id)
 	if err != nil {
 		panic(err)
 	}
 
 	tournament.Status = status
-	tournament, err = s.tournamentRepository.Update(tournament)
+	tournament, err = s.tournamentRepository.Update(ctx, tournament)
 
 	if err != nil {
 		panic(err)
@@ -78,8 +79,8 @@ func (s *TournamentServiceImpl) UpdateTournamentStatus(id string, status domain.
 	return tournament
 }
 
-func (s *TournamentServiceImpl) DeleteTournament(id string) {
-	err := s.tournamentRepository.Delete(id)
+func (s *TournamentServiceImpl) DeleteTournament(ctx context.Context, id string) {
+	err := s.tournamentRepository.Delete(ctx, id)
 
 	if err != nil {
 		panic(err)

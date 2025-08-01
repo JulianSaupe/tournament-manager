@@ -2,22 +2,23 @@ package input
 
 import (
 	"Tournament/internal/domain"
+	"context"
 )
 
 // TournamentService defines the interface for tournament business operations
 type TournamentService interface {
 	// CreateTournament creates a new tournament
-	CreateTournament(name, description, startDate, endDate string) *domain.Tournament
+	CreateTournament(ctx context.Context, name, description, startDate, endDate string) *domain.Tournament
 
 	// GetTournament retrieves a tournament by Id
-	GetTournament(id string) *domain.Tournament
+	GetTournament(ctx context.Context, id string) *domain.Tournament
 
 	// ListTournaments retrieves all tournaments
-	ListTournaments() []*domain.IndexTournament
+	ListTournaments(ctx context.Context) []*domain.IndexTournament
 
 	// UpdateTournamentStatus updates the status of a tournament
-	UpdateTournamentStatus(id string, status domain.TournamentStatus) *domain.Tournament
+	UpdateTournamentStatus(ctx context.Context, id string, status domain.TournamentStatus) *domain.Tournament
 
 	// DeleteTournament removes a tournament
-	DeleteTournament(id string)
+	DeleteTournament(ctx context.Context, id string)
 }

@@ -2,22 +2,23 @@ package output
 
 import (
 	"Tournament/internal/domain"
+	"context"
 )
 
 // TournamentRepository defines the interface for tournament data access
 type TournamentRepository interface {
 	// FindByID retrieves a tournament by its Id
-	FindByID(id string) (*domain.Tournament, error)
+	FindByID(ctx context.Context, id string) (*domain.Tournament, error)
 
 	// FindAll retrieves all tournaments
-	FindAll() ([]*domain.IndexTournament, error)
+	FindAll(ctx context.Context) ([]*domain.IndexTournament, error)
 
 	// Save persists a tournament
-	Save(tournament *domain.Tournament) (*domain.Tournament, error)
+	Save(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error)
 
 	// Delete removes a tournament
-	Delete(id string) error
+	Delete(ctx context.Context, id string) error
 
 	// Update updates a tournament
-	Update(tournament *domain.Tournament) (*domain.Tournament, error)
+	Update(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error)
 }

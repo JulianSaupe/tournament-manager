@@ -30,13 +30,13 @@ func NewPostgresUserRepository(db *bun.DB) (output.UserRepository, error) {
 }
 
 // FindByUsername retrieves a user by their username
-func (r *UserRepository) FindByUsername(username string) (*domain.User, error) {
+func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*domain.User, error) {
 	user := new(domain.User)
 
 	err := r.db.NewSelect().
 		Model(user).
 		Where("username = ?", username).
-		Scan(context.Background())
+		Scan(ctx)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

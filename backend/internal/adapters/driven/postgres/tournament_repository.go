@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/uptrace/bun"
 )
@@ -31,7 +32,11 @@ func NewTournamentRepository(db *bun.DB) (output.TournamentRepository, error) {
 }
 
 // FindByID retrieves a tournament by its Id
-func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
+func (r *TournamentRepository) FindByID(ctx context.Context, id string) (*domain.Tournament, error) {
+	// Add timeout for database operations
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
 	tournament := new(domain.Tournament)
 
 	err := r.db.NewSelect().
@@ -44,11 +49,14 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
             WHERE p.tournament_id = tournament.id
         ) AS player_count`).
 		Relation("players").
-		Scan(context.Background())
+		Scan(ctx)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.NewNotFoundError("tournament not found")
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("database query timed out: %w", err)
 		}
 		return nil, fmt.Errorf("error finding tournament: %w", err)
 	}
@@ -57,12 +65,12 @@ func (r *TournamentRepository) FindByID(id string) (*domain.Tournament, error) {
 }
 
 // FindAll retrieves all tournaments
-func (r *TournamentRepository) FindAll() ([]*domain.IndexTournament, error) {
+func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTournament, error) {
 	tournaments := make([]*domain.IndexTournament, 0)
 
 	err := r.db.NewSelect().
 		Model(&tournaments).
-		Scan(context.Background())
+		Scan(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error querying tournaments: %w", err)
@@ -72,8 +80,8 @@ func (r *TournamentRepository) FindAll() ([]*domain.IndexTournament, error) {
 }
 
 // Save persists a tournament
-func (r *TournamentRepository) Save(tournament *domain.Tournament) (*domain.Tournament, error) {
-	_, err := r.db.NewInsert().Model(tournament).Exec(context.Background())
+func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error) {
+	_, err := r.db.NewInsert().Model(tournament).Exec(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving tournament: %w", err)
@@ -83,11 +91,11 @@ func (r *TournamentRepository) Save(tournament *domain.Tournament) (*domain.Tour
 }
 
 // Delete removes a tournament
-func (r *TournamentRepository) Delete(id string) error {
+func (r *TournamentRepository) Delete(ctx context.Context, id string) error {
 	result, err := r.db.NewDelete().
 		Model((*domain.Tournament)(nil)).
 		Where("id = ?", id).
-		Exec(context.Background())
+		Exec(ctx)
 
 	if err != nil {
 		return fmt.Errorf("error deleting tournament: %w", err)
@@ -105,8 +113,8 @@ func (r *TournamentRepository) Delete(id string) error {
 	return nil
 }
 
-func (r *TournamentRepository) Update(tournament *domain.Tournament) (*domain.Tournament, error) {
-	err := r.db.RunInTx(context.Background(), &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
+func (r *TournamentRepository) Update(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error) {
+	err := r.db.RunInTx(ctx, &sql.TxOptions{}, func(ctx context.Context, tx bun.Tx) error {
 		result, err := tx.NewUpdate().
 			Model(tournament).
 			Set("status = ?", tournament.Status).

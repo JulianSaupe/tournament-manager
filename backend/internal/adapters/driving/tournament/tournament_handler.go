@@ -54,18 +54,21 @@ func (h *Handler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tournament := h.tournamentService.CreateTournament(req.Name, req.Description, req.StartDate, req.EndDate)
+	ctx := r.Context()
+	tournament := h.tournamentService.CreateTournament(ctx, req.Name, req.Description, req.StartDate, req.EndDate)
 
 	Send(w, r, http.StatusCreated, tournament)
 }
 
 func (h *Handler) GetTournament(w http.ResponseWriter, r *http.Request) {
+	// The tournament is already retrieved by middleware and stored in context
 	tournament := r.Context().Value(middleware.TournamentKey{}).(*domain.Tournament)
 	Send(w, r, http.StatusOK, tournament)
 }
 
 func (h *Handler) ListTournaments(w http.ResponseWriter, r *http.Request) {
-	tournaments := h.tournamentService.ListTournaments()
+	ctx := r.Context()
+	tournaments := h.tournamentService.ListTournaments(ctx)
 
 	Send(w, r, http.StatusOK, tournaments)
 }
@@ -94,13 +97,15 @@ func (h *Handler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tournament := h.tournamentService.UpdateTournamentStatus(id, status)
+	ctx := r.Context()
+	tournament := h.tournamentService.UpdateTournamentStatus(ctx, id, status)
 
 	Send(w, r, http.StatusOK, tournament)
 }
 
 func (h *Handler) DeleteTournament(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	ctx := r.Context()
 
-	h.tournamentService.DeleteTournament(id)
+	h.tournamentService.DeleteTournament(ctx, id)
 }

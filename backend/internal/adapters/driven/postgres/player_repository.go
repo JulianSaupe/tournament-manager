@@ -25,8 +25,8 @@ func NewPlayerRepository(db *bun.DB) (*PlayerRepository, error) {
 	}, nil
 }
 
-func (r PlayerRepository) Save(player *domain.Player) (*domain.Player, error) {
-	_, err := r.db.NewInsert().Model(player).Exec(context.Background())
+func (r PlayerRepository) Save(ctx context.Context, player *domain.Player) (*domain.Player, error) {
+	_, err := r.db.NewInsert().Model(player).Exec(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving player: %w", err)

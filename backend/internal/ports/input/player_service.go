@@ -1,7 +1,10 @@
 package input
 
-import "Tournament/internal/domain"
+import (
+	"Tournament/internal/domain"
+	"context"
+)
 
 type PlayerService interface {
-	CreatePlayer(name string, tournamentId string) *domain.Player
+	CreatePlayer(ctx context.Context, name string, tournamentId string) *domain.Player
 }
