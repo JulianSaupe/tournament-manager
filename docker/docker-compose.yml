@@ -14,26 +14,26 @@ services:
     networks:
       - tournament-network
 
-  api:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    container_name: tournament_api
-    restart: always
-    depends_on:
-      - postgres
-    environment:
-      USE_POSTGRES: "true"
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: tournament
-      DB_SSLMODE: disable
-    ports:
-      - "3000:3000"
-    networks:
-      - tournament-network
+#  api:
+#    build:
+#      context: ../backend
+#      dockerfile: Dockerfile
+#    container_name: tournament_api
+#    restart: always
+#    depends_on:
+#      - postgres
+#    environment:
+#      USE_POSTGRES: "true"
+#      DB_HOST: postgres
+#      DB_PORT: 5432
+#      DB_USER: postgres
+#      DB_PASSWORD: postgres
+#      DB_NAME: tournament
+#      DB_SSLMODE: disable
+#    ports:
+#      - "3000:3000"
+#    networks:
+#      - tournament-network
 
 networks:
   tournament-network:

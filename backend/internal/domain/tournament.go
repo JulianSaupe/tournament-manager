@@ -4,6 +4,8 @@ import "github.com/uptrace/bun"
 
 // Tournament represents a tournament entity
 type Tournament struct {
+	bun.BaseModel `bun:"table:tournaments"`
+
 	Id          string           `bun:"id,pk" json:"id"`
 	Name        string           `bun:"name" json:"name"`
 	Description string           `bun:"description" json:"description"`

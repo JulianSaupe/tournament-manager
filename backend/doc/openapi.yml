@@ -14,6 +14,8 @@ security:
 paths:
   /api/tournament:
     get:
+      tags:
+        - Tournament
       summary: List all tournaments
       description: Retrieves a list of all tournaments
       operationId: listTournaments
@@ -34,6 +36,8 @@ paths:
                 type: string
 
     post:
+      tags:
+        - Tournament
       summary: Create a new tournament
       description: Creates a new tournament with DRAFT status
       operationId: createTournament
@@ -64,6 +68,8 @@ paths:
                 type: string
   /api/tournament/{id}:
     get:
+      tags:
+        - Tournament
       summary: Get a tournament by ID
       description: Retrieves a tournament by its ID
       operationId: getTournament
@@ -89,6 +95,8 @@ paths:
                 type: string
   /api/tournament/{id}/status:
     patch:
+      tags:
+        - Tournament
       summary: Update tournament status
       description: Updates the status of a tournament
       operationId: updateTournamentStatus
@@ -133,6 +141,8 @@ paths:
 
   /api/tournament/{id}/player:
     post:
+      tags:
+        - Player
       summary: Create a new player
       description: Create a new player and links them to the tournament
       operationId: createTournamentPlayer

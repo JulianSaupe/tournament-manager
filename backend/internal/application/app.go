@@ -6,7 +6,7 @@ import (
 	httpHandler "Tournament/internal/adapters/driving/tournament"
 	"Tournament/internal/application/service"
 	"Tournament/internal/config"
-	middleware2 "Tournament/internal/middleware"
+	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
 	"context"
@@ -128,8 +128,8 @@ func (a *App) registerRoutes() {
 	a.router.Use(chiMiddleware.RequestID)
 	a.router.Use(chiMiddleware.RealIP)
 	a.router.Use(chiMiddleware.Logger)
-	a.router.Use(middleware2.AuthMiddleware(a.userService))
-	a.router.Use(middleware2.CustomRecoverer)
+	// a.router.Use(middleware2.AuthMiddleware(a.userService))
+	a.router.Use(middleware.CustomRecoverer)
 	a.router.Use(response.RequestStartTimeMiddleware)
 
 	// Health check endpoint

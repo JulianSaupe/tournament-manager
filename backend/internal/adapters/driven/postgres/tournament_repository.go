@@ -41,11 +41,6 @@ func (r *TournamentRepository) FindByID(ctx context.Context, id string) (*domain
 		Model(tournament).
 		Where("id = ?", id).
 		Column("tournament.*").
-		ColumnExpr(`(
-            SELECT count(*)
-            FROM player p
-            WHERE p.tournament_id = tournament.id
-        ) AS player_count`).
 		Relation("players").
 		Scan(ctx)
 
