@@ -2,6 +2,7 @@ package player
 
 import (
 	"Tournament/internal/adapters/driving/response"
+	"Tournament/internal/adapters/driving/validation"
 	"Tournament/internal/domain"
 	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
@@ -51,11 +52,7 @@ func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tournament := ctx.Value(middleware.TournamentKey{}).(*domain.Tournament)
 
-	var req CreatePlayerRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		response.SendError(w, r, http.StatusBadRequest, err.Error())
-		return
-	}
+	var req = validation.ValidateRequest[CreatePlayerRequest](r)
 
 	player := h.playerService.CreatePlayer(ctx, req.Name, tournament.Id)
 	response.Send(w, r, http.StatusCreated, player)

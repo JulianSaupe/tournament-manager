@@ -1,10 +1,10 @@
 package tournament
 
 type CreateTournamentRequest struct {
-	Name        string                         `json:"name"`
-	Description string                         `json:"description"`
-	StartDate   string                         `json:"startDate"`
-	EndDate     string                         `json:"endDate"`
+	Name        string                         `json:"name" validate:"required,min=3,max=255"`
+	Description string                         `json:"description" validate:"required,min=3,max=255"`
+	StartDate   string                         `json:"startDate" validate:"required"`
+	EndDate     string                         `json:"endDate" validate:"required"`
 	Rounds      []CreateTournamentRoundRequest `json:"rounds"`
 }
 
@@ -17,5 +17,5 @@ type CreateTournamentRoundRequest struct {
 }
 
 type UpdateTournamentStatusRequest struct {
-	Status string `json:"status"`
+	Status string `json:"status" validate:"required"`
 }

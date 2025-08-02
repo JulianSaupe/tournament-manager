@@ -71,7 +71,7 @@ func (r *TournamentRepository) FindByID(ctx context.Context, id string) (*domain
 	}
 	defer rows.Close()
 
-	players := []domain.Player{}
+	var players []domain.Player
 	for rows.Next() {
 		player := domain.Player{}
 		err := rows.Scan(&player.Id, &player.Name, &player.TournamentId)
