@@ -57,7 +57,7 @@
                         <span class="text-sm font-medium">Groups</span>
                     </div>
                     <div class="text-sm text-base-content/70">
-                        Total: {round.groupCount * round.playersPerGroup} players
+                        Total: {round.groupCount * (round.playersPerGroup || 0) || 0} players
                     </div>
                 </div>
 
@@ -73,7 +73,23 @@
                             class="input input-bordered w-full"
                             min="2"
                             value={round.playersPerGroup}
-                            oninput={(e) => updateRoundField(index, 'playersPerGroup', parseInt(e.currentTarget.value) || 2)}
+                            oninput={(e) => {
+                                const value = e.currentTarget.value;
+                                if (value === '') {
+                                    // Allow empty value during editing
+                                    updateRoundField(index, 'playersPerGroup', null);
+                                } else {
+                                    updateRoundField(index, 'playersPerGroup', parseInt(value));
+                                }
+                            }}
+                            onblur={(e) => {
+                                // Apply fallback only when field loses focus
+                                const value = parseInt(e.currentTarget.value);
+                                if (isNaN(value) || value < 2) {
+                                    updateRoundField(index, 'playersPerGroup', 2);
+                                    e.currentTarget.value = '2';
+                                }
+                            }}
                         />
                     </div>
 
@@ -87,7 +103,23 @@
                             class="input input-bordered w-full"
                             min="1"
                             value={round.matchesPerGroup}
-                            oninput={(e) => updateRoundField(index, 'matchesPerGroup', parseInt(e.currentTarget.value) || 1)}
+                            oninput={(e) => {
+                                const value = e.currentTarget.value;
+                                if (value === '') {
+                                    // Allow empty value during editing
+                                    updateRoundField(index, 'matchesPerGroup', null);
+                                } else {
+                                    updateRoundField(index, 'matchesPerGroup', parseInt(value));
+                                }
+                            }}
+                            onblur={(e) => {
+                                // Apply fallback only when field loses focus
+                                const value = parseInt(e.currentTarget.value);
+                                if (isNaN(value) || value < 1) {
+                                    updateRoundField(index, 'matchesPerGroup', 1);
+                                    e.currentTarget.value = '1';
+                                }
+                            }}
                         />
                     </div>
 
@@ -100,9 +132,29 @@
                             type="number"
                             class="input input-bordered w-full"
                             min="1"
-                            max={round.playersPerGroup - 1}
                             value={round.advancingPlayersPerGroup}
-                            oninput={(e) => updateRoundField(index, 'advancingPlayersPerGroup', parseInt(e.currentTarget.value) || 1)}
+                            oninput={(e) => {
+                                const value = e.currentTarget.value;
+                                if (value === '') {
+                                    // Allow empty value during editing
+                                    updateRoundField(index, 'advancingPlayersPerGroup', null);
+                                } else {
+                                    updateRoundField(index, 'advancingPlayersPerGroup', parseInt(value));
+                                }
+                            }}
+                            onblur={(e) => {
+                                // Apply fallback only when field loses focus
+                                const value = parseInt(e.currentTarget.value);
+                                if (isNaN(value) || value < 1) {
+                                    updateRoundField(index, 'advancingPlayersPerGroup', 1);
+                                    e.currentTarget.value = '1';
+                                } else if (round.playersPerGroup && value >= round.playersPerGroup) {
+                                    // Ensure advancing players is less than total players
+                                    const maxAdvancing = Math.max(1, round.playersPerGroup - 1);
+                                    updateRoundField(index, 'advancingPlayersPerGroup', maxAdvancing);
+                                    e.currentTarget.value = maxAdvancing.toString();
+                                }
+                            }}
                         />
                     </div>
 
@@ -117,7 +169,27 @@
                             min="1"
                             max={round.groupCount}
                             value={round.concurrentGroups}
-                            oninput={(e) => updateRoundField(index, 'concurrentGroups', parseInt(e.currentTarget.value) || 1)}
+                            oninput={(e) => {
+                                const value = e.currentTarget.value;
+                                if (value === '') {
+                                    // Allow empty value during editing
+                                    updateRoundField(index, 'concurrentGroups', null);
+                                } else {
+                                    updateRoundField(index, 'concurrentGroups', parseInt(value));
+                                }
+                            }}
+                            onblur={(e) => {
+                                // Apply fallback only when field loses focus
+                                const value = parseInt(e.currentTarget.value);
+                                if (isNaN(value) || value < 1) {
+                                    updateRoundField(index, 'concurrentGroups', 1);
+                                    e.currentTarget.value = '1';
+                                } else if (value > round.groupCount) {
+                                    // Ensure concurrent groups is not more than total groups
+                                    updateRoundField(index, 'concurrentGroups', round.groupCount);
+                                    e.currentTarget.value = round.groupCount.toString();
+                                }
+                            }}
                         />
                         <label class="label" for="concurrentGroups">
                             <span class="label-text-alt text-base-content/70">Groups that can play at the same time</span>

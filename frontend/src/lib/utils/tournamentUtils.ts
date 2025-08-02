@@ -15,16 +15,20 @@ export function addRound(formData: TournamentFormData): TournamentFormData {
     const lastRound = formData.rounds[formData.rounds.length - 1];
     const newRoundNumber = formData.rounds.length + 1;
 
+    // Get values from last round with fallbacks for null/undefined values
+    const lastAdvancingPlayers = lastRound.advancingPlayersPerGroup || 2; // Default to 2 if null
+    const lastConcurrentGroups = lastRound.concurrentGroups || 1; // Default to 1 if null
+
     // Calculate default values based on previous round
-    const newPlayersPerGroup = lastRound.advancingPlayersPerGroup * 2; // Double the advancing players
+    const newPlayersPerGroup = lastAdvancingPlayers * 2; // Double the advancing players
 
     const newRound: Round = {
         name: `Round ${newRoundNumber}`,
         groupCount: 1, // Will be calculated automatically by reactive statement
         playersPerGroup: newPlayersPerGroup,
         matchesPerGroup: calculateDefaultMatches(newPlayersPerGroup),
-        advancingPlayersPerGroup: Math.max(1, Math.floor(lastRound.advancingPlayersPerGroup / 2)), // Half the advancing players
-        concurrentGroups: Math.max(1, Math.floor(lastRound.concurrentGroups / 2)) // Half the concurrent groups, minimum 1
+        advancingPlayersPerGroup: Math.max(1, Math.floor(lastAdvancingPlayers / 2)), // Half the advancing players
+        concurrentGroups: Math.max(1, Math.floor(lastConcurrentGroups / 2)) // Half the concurrent groups, minimum 1
     };
 
     return {

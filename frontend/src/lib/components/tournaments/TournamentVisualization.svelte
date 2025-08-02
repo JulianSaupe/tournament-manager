@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { PhaseVisualizationData } from '$lib/types/tournament';
-    
+    import type {PhaseVisualizationData} from '$lib/types/tournament';
+
     // Props
     export let visualizationData: PhaseVisualizationData[] = [];
     export let playerCount: number = 0;
@@ -32,9 +32,9 @@
                         {#if visualizationData.length > 0}
                             <!-- Calculate dynamic width based on maximum number of groups in any phase -->
                             {@const maxGroups = Math.max(...visualizationData.map(phase => phase.groupCount))}
-                            {@const totalWidth = Math.max(900, maxGroups * 120)}
+                            {@const totalWidth = Math.max(900, maxGroups * 150)} <!-- Increased width per group -->
                             <!-- Ensure minimum width of 900px -->
-                            {@const svgHeight = visualizationData.length * 200}
+                            {@const svgHeight = Math.max(400, visualizationData.length * 180)} <!-- Optimized height -->
                             <!-- SVG for the tournament tree -->
                             <div class="w-full overflow-x-auto">
                                 <div class="min-w-[800px] md:min-w-0">
@@ -46,19 +46,27 @@
                                         <!-- Draw the tree structure -->
                                         {#each visualizationData.slice().reverse() as phase, reversedIndex}
                                             {@const phaseIndex = visualizationData.length - 1 - reversedIndex}
-                                            {@const yPosition = 50 + reversedIndex * 150}
+                                            {@const yPosition = 40 + reversedIndex * 130} <!-- Reduced vertical spacing -->
                                             {@const numGroups = phase.groupCount}
                                             {@const groupWidth = totalWidth / numGroups}
 
                                             <!-- Phase Label with concurrent groups info -->
                                             <text
                                                     x="{totalWidth / 2}"
-                                                    y="{yPosition - 30}"
+                                                    y="{yPosition - 25}"
                                                     text-anchor="middle"
                                                     class="text-lg font-medium fill-primary"
                                             >
-                                                {phase.name} ({phase.totalPlayers}
-                                                Players, {phase.concurrentGroups || 'All'} Concurrent)
+                                                {phase.name}
+                                            </text>
+                                            <!-- Phase details in smaller text below -->
+                                            <text
+                                                    x="{totalWidth / 2}"
+                                                    y="{yPosition - 10}"
+                                                    text-anchor="middle"
+                                                    class="text-xs fill-primary/80"
+                                            >
+                                                {phase.totalPlayers} Players, {phase.concurrentGroups || 'All'} Concurrent
                                             </text>
 
                                             <!-- Groups in this phase -->
@@ -68,59 +76,58 @@
                                                 <!-- Group node -->
                                                 <g class="group-node"
                                                    transform="translate({xPosition}, {yPosition})">
-                                                    <!-- Group box -->
+                                                    <!-- Group box - adjusted height -->
                                                     <rect
-                                                            x="-50"
-                                                            y="-40"
-                                                            width="100"
-                                                            height="80"
+                                                            x="-55"
+                                                            y="-35"
+                                                            width="110"
+                                                            height="70"
                                                             rx="8"
                                                             class="fill-base-100 stroke-base-300 hover:stroke-primary"
                                                             stroke-width="2"
                                                     />
 
-                                                    <!-- Group label -->
+                                                    <!-- Group label - adjusted position -->
                                                     <text
-                                                            y="-20"
+                                                            y="-18"
                                                             text-anchor="middle"
-                                                            class="font-medium text-base"
+                                                            class="font-medium text-sm"
                                                     >
                                                         Group {groupIndex + 1}
                                                     </text>
 
-                                                    <!-- Players info -->
+                                                    <!-- Players and Matches info combined -->
                                                     <text
-                                                            y="0"
+                                                            y="2"
                                                             text-anchor="middle"
-                                                            class="text-sm"
+                                                            class="text-xs"
                                                     >
                                                         {phase.playersPerGroup} Players
                                                     </text>
-
-                                                    <!-- Matches info -->
+                                                    
                                                     <text
-                                                            y="20"
+                                                            y="18"
                                                             text-anchor="middle"
-                                                            class="text-sm"
+                                                            class="text-xs"
                                                     >
                                                         {phase.matchesPerGroup} Matches
                                                     </text>
 
-                                                    <!-- Advancing info for non-final rounds -->
+                                                    <!-- Advancing info for non-final rounds - adjusted position -->
                                                     {#if phaseIndex < visualizationData.length - 1}
                                                         <g class="advancing-indicator"
-                                                           transform="translate(0, 50)">
+                                                           transform="translate(0, 45)">
                                                             <rect
-                                                                    x="-45"
-                                                                    y="-15"
-                                                                    width="90"
-                                                                    height="30"
+                                                                    x="-40"
+                                                                    y="-12"
+                                                                    width="80"
+                                                                    height="24"
                                                                     rx="4"
                                                                     class="fill-success/10 stroke-success"
                                                                     stroke-width="1"
                                                             />
                                                             <text
-                                                                    y="5"
+                                                                    y="4"
                                                                     text-anchor="middle"
                                                                     class="text-xs text-success"
                                                             >
@@ -136,7 +143,7 @@
                                                         nextPhase = visualizationData[visualizationData.length - reversedIndex]}
                                                     {@const nextNumGroups = nextPhase.groupCount}
                                                     {@const nextGroupWidth = totalWidth / nextNumGroups}
-                                                    {@const nextYPosition = 50 + (reversedIndex - 1) * 150}
+                                                    {@const nextYPosition = 40 + (reversedIndex - 1) * 130} <!-- Fixed calculation -->
 
                                                     <!-- Calculate which group in the next phase this connects to -->
                                                     {@const
@@ -144,25 +151,25 @@
                                                     {@const
                                                         nextXPosition = (nextGroupIndex + 0.5) * nextGroupWidth}
 
-                                                    <!-- Draw connection line with arrow -->
+                                                    <!-- Draw connection line with arrow - improved curve parameters -->
                                                     <path
-                                                            d="M {xPosition} {yPosition + 60} C {xPosition} {yPosition + 90}, {nextXPosition} {nextYPosition - 90}, {nextXPosition} {nextYPosition - 60}"
+                                                            d="M {xPosition} {yPosition + 50} C {xPosition} {yPosition + 70}, {nextXPosition} {nextYPosition - 30}, {nextXPosition} {nextYPosition - 10}"
                                                             fill="none"
                                                             stroke="currentColor"
                                                             stroke-width="2"
                                                             class="text-primary"
                                                     />
 
-                                                    <!-- Add arrow at the end of the path -->
+                                                    <!-- Add arrow at the end of the path - adjusted position -->
                                                     <polygon
-                                                            points="{nextXPosition-5},{nextYPosition-65} {nextXPosition},{nextYPosition-60} {nextXPosition+5},{nextYPosition-65}"
+                                                            points="{nextXPosition-5},{nextYPosition-15} {nextXPosition},{nextYPosition-10} {nextXPosition+5},{nextYPosition-15}"
                                                             fill="currentColor"
                                                             class="text-primary"
                                                     />
 
-                                                    <!-- Add advancement info on the path -->
+                                                    <!-- Add advancement info on the path - improved positioning -->
                                                     {@const midX = (xPosition + nextXPosition) / 2}
-                                                    {@const midY = (yPosition + 60 + nextYPosition - 60) / 2}
+                                                    {@const midY = (yPosition + 50 + nextYPosition - 10) / 2 - 5} <!-- Adjusted to be above the line -->
 
                                                     <g class="advancement-label"
                                                        transform="translate({midX}, {midY})">
@@ -191,7 +198,7 @@
                                         <!-- Connect the final winner to the last phase -->
                                         {#if visualizationData.length > 0}
                                             {@const finalPhase = visualizationData[0]}
-                                            {@const finalYPosition = 50 + (visualizationData.length - 1) * 150}
+                                            {@const finalYPosition = 40 + (visualizationData.length - 1) * 130} <!-- Updated to match new spacing -->
                                             {@const finalNumGroups = finalPhase.groupCount}
                                             {@const finalGroupWidth = totalWidth / finalNumGroups}
 
@@ -199,17 +206,26 @@
                                             {#if finalNumGroups === 1}
                                                 {@const finalXPosition = finalGroupWidth / 2}
                                                 <path
-                                                        d="M {totalWidth / 2} 20 L {totalWidth / 2} 50 L {finalXPosition} 50 L {finalXPosition} {finalYPosition - 60}"
+                                                        d="M {totalWidth / 2} 15 L {totalWidth / 2} 25 L {finalXPosition} 25 L {finalXPosition} {finalYPosition - 35}"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         stroke-width="2"
                                                         stroke-dasharray="4 2"
                                                         class="text-success"
                                                 />
+                                                <!-- Add trophy icon -->
+                                                <text
+                                                        x="{totalWidth / 2}"
+                                                        y="12"
+                                                        text-anchor="middle"
+                                                        class="text-sm text-success font-bold"
+                                                >
+                                                    🏆
+                                                </text>
                                             {:else}
                                                 <!-- For multiple groups in final phase, connect to the middle -->
                                                 <path
-                                                        d="M {totalWidth / 2} 20 L {totalWidth / 2} {finalYPosition - 100}"
+                                                        d="M {totalWidth / 2} 15 L {totalWidth / 2} {finalYPosition - 70}"
                                                         fill="none"
                                                         stroke="currentColor"
                                                         stroke-width="2"
@@ -217,12 +233,22 @@
                                                         class="text-success"
                                                 />
 
+                                                <!-- Add trophy icon -->
+                                                <text
+                                                        x="{totalWidth / 2}"
+                                                        y="12"
+                                                        text-anchor="middle"
+                                                        class="text-sm text-success font-bold"
+                                                >
+                                                    🏆
+                                                </text>
+
                                                 <!-- Add text to explain -->
                                                 <text
                                                         x="{totalWidth / 2}"
-                                                        y="{finalYPosition - 80}"
+                                                        y="{finalYPosition - 55}"
                                                         text-anchor="middle"
-                                                        class="text-sm text-success"
+                                                        class="text-xs text-success"
                                                 >
                                                     Winner from final round
                                                 </text>
