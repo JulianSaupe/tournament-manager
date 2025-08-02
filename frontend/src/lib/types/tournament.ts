@@ -37,33 +37,3 @@ export interface TournamentFormErrors {
     endDate: string;
     playerCount: string;
 }
-
-/**
- * Visualization data for a tournament phase
- */
-export interface PhaseVisualizationData {
-    name: string;
-    groupCount: number;
-    playersPerGroup: number;
-    totalPlayers: number;
-    advancingPlayers: number;
-    matchesPerGroup: number;
-    advancingPlayersPerGroup: number;
-    concurrentGroups: number;
-}
-
-/**
- * Tournament data for submission
- */
-export interface Tournament {
-    id: string;
-    name: string;
-    startDate: string;
-    endDate: string;
-    playerCount: number;
-    status: string;
-    groupPhase: boolean;
-    groupSize: number | null;
-    allowPartiallyFilledGroups: boolean;
-    rounds: Round[];
-}

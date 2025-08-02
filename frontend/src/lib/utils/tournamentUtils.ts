@@ -1,4 +1,4 @@
-import type { Round, TournamentFormData, TournamentFormErrors, PhaseVisualizationData } from '$lib/types/tournament';
+import type {Round, TournamentFormData, TournamentFormErrors} from '$lib/types/tournament';
 
 /**
  * Calculate default number of matches for a group
@@ -25,7 +25,7 @@ export function addRound(formData: TournamentFormData): TournamentFormData {
 
     // Ensure advancingPlayersPerGroup is valid (at least 1 and less than playersPerGroup)
     const newAdvancingPlayers = Math.min(
-        newPlayersPerGroup - 1, 
+        newPlayersPerGroup - 1,
         Math.max(1, Math.floor(lastAdvancingPlayers / 2))
     );
 
@@ -66,66 +66,6 @@ export function removeRound(formData: TournamentFormData, index: number): Tourna
  */
 export function calculateTotalRounds(formData: TournamentFormData): number {
     return formData.rounds.length;
-}
-
-/**
- * Calculate matches for a group
- * Default calculation: each player plays against every other player once
- */
-function calculateMatchesForGroup(players: number): number {
-    return players > 1 ? (players * (players - 1)) / 2 : 0;
-}
-
-/**
- * Generate visualization data for the tournament
- */
-export function generateVisualizationData(formData: TournamentFormData): PhaseVisualizationData[] {
-    const data: PhaseVisualizationData[] = [];
-    let totalPlayers = formData.playerCount;
-
-    // If group phase is enabled, use it as the starting point
-    if (formData.groupPhase && formData.playerCount > 0) {
-        const groupCount = Math.ceil(totalPlayers / formData.groupSize);
-        const playersPerGroup = formData.groupSize;
-
-        // Calculate how many players advance to the first round
-        const advancingPlayers = groupCount * formData.rounds[0].advancingPlayersPerGroup;
-
-        data.push({
-            name: 'Group Phase',
-            groupCount,
-            playersPerGroup,
-            totalPlayers,
-            advancingPlayers,
-            matchesPerGroup: calculateMatchesForGroup(playersPerGroup),
-            advancingPlayersPerGroup: formData.rounds[0].advancingPlayersPerGroup,
-            concurrentGroups: formData.groupSize // For group phase, default to group size as concurrent groups
-        });
-
-        totalPlayers = advancingPlayers;
-    }
-
-    // Add data for each configured round
-    formData.rounds.forEach((round, index) => {
-        const advancingPlayers = index < formData.rounds.length - 1
-            ? formData.rounds[index + 1].groupCount * formData.rounds[index + 1].playersPerGroup
-            : 1; // Final winner
-
-        data.push({
-            name: round.name,
-            groupCount: round.groupCount,
-            playersPerGroup: round.playersPerGroup,
-            totalPlayers,
-            advancingPlayers,
-            matchesPerGroup: round.matchesPerGroup,
-            advancingPlayersPerGroup: round.advancingPlayersPerGroup,
-            concurrentGroups: round.concurrentGroups
-        });
-
-        totalPlayers = advancingPlayers;
-    });
-
-    return data;
 }
 
 /**
@@ -256,5 +196,5 @@ export function validateForm(formData: TournamentFormData): { isValid: boolean; 
         }
     }
 
-    return { isValid, errors };
+    return {isValid, errors};
 }

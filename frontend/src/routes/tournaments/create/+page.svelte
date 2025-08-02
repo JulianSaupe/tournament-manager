@@ -1,16 +1,16 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
-    import { mockTournaments } from '$lib/mockData';
-    import type { TournamentFormData, TournamentFormErrors, PhaseVisualizationData } from '$lib/types/tournament';
-    import { validateForm, generateVisualizationData, updateGroupCounts } from '$lib/utils/tournamentUtils';
-    
+    import {goto} from '$app/navigation';
+    import {mockTournaments} from '$lib/mockData';
+    import type {TournamentFormData, TournamentFormErrors} from '$lib/types/tournament';
+    import {updateGroupCounts, validateForm} from '$lib/utils/tournamentUtils';
+
     // Import components
     import TournamentDetails from '$lib/components/tournaments/TournamentDetails.svelte';
     import TournamentStructure from '$lib/components/tournaments/TournamentStructure.svelte';
     import TournamentVisualization from '$lib/components/tournaments/TournamentVisualization.svelte';
 
-    // Form data
-    let formData: TournamentFormData = {
+    // Form data using $state rune
+    let formData = $state<TournamentFormData>({
         name: '',
         startDate: '',
         endDate: '',
@@ -28,50 +28,43 @@
                 concurrentGroups: 2
             }
         ]
-    };
+    });
 
-    // Form validation
-    let errors: TournamentFormErrors = {
+    // Form validation using $state rune
+    let errors = $state<TournamentFormErrors>({
         name: '',
         startDate: '',
         endDate: '',
         playerCount: ''
-    };
+    });
 
-    // Visualization data
-    let visualizationData: PhaseVisualizationData[] = [];
+    let updatedFormData = $derived(updateGroupCounts(formData));
 
-    // Update form data field
-    function handleFormUpdate(event: CustomEvent<{ field: string; value: string | number | boolean }>) {
-        const { field, value } = event.detail;
-        formData = { ...formData, [field]: value };
+    $effect(() => {
+        formData = updatedFormData;
+    });
+
+    // Simple callback function for form updates
+    function handleFormUpdate(field: string, value: string | number | boolean) {
+        (formData as any)[field] = value;
+
+        // Clear error for this field
+        if (errors[field as keyof TournamentFormErrors]) {
+            errors[field as keyof TournamentFormErrors] = '';
+        }
     }
 
-    // Update rounds
-    function handleRoundsUpdate(event: CustomEvent<{ rounds: any[] }>) {
-        formData = { ...formData, rounds: event.detail.rounds };
+    // Simple callback function for rounds update
+    function handleRoundsUpdate(rounds: any[]) {
+        formData.rounds = rounds;
     }
-
-    // Reactive statements to calculate group counts and update visualization
-    $: {
-        // Update group counts whenever formData changes
-        // This ensures group counts are recalculated when any relevant field changes
-        // (playerCount, playersPerGroup, advancingPlayersPerGroup, etc.)
-        formData = updateGroupCounts(formData);
-    }
-
-    // Reactive statement to update visualization when form data changes
-    $: visualizationData = generateVisualizationData(formData);
 
     // Form submission
     function handleSubmit(event: Event) {
         event.preventDefault();
         const validation = validateForm(formData);
-        
-        if (validation.isValid) {
-            // In a real application, this would send data to the backend
-            // For now, we'll just log it and navigate back to the home page
 
+        if (validation.isValid) {
             // Create a new tournament object
             const newTournament = {
                 id: (mockTournaments.length + 1).toString(),
@@ -94,8 +87,6 @@
             };
 
             console.log('New tournament created:', newTournament);
-
-            // Navigate back to the home page
             goto('/');
         } else {
             errors = validation.errors;
@@ -113,23 +104,22 @@
 
     <form onsubmit={handleSubmit} class="space-y-6">
         <!-- Tournament Details Component -->
-        <TournamentDetails 
-            {formData} 
-            {errors} 
-            on:update={handleFormUpdate} 
+        <TournamentDetails
+                {formData}
+                {errors}
+                onUpdate={handleFormUpdate}
         />
 
         <!-- Tournament Structure Component -->
-        <TournamentStructure 
-            {formData} 
-            onUpdate={(field, value) => handleFormUpdate({ detail: { field, value } })}
-            onUpdateRounds={(rounds) => handleRoundsUpdate({ detail: { rounds } })}
+        <TournamentStructure
+                {formData}
+                onUpdate={handleFormUpdate}
+                onUpdateRounds={handleRoundsUpdate}
         />
 
         <!-- Tournament Visualization Component -->
-        <TournamentVisualization 
-            {visualizationData} 
-            playerCount={formData.playerCount} 
+        <TournamentVisualization
+                playerCount={formData.playerCount}
         />
 
         <!-- Form Actions -->

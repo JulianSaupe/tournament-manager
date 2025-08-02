@@ -1,20 +1,11 @@
 <script lang="ts">
-    import type { TournamentFormData, TournamentFormErrors } from '$lib/types/tournament';
-    
-    // Props
-    export let formData: TournamentFormData;
-    export let errors: TournamentFormErrors;
-    
-    // Event dispatcher for form updates
-    import { createEventDispatcher } from 'svelte';
-    const dispatch = createEventDispatcher<{
-        update: { field: string; value: string | number | boolean };
+    import type {TournamentFormData, TournamentFormErrors} from '$lib/types/tournament';
+
+    const {formData, errors, onUpdate} = $props<{
+        formData: TournamentFormData;
+        errors: TournamentFormErrors;
+        onUpdate: (field: string, value: string | number | boolean) => void;
     }>();
-    
-    // Helper function to update form data
-    function updateFormData(field: string, value: string | number | boolean) {
-        dispatch('update', { field, value });
-    }
 </script>
 
 <div class="card bg-base-100 shadow-sm">
@@ -32,7 +23,7 @@
                         type="text"
                         id="name"
                         value={formData.name}
-                        on:input={(e) => updateFormData('name', e.currentTarget.value)}
+                        oninput={(e) => onUpdate('name', e.currentTarget.value)}
                         class="input input-bordered w-full {errors.name ? 'input-error' : ''}"
                         placeholder="Enter tournament name"
                 />
@@ -52,7 +43,7 @@
                         type="number"
                         id="playerCount"
                         value={formData.playerCount}
-                        on:input={(e) => updateFormData('playerCount', parseInt(e.currentTarget.value) || 0)}
+                        oninput={(e) => onUpdate('playerCount', parseInt(e.currentTarget.value) || 0)}
                         min="1"
                         class="input input-bordered w-full {errors.playerCount ? 'input-error' : ''}"
                         placeholder="Enter number of players"
@@ -73,7 +64,7 @@
                         type="date"
                         id="startDate"
                         value={formData.startDate}
-                        on:input={(e) => updateFormData('startDate', e.currentTarget.value)}
+                        oninput={(e) => onUpdate('startDate', e.currentTarget.value)}
                         class="input input-bordered w-full {errors.startDate ? 'input-error' : ''}"
                 />
                 {#if errors.startDate}
@@ -92,7 +83,7 @@
                         type="date"
                         id="endDate"
                         value={formData.endDate}
-                        on:input={(e) => updateFormData('endDate', e.currentTarget.value)}
+                        oninput={(e) => onUpdate('endDate', e.currentTarget.value)}
                         class="input input-bordered w-full {errors.endDate ? 'input-error' : ''}"
                 />
                 {#if errors.endDate}
