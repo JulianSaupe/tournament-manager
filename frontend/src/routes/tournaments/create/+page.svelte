@@ -54,9 +54,10 @@
 
     // Reactive statements to calculate group counts and update visualization
     $: {
-        if (formData.playerCount > 0) {
-            formData = updateGroupCounts(formData);
-        }
+        // Update group counts whenever formData changes
+        // This ensures group counts are recalculated when any relevant field changes
+        // (playerCount, playersPerGroup, advancingPlayersPerGroup, etc.)
+        formData = updateGroupCounts(formData);
     }
 
     // Reactive statement to update visualization when form data changes
@@ -121,8 +122,8 @@
         <!-- Tournament Structure Component -->
         <TournamentStructure 
             {formData} 
-            on:update={handleFormUpdate}
-            on:updateRounds={handleRoundsUpdate}
+            onUpdate={(field, value) => handleFormUpdate({ detail: { field, value } })}
+            onUpdateRounds={(rounds) => handleRoundsUpdate({ detail: { rounds } })}
         />
 
         <!-- Tournament Visualization Component -->

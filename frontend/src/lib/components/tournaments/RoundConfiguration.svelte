@@ -5,32 +5,32 @@
     // Props
     export let formData: TournamentFormData;
     
-    // Event dispatcher for form updates
-    import { createEventDispatcher } from 'svelte';
-    const dispatch = createEventDispatcher<{
-        addRound: void;
-        removeRound: { index: number };
-        updateRound: { index: number; field: string; value: number };
-    }>();
+    // Callback props instead of event dispatcher
+    export let onAddRound = () => {};
+    export let onRemoveRound = (index: number) => {};
+    export let onUpdateRound = (index: number, field: string, value: number) => {};
     
-    // Helper functions to dispatch events
+    // Helper functions to call callbacks
     function handleAddRound() {
-        dispatch('addRound');
+        onAddRound();
     }
     
     function handleRemoveRound(index: number) {
-        dispatch('removeRound', { index });
+        onRemoveRound(index);
     }
     
     function updateRoundField(index: number, field: string, value: number) {
-        dispatch('updateRound', { index, field, value });
+        onUpdateRound(index, field, value);
     }
+    
+    // Derived value for total rounds
+    $: totalRounds = calculateTotalRounds(formData);
 </script>
 
 <div class="space-y-6">
     <div class="flex justify-between items-center">
         <h3 class="font-medium text-lg">Tournament Rounds</h3>
-        <span class="badge badge-primary">{calculateTotalRounds(formData)} Rounds</span>
+        <span class="badge badge-primary">{totalRounds} Rounds</span>
     </div>
 
     {#each formData.rounds as round, index}

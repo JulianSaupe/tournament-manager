@@ -7,16 +7,13 @@
     // Props
     export let formData: TournamentFormData;
     
-    // Event dispatcher for form updates
-    import { createEventDispatcher } from 'svelte';
-    const dispatch = createEventDispatcher<{
-        update: { field: string; value: string | number | boolean };
-        updateRounds: { rounds: any[] };
-    }>();
+    // Callback props instead of event dispatcher
+    export let onUpdate = (field: string, value: string | number | boolean) => {};
+    export let onUpdateRounds = (rounds: any[]) => {};
     
     // Helper function to update form data
     function updateFormData(field: string, value: string | number | boolean) {
-        dispatch('update', { field, value });
+        onUpdate(field, value);
     }
     
     // Handle group phase settings updates
@@ -27,19 +24,20 @@
     // Handle round operations
     function handleAddRound() {
         const updatedFormData = addRound(formData);
-        dispatch('updateRounds', { rounds: updatedFormData.rounds });
+        onUpdateRounds(updatedFormData.rounds);
     }
     
-    function handleRemoveRound(event: CustomEvent<{ index: number }>) {
-        const updatedFormData = removeRound(formData, event.detail.index);
-        dispatch('updateRounds', { rounds: updatedFormData.rounds });
+    function handleRemoveRound(event: CustomEvent<{ index: number }> | { detail: { index: number } }) {
+        const index = 'detail' in event ? event.detail.index : event.detail.index;
+        const updatedFormData = removeRound(formData, index);
+        onUpdateRounds(updatedFormData.rounds);
     }
     
-    function handleUpdateRound(event: CustomEvent<{ index: number; field: string; value: number }>) {
-        const { index, field, value } = event.detail;
+    function handleUpdateRound(event: CustomEvent<{ index: number; field: string; value: number }> | { detail: { index: number; field: string; value: number } }) {
+        const { index, field, value } = 'detail' in event ? event.detail : event.detail;
         const updatedRounds = [...formData.rounds];
         updatedRounds[index] = { ...updatedRounds[index], [field]: value };
-        dispatch('updateRounds', { rounds: updatedRounds });
+        onUpdateRounds(updatedRounds);
     }
 </script>
 
@@ -53,15 +51,15 @@
         <!-- Group Phase Settings -->
         <GroupPhaseSettings 
             {formData} 
-            on:update={handleGroupPhaseUpdate} 
+            onUpdate={(field, value) => handleGroupPhaseUpdate({ detail: { field, value } })} 
         />
 
         <!-- Rounds Configuration -->
         <RoundConfiguration 
             {formData} 
-            on:addRound={handleAddRound}
-            on:removeRound={handleRemoveRound}
-            on:updateRound={handleUpdateRound}
+            onAddRound={handleAddRound}
+            onRemoveRound={(index) => handleRemoveRound({ detail: { index } })}
+            onUpdateRound={(index, field, value) => handleUpdateRound({ detail: { index, field, value } })}
         />
     </div>
 </div>

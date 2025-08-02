@@ -20,21 +20,32 @@ export function addRound(formData: TournamentFormData): TournamentFormData {
     const lastConcurrentGroups = lastRound.concurrentGroups || 1; // Default to 1 if null
 
     // Calculate default values based on previous round
-    const newPlayersPerGroup = lastAdvancingPlayers * 2; // Double the advancing players
+    // Ensure playersPerGroup is at least 2
+    const newPlayersPerGroup = Math.max(2, lastAdvancingPlayers * 2); // Double the advancing players
+
+    // Ensure advancingPlayersPerGroup is valid (at least 1 and less than playersPerGroup)
+    const newAdvancingPlayers = Math.min(
+        newPlayersPerGroup - 1, 
+        Math.max(1, Math.floor(lastAdvancingPlayers / 2))
+    );
 
     const newRound: Round = {
         name: `Round ${newRoundNumber}`,
         groupCount: 1, // Will be calculated automatically by reactive statement
         playersPerGroup: newPlayersPerGroup,
         matchesPerGroup: calculateDefaultMatches(newPlayersPerGroup),
-        advancingPlayersPerGroup: Math.max(1, Math.floor(lastAdvancingPlayers / 2)), // Half the advancing players
+        advancingPlayersPerGroup: newAdvancingPlayers,
         concurrentGroups: Math.max(1, Math.floor(lastConcurrentGroups / 2)) // Half the concurrent groups, minimum 1
     };
 
-    return {
+    // Create a new formData object with the new round
+    const updatedFormData = {
         ...formData,
         rounds: [...formData.rounds, newRound]
     };
+
+    // Update group counts to ensure consistency
+    return updateGroupCounts(updatedFormData);
 }
 
 /**
@@ -145,9 +156,15 @@ export function updateGroupCounts(formData: TournamentFormData): TournamentFormD
             availablePlayers = prevRound.groupCount * prevRound.advancingPlayersPerGroup;
         }
 
+        // Ensure playersPerGroup is valid (at least 2)
+        const playersPerGroup = round.playersPerGroup || 2;
+        if (playersPerGroup < 2) {
+            round.playersPerGroup = 2;
+        }
+
         // Calculate group count based on available players and players per group
         // Ensure we always have at least 1 group
-        round.groupCount = Math.max(1, Math.ceil(availablePlayers / round.playersPerGroup));
+        round.groupCount = Math.max(1, Math.ceil(availablePlayers / playersPerGroup));
     });
 
     return {

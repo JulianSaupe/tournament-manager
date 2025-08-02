@@ -4,15 +4,12 @@
     // Props
     export let formData: TournamentFormData;
     
-    // Event dispatcher for form updates
-    import { createEventDispatcher } from 'svelte';
-    const dispatch = createEventDispatcher<{
-        update: { field: string; value: string | number | boolean };
-    }>();
+    // Callback prop instead of event dispatcher
+    export let onUpdate = (field: string, value: string | number | boolean) => {};
     
     // Helper function to update form data
     function updateFormData(field: string, value: string | number | boolean) {
-        dispatch('update', { field, value });
+        onUpdate(field, value);
     }
 </script>
 
@@ -24,7 +21,7 @@
             type="checkbox" 
             class="toggle toggle-primary ms-3" 
             checked={formData.groupPhase}
-            on:change={(e) => updateFormData('groupPhase', e.currentTarget.checked)}
+            onclick={(e) => updateFormData('groupPhase', e.currentTarget.checked)}
         />
     </div>
     <p class="text-xs text-base-content/70">
@@ -50,7 +47,7 @@
                     placeholder="Enter group size"
                     min="2"
                     value={formData.groupSize}
-                    on:input={(e) => updateFormData('groupSize', parseInt(e.currentTarget.value) || 4)}
+                    oninput={(e) => updateFormData('groupSize', parseInt(e.currentTarget.value) || 4)}
                 />
                 <label class="label" for="groupSize">
                     <span class="label-text-alt text-base-content/70">Recommended: 4-6 players per group</span>
@@ -65,7 +62,7 @@
                         type="checkbox"
                         class="checkbox"
                         checked={formData.allowPartiallyFilledGroups}
-                        on:change={(e) => updateFormData('allowPartiallyFilledGroups', e.currentTarget.checked)}
+                        onclick={(e) => updateFormData('allowPartiallyFilledGroups', e.currentTarget.checked)}
                     />
                 </label>
                 <label class="label mt-[-8px]" for="allowPartiallyFilledGroups">
