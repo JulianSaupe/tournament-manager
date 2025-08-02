@@ -9,6 +9,7 @@
         playersPerGroup: number;
         matchesPerGroup: number;
         advancingPlayersPerGroup: number;
+        concurrentGroups: number; // Number of groups that can play concurrently
     }
 
     // Form data
@@ -26,7 +27,8 @@
                 groupCount: 4,
                 playersPerGroup: 4,
                 matchesPerGroup: 6,
-                advancingPlayersPerGroup: 2
+                advancingPlayersPerGroup: 2,
+                concurrentGroups: 2
             }
         ] as Round[]
     };
@@ -52,7 +54,8 @@
             groupCount: 1, // Will be calculated automatically by reactive statement
             playersPerGroup: newPlayersPerGroup,
             matchesPerGroup: calculateDefaultMatches(newPlayersPerGroup),
-            advancingPlayersPerGroup: Math.max(1, Math.floor(lastRound.advancingPlayersPerGroup / 2)) // Half the advancing players
+            advancingPlayersPerGroup: Math.max(1, Math.floor(lastRound.advancingPlayersPerGroup / 2)), // Half the advancing players
+            concurrentGroups: Math.max(1, Math.floor(lastRound.concurrentGroups / 2)) // Half the concurrent groups, minimum 1
         };
 
         formData.rounds = [...formData.rounds, newRound];
@@ -94,14 +97,15 @@
                 totalPlayers,
                 advancingPlayers,
                 matchesPerGroup: calculateMatchesForGroup(playersPerGroup),
-                advancingPlayersPerGroup: formData.rounds[0].advancingPlayersPerGroup
+                advancingPlayersPerGroup: formData.rounds[0].advancingPlayersPerGroup,
+                concurrentGroups: formData.groupSize // For group phase, default to group size as concurrent groups
             });
 
             totalPlayers = advancingPlayers;
         }
 
         // Helper function to calculate default matches for a group
-        function calculateMatchesForGroup(players) {
+        function calculateMatchesForGroup(players: number): number {
             // Default calculation: each player plays against every other player once
             return players > 1 ? (players * (players - 1)) / 2 : 0;
         }
@@ -119,7 +123,8 @@
                 totalPlayers,
                 advancingPlayers,
                 matchesPerGroup: round.matchesPerGroup,
-                advancingPlayersPerGroup: round.advancingPlayersPerGroup
+                advancingPlayersPerGroup: round.advancingPlayersPerGroup,
+                concurrentGroups: round.concurrentGroups
             });
 
             totalPlayers = advancingPlayers;
@@ -229,6 +234,16 @@
                 alert(`Round ${i + 1}: Advancing players must be between 1 and ${round.playersPerGroup - 1}`);
                 isValid = false;
             }
+
+            if (round.concurrentGroups <= 0) {
+                alert(`Round ${i + 1}: Concurrent groups must be at least 1`);
+                isValid = false;
+            }
+
+            if (round.concurrentGroups > round.groupCount) {
+                alert(`Round ${i + 1}: Concurrent groups cannot exceed the total number of groups (${round.groupCount})`);
+                isValid = false;
+            }
         }
 
         return isValid;
@@ -257,7 +272,8 @@
                     groupCount: round.groupCount,
                     playersPerGroup: round.playersPerGroup,
                     matchesPerGroup: round.matchesPerGroup,
-                    advancingPlayersPerGroup: round.advancingPlayersPerGroup
+                    advancingPlayersPerGroup: round.advancingPlayersPerGroup,
+                    concurrentGroups: round.concurrentGroups
                 }))
             };
 
@@ -457,7 +473,7 @@
                                 <div class="flex flex-wrap gap-3">
                                     <!-- Players per Group -->
                                     <div class="form-control flex-1 min-w-[150px]">
-                                        <label class="label">
+                                        <label class="label" for="playersPerGroup">
                                             <span class="label-text">Players per Group</span>
                                         </label>
                                         <input
@@ -470,7 +486,7 @@
 
                                     <!-- Matches per Group -->
                                     <div class="form-control flex-1 min-w-[150px]">
-                                        <label class="label">
+                                        <label class="label" for="matchesPerGroup">
                                             <span class="label-text">Matches per Group</span>
                                         </label>
                                         <input
@@ -483,7 +499,7 @@
 
                                     <!-- Advancing Players per Group -->
                                     <div class="form-control flex-1 min-w-[150px]">
-                                        <label class="label">
+                                        <label class="label" for="advancingPlayersPerGroup">
                                             <span class="label-text">Advancing Players</span>
                                         </label>
                                         <input
@@ -493,6 +509,23 @@
                                                 max={round.playersPerGroup - 1}
                                                 bind:value={round.advancingPlayersPerGroup}
                                         />
+                                    </div>
+
+                                    <!-- Concurrent Groups -->
+                                    <div class="form-control flex-1 min-w-[150px]">
+                                        <label class="label" for="concurrentGroups">
+                                            <span class="label-text">Concurrent Groups</span>
+                                        </label>
+                                        <input
+                                                type="number"
+                                                class="input input-bordered w-full"
+                                                min="1"
+                                                max={round.groupCount}
+                                                bind:value={round.concurrentGroups}
+                                        />
+                                        <label class="label" for="concurrentGroups">
+                                            <span class="label-text-alt text-base-content/70">Groups that can play at the same time</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -506,7 +539,7 @@
                                 class="btn btn-outline btn-primary"
                                 onclick={addRound}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24"
                                  stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M12 4v16m8-8H4"/>
@@ -538,65 +571,54 @@
                 </div>
 
                 {#if formData.playerCount > 0}
-                    {@const totalWidth = 900}
                     <div class="overflow-x-auto">
                         <div class="tournament-tree pb-6">
                             <!-- Tournament Tree Visualization -->
                             <div class="flex flex-col items-center">
-                                <!-- Final Winner -->
                                 {#if visualizationData.length > 0}
-                                    <div class="winner-node mb-8">
-                                        <div class="border-2 border-success rounded-lg p-4 bg-success/10 shadow-md hover:shadow-lg transition-shadow duration-300">
-                                            <div class="text-success font-bold flex items-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
-                                                     viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                          stroke-width="2"
-                                                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-                                                </svg>
-                                                Tournament Winner
-                                            </div>
-                                        </div>
-                                    </div>
-
+                                    <!-- Calculate dynamic width based on maximum number of groups in any phase -->
+                                    {@const maxGroups = Math.max(...visualizationData.map(phase => phase.groupCount))}
+                                    {@const totalWidth = Math.max(900, maxGroups * 120)}
+                                    <!-- Ensure minimum width of 900px -->
+                                    {@const svgHeight = visualizationData.length * 200}
                                     <!-- SVG for the tournament tree -->
                                     <div class="w-full overflow-x-auto">
                                         <div class="min-w-[800px] md:min-w-0">
                                             <svg class="tournament-bracket" width="100%"
-                                                 height="{visualizationData.length * 200}"
-                                                 viewBox="0 0 1000 {visualizationData.length * 200}"
+                                                 height="{svgHeight}"
+                                                 viewBox="0 0 {totalWidth} {svgHeight}"
                                                  preserveAspectRatio="xMidYMid meet">
 
                                                 <!-- Draw the tree structure -->
                                                 {#each visualizationData.slice().reverse() as phase, reversedIndex}
                                                     {@const phaseIndex = visualizationData.length - 1 - reversedIndex}
                                                     {@const yPosition = 50 + reversedIndex * 150}
-                                                    {@const numGroups = Math.min(phase.groupCount, 8)}
+                                                    {@const numGroups = phase.groupCount}
                                                     {@const groupWidth = totalWidth / numGroups}
 
-                                                    <!-- Phase Label -->
+                                                    <!-- Phase Label with concurrent groups info -->
                                                     <text
-                                                            x="500"
+                                                            x="{totalWidth / 2}"
                                                             y="{yPosition - 30}"
                                                             text-anchor="middle"
                                                             class="text-lg font-medium fill-primary"
                                                     >
-                                                        {phase.name} ({phase.totalPlayers} Players)
+                                                        {phase.name} ({phase.totalPlayers}
+                                                        Players, {phase.concurrentGroups || 'All'} Concurrent)
                                                     </text>
 
                                                     <!-- Groups in this phase -->
                                                     {#each Array(numGroups) as _, groupIndex}
-                                                        {@const
-                                                            xPosition = 50 + groupIndex * groupWidth + groupWidth / 2}
+                                                        {@const xPosition = (groupIndex + 0.5) * groupWidth}
 
                                                         <!-- Group node -->
                                                         <g class="group-node"
                                                            transform="translate({xPosition}, {yPosition})">
                                                             <!-- Group box -->
                                                             <rect
-                                                                    x="-80"
+                                                                    x="-50"
                                                                     y="-40"
-                                                                    width="160"
+                                                                    width="100"
                                                                     height="80"
                                                                     rx="8"
                                                                     class="fill-base-100 stroke-base-300 hover:stroke-primary"
@@ -609,7 +631,7 @@
                                                                     text-anchor="middle"
                                                                     class="font-medium text-base"
                                                             >
-                                                                Group {groupIndex + 1}{phase.groupCount > 8 && groupIndex === 7 ? ` (+ ${phase.groupCount - 8} more)` : ''}
+                                                                Group {groupIndex + 1}
                                                             </text>
 
                                                             <!-- Players info -->
@@ -635,9 +657,9 @@
                                                                 <g class="advancing-indicator"
                                                                    transform="translate(0, 50)">
                                                                     <rect
-                                                                            x="-60"
+                                                                            x="-45"
                                                                             y="-15"
-                                                                            width="120"
+                                                                            width="90"
                                                                             height="30"
                                                                             rx="4"
                                                                             class="fill-success/10 stroke-success"
@@ -655,17 +677,18 @@
                                                         </g>
 
                                                         <!-- Connection lines to next phase (if not the final phase) -->
-                                                        {#if reversedIndex > 0}
+                                                        {#if reversedIndex > 0 && phaseIndex < visualizationData.length - 1}
                                                             {@const
                                                                 nextPhase = visualizationData[visualizationData.length - reversedIndex]}
-                                                            {@const nextNumGroups = Math.min(nextPhase.groupCount, 8)}
+                                                            {@const nextNumGroups = nextPhase.groupCount}
                                                             {@const nextGroupWidth = totalWidth / nextNumGroups}
                                                             {@const nextYPosition = 50 + (reversedIndex - 1) * 150}
 
                                                             <!-- Calculate which group in the next phase this connects to -->
-                                                            {@const nextGroupIndex = Math.floor(groupIndex / 2)}
                                                             {@const
-                                                                nextXPosition = 50 + nextGroupIndex * nextGroupWidth + nextGroupWidth / 2}
+                                                                nextGroupIndex = Math.floor(groupIndex * nextNumGroups / numGroups)}
+                                                            {@const
+                                                                nextXPosition = (nextGroupIndex + 0.5) * nextGroupWidth}
 
                                                             <!-- Draw connection line with arrow -->
                                                             <path
@@ -709,33 +732,20 @@
                                                             </g>
                                                         {/if}
                                                     {/each}
-
-                                                    <!-- If there are more than 8 groups, show a message -->
-                                                    {#if phase.groupCount > 8}
-                                                        <text
-                                                                x="500"
-                                                                y="{yPosition + 100}"
-                                                                text-anchor="middle"
-                                                                class="text-sm text-base-content/70"
-                                                        >
-                                                            Showing 8 of {phase.groupCount} groups
-                                                        </text>
-                                                    {/if}
                                                 {/each}
 
                                                 <!-- Connect the final winner to the last phase -->
                                                 {#if visualizationData.length > 0}
                                                     {@const finalPhase = visualizationData[0]}
                                                     {@const finalYPosition = 50 + (visualizationData.length - 1) * 150}
-                                                    {@const finalNumGroups = Math.min(finalPhase.groupCount, 8)}
+                                                    {@const finalNumGroups = finalPhase.groupCount}
                                                     {@const finalGroupWidth = totalWidth / finalNumGroups}
 
                                                     <!-- If there's only one group in the final phase, connect directly -->
                                                     {#if finalNumGroups === 1}
-                                                        {@const
-                                                            finalXPosition = 50 + finalGroupWidth / 2}
+                                                        {@const finalXPosition = finalGroupWidth / 2}
                                                         <path
-                                                                d="M 500 20 L 500 50 L {finalXPosition} 50 L {finalXPosition} {finalYPosition - 60}"
+                                                                d="M {totalWidth / 2} 20 L {totalWidth / 2} 50 L {finalXPosition} 50 L {finalXPosition} {finalYPosition - 60}"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 stroke-width="2"
@@ -745,7 +755,7 @@
                                                     {:else}
                                                         <!-- For multiple groups in final phase, connect to the middle -->
                                                         <path
-                                                                d="M 500 20 L 500 {finalYPosition - 100}"
+                                                                d="M {totalWidth / 2} 20 L {totalWidth / 2} {finalYPosition - 100}"
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 stroke-width="2"
@@ -755,7 +765,7 @@
 
                                                         <!-- Add text to explain -->
                                                         <text
-                                                                x="500"
+                                                                x="{totalWidth / 2}"
                                                                 y="{finalYPosition - 80}"
                                                                 text-anchor="middle"
                                                                 class="text-sm text-success"
@@ -774,8 +784,8 @@
 
                     <div class="mt-6 text-sm text-base-content/70 bg-base-200 p-3 rounded-lg">
                         <p class="italic flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-info" fill="none"
-                                 viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-info" viewBox="0 0 24 24"
+                                 stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
@@ -785,7 +795,7 @@
                     </div>
                 {:else}
                     <div class="alert alert-info shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                              class="stroke-current shrink-0 w-6 h-6">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
