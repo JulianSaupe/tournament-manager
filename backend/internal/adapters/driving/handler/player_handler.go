@@ -79,9 +79,6 @@ func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := r.Context()
-	// id := chi.URLParam(r, "playerId")
-
-	h.playerService.DeletePlayer(ctx, params.Id)
+	h.playerService.DeletePlayer(r.Context(), params.Id)
 	response.Send(w, r, http.StatusOK, nil)
 }

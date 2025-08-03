@@ -11,6 +11,12 @@ import (
 	"strings"
 )
 
+const (
+	pathTag    = "path"
+	queryTag   = "query"
+	defaultTag = "default"
+)
+
 // URLParser handles parsing URL parameters into structs
 type URLParser struct {
 	validator *validator.Validate
@@ -26,11 +32,9 @@ func (p *URLParser) parseURLParams(r *http.Request, params interface{}) error {
 	if err := p.parseParameters(r, params); err != nil {
 		return err
 	}
-
 	if err := p.validator.Struct(params); err != nil {
 		return fmt.Errorf("validation failed: %w", err)
 	}
-
 	return nil
 }
 
@@ -46,76 +50,145 @@ func (p *URLParser) parseParameters(r *http.Request, params interface{}) error {
 			continue
 		}
 
-		// Parse path parameters
-		if pathTag := fieldType.Tag.Get("path"); pathTag != "" {
-			if value := chi.URLParam(r, pathTag); value != "" {
-				if err := p.setFieldValue(field, value); err != nil {
-					return fmt.Errorf("failed to set path param %s: %w", pathTag, err)
-				}
-			}
-		}
-
-		// Parse query parameters
-		if queryTag := fieldType.Tag.Get("query"); queryTag != "" {
-			if value := r.URL.Query().Get(queryTag); value != "" {
-				if err := p.setFieldValue(field, value); err != nil {
-					return fmt.Errorf("failed to set query param %s: %w", queryTag, err)
-				}
-			}
-		}
-
-		// Set default values
-		if defaultTag := fieldType.Tag.Get("default"); defaultTag != "" && p.isZeroValue(field) {
-			if err := p.setFieldValue(field, defaultTag); err != nil {
-				return fmt.Errorf("failed to set default value for %s: %w", fieldType.Name, err)
-			}
+		if err := p.processField(r, field, fieldType); err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
+func (p *URLParser) processField(r *http.Request, field reflect.Value, fieldType reflect.StructField) error {
+	if err := p.processPathParameter(r, field, fieldType); err != nil {
+		return err
+	}
+
+	if err := p.processQueryParameter(r, field, fieldType); err != nil {
+		return err
+	}
+
+	if err := p.processDefaultValue(field, fieldType); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *URLParser) processPathParameter(r *http.Request, field reflect.Value, fieldType reflect.StructField) error {
+	pathTagValue := fieldType.Tag.Get(pathTag)
+	if pathTagValue == "" {
+		return nil
+	}
+
+	value := chi.URLParam(r, pathTagValue)
+	if value == "" {
+		return nil
+	}
+
+	if err := p.setFieldValue(field, value); err != nil {
+		return fmt.Errorf("failed to set path param %s: %w", pathTagValue, err)
+	}
+	return nil
+}
+
+func (p *URLParser) processQueryParameter(r *http.Request, field reflect.Value, fieldType reflect.StructField) error {
+	queryTagValue := fieldType.Tag.Get(queryTag)
+	if queryTagValue == "" {
+		return nil
+	}
+
+	value := r.URL.Query().Get(queryTagValue)
+	if value == "" {
+		return nil
+	}
+
+	if err := p.setFieldValue(field, value); err != nil {
+		return fmt.Errorf("failed to set query param %s: %w", queryTagValue, err)
+	}
+	return nil
+}
+
+func (p *URLParser) processDefaultValue(field reflect.Value, fieldType reflect.StructField) error {
+	defaultValue := fieldType.Tag.Get(defaultTag)
+	if defaultValue == "" || !p.isFieldEmpty(field) {
+		return nil
+	}
+
+	if err := p.setFieldValue(field, defaultValue); err != nil {
+		return fmt.Errorf("failed to set default value for %s: %w", fieldType.Name, err)
+	}
 	return nil
 }
 
 func (p *URLParser) setFieldValue(field reflect.Value, value string) error {
 	switch field.Kind() {
 	case reflect.String:
-		field.SetString(value)
+		return p.setStringValue(field, value)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		intValue, err := strconv.ParseInt(value, 10, 64)
-		if err != nil {
-			return err
-		}
-		field.SetInt(intValue)
+		return p.setIntValue(field, value)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		uintValue, err := strconv.ParseUint(value, 10, 64)
-		if err != nil {
-			return err
-		}
-		field.SetUint(uintValue)
+		return p.setUintValue(field, value)
 	case reflect.Bool:
-		boolValue, err := strconv.ParseBool(value)
-		if err != nil {
-			return err
-		}
-		field.SetBool(boolValue)
+		return p.setBoolValue(field, value)
 	case reflect.Float32, reflect.Float64:
-		floatValue, err := strconv.ParseFloat(value, field.Type().Bits())
-		if err != nil {
-			return err
-		}
-		field.SetFloat(floatValue)
+		return p.setFloatValue(field, value)
 	case reflect.Slice:
-		// Handle comma-separated values
-		if field.Type().Elem().Kind() == reflect.String {
-			field.Set(reflect.ValueOf(strings.Split(value, ",")))
-		}
+		return p.setSliceValue(field, value)
 	default:
 		return fmt.Errorf("unsupported field type: %s", field.Kind())
 	}
+}
 
+func (p *URLParser) setStringValue(field reflect.Value, value string) error {
+	field.SetString(value)
 	return nil
 }
 
-func (p *URLParser) isZeroValue(field reflect.Value) bool {
+func (p *URLParser) setIntValue(field reflect.Value, value string) error {
+	intValue, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return err
+	}
+	field.SetInt(intValue)
+	return nil
+}
+
+func (p *URLParser) setUintValue(field reflect.Value, value string) error {
+	uintValue, err := strconv.ParseUint(value, 10, 64)
+	if err != nil {
+		return err
+	}
+	field.SetUint(uintValue)
+	return nil
+}
+
+func (p *URLParser) setBoolValue(field reflect.Value, value string) error {
+	boolValue, err := strconv.ParseBool(value)
+	if err != nil {
+		return err
+	}
+	field.SetBool(boolValue)
+	return nil
+}
+
+func (p *URLParser) setFloatValue(field reflect.Value, value string) error {
+	floatValue, err := strconv.ParseFloat(value, field.Type().Bits())
+	if err != nil {
+		return err
+	}
+	field.SetFloat(floatValue)
+	return nil
+}
+
+func (p *URLParser) setSliceValue(field reflect.Value, value string) error {
+	// Handle comma-separated values
+	if field.Type().Elem().Kind() == reflect.String {
+		field.Set(reflect.ValueOf(strings.Split(value, ",")))
+		return nil
+	}
+	return fmt.Errorf("unsupported slice element type: %s", field.Type().Elem().Kind())
+}
+
+func (p *URLParser) isFieldEmpty(field reflect.Value) bool {
 	return field.IsZero()
 }
 
