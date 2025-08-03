@@ -5,7 +5,6 @@ import (
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
 	"context"
-	"github.com/google/uuid"
 )
 
 type PlayerService struct {
@@ -20,12 +19,11 @@ func NewPlayerService(playerRepository output.PlayerRepository) input.PlayerServ
 
 func (s *PlayerService) CreatePlayer(ctx context.Context, name string, tournamentId string) *domain.Player {
 	player := &domain.Player{
-		Id:           uuid.New().String(),
 		Name:         name,
 		TournamentId: tournamentId,
 	}
 
-	player, err := s.playerRepository.Save(ctx, player)
+	player, err := s.playerRepository.InsertNewPlayer(ctx, player)
 
 	if err != nil {
 		panic(err)

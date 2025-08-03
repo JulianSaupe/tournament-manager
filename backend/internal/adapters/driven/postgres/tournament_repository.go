@@ -127,8 +127,7 @@ func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTour
 	return tournaments, nil
 }
 
-// Save persists a tournament
-func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error) {
+func (r *TournamentRepository) InsertNewTournament(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error) {
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
@@ -140,14 +139,16 @@ func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tour
 		}
 	}()
 
+	// Let PostgreSQL generate UUID if not provided
+	var tournamentID string
 	query := `
-		INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	`
-	_, err = tx.ExecContext(
+        INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `
+	err = tx.QueryRowContext(
 		ctx,
 		query,
-		tournament.Id,
 		tournament.Name,
 		tournament.Description,
 		tournament.StartDate,
@@ -155,25 +156,26 @@ func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tour
 		tournament.Status,
 		tournament.PlayerCount,
 		tournament.AllowUnderfilledGroups,
-	)
+	).Scan(&tournamentID)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving tournament: %w", err)
 	}
 
-	// Build batch insert query
+	tournament.Id = tournamentID
+
+	// Handle rounds if they exist
 	if len(tournament.Rounds) > 0 {
 		placeholders := make([]string, len(tournament.Rounds))
 		args := make([]interface{}, 0, len(tournament.Rounds)*8)
 
 		for i, round := range tournament.Rounds {
-			placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)",
-				i*8+1, i*8+2, i*8+3, i*8+4, i*8+5, i*8+6, i*8+7, i*8+8)
+			placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d)",
+				i*7+1, i*7+2, i*7+3, i*7+4, i*7+5, i*7+6, i*7+7)
 
 			args = append(args,
-				round.Id,
 				round.Name,
-				round.TournamentId,
+				tournamentID,
 				round.MatchCount,
 				round.PlayerCount,
 				round.PlayerAdvancementCount,
@@ -183,9 +185,9 @@ func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tour
 		}
 
 		roundQuery := fmt.Sprintf(`
-        INSERT INTO rounds (id, name, tournament_id, match_count, player_count, player_advancement_count, group_size, concurrent_group_count)
-        VALUES %s
-    `, strings.Join(placeholders, ", "))
+            INSERT INTO rounds (name, tournament_id, match_count, player_count, player_advancement_count, group_size, concurrent_group_count)
+            VALUES %s
+        `, strings.Join(placeholders, ", "))
 
 		_, err = tx.ExecContext(ctx, roundQuery, args...)
 		if err != nil {

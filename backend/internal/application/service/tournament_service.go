@@ -6,7 +6,6 @@ import (
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
 	"context"
-	"github.com/google/uuid"
 )
 
 // TournamentService implements the TournamentService interface
@@ -24,13 +23,10 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 // CreateTournament creates a new tournament
 func (s *TournamentService) CreateTournament(ctx context.Context, req *requests.CreateTournamentRequest) *domain.Tournament {
 	rounds := make([]domain.Round, 0)
-	var tournamentId = uuid.New().String()
 
 	for _, round := range req.Rounds {
 		var newRound = domain.Round{
-			Id:                     uuid.New().String(),
 			Name:                   round.Name,
-			TournamentId:           tournamentId,
 			MatchCount:             round.MatchCount,
 			PlayerAdvancementCount: round.PlayerAdvancementCount,
 			PlayerCount:            round.GroupCount * round.GroupSize,
@@ -43,7 +39,6 @@ func (s *TournamentService) CreateTournament(ctx context.Context, req *requests.
 	}
 
 	var newTournament = domain.Tournament{
-		Id:                     tournamentId,
 		Name:                   req.Name,
 		Description:            req.Description,
 		StartDate:              req.StartDate,
@@ -53,7 +48,7 @@ func (s *TournamentService) CreateTournament(ctx context.Context, req *requests.
 		AllowUnderfilledGroups: req.AllowUnderfilledGroups,
 	}
 
-	savedTournament, err := s.tournamentRepository.Save(ctx, &newTournament)
+	savedTournament, err := s.tournamentRepository.InsertNewTournament(ctx, &newTournament)
 
 	if err != nil {
 		panic(err)

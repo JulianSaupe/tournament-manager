@@ -13,8 +13,8 @@ type TournamentRepository interface {
 	// FindAll retrieves all tournaments
 	FindAll(ctx context.Context) ([]*domain.IndexTournament, error)
 
-	// Save persists a tournament
-	Save(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error)
+	// InsertNewPlayer persists a tournament
+	InsertNewTournament(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error)
 
 	// Delete removes a tournament
 	Delete(ctx context.Context, id string) error

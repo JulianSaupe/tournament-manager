@@ -24,15 +24,14 @@ func NewPlayerRepository(db *sql.DB) (output.PlayerRepository, error) {
 	}, nil
 }
 
-func (r *PlayerRepository) Save(ctx context.Context, player *domain.Player) (*domain.Player, error) {
+func (r *PlayerRepository) InsertNewPlayer(ctx context.Context, player *domain.Player) (*domain.Player, error) {
 	query := `
-		INSERT INTO players (id, name, tournament_id)
-		VALUES ($1, $2, $3)
+		INSERT INTO players (name, tournament_id)
+		VALUES ($1, $2)
 	`
 	_, err := r.db.ExecContext(
 		ctx,
 		query,
-		player.Id,
 		player.Name,
 		player.TournamentId,
 	)
