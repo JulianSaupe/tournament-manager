@@ -25,20 +25,24 @@ func NewPlayerRepository(db *sql.DB) (output.PlayerRepositoryInterface, error) {
 }
 
 func (r *PlayerRepository) InsertNewPlayer(ctx context.Context, player *domain.Player) (*domain.Player, error) {
+	var playerID string
 	query := `
 		INSERT INTO players (name, tournament_id)
 		VALUES ($1, $2)
+		RETURNING id
 	`
-	_, err := r.db.ExecContext(
+	err := r.db.QueryRowContext(
 		ctx,
 		query,
 		player.Name,
 		player.TournamentId,
-	)
+	).Scan(&playerID)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving player: %w", err)
 	}
+
+	player.Id = playerID
 
 	return player, nil
 }

@@ -189,7 +189,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Player'
 
-  /api/tournament/{id}/player/{player_id}:
+  /api/tournament/{id}/player/{playerId}:
     delete:
       tags:
         - Player
@@ -203,7 +203,7 @@ paths:
           schema:
             type: string
           description: The ID of the tournament
-        - name: player_id
+        - name: playerId
           in: path
           required: true
           schema:

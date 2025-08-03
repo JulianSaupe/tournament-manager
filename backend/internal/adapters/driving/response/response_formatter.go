@@ -15,7 +15,7 @@ type StandardResponse struct {
 	StartTime  time.Time   `json:"startTime"`
 	EndTime    time.Time   `json:"endTime"`
 	StatusCode int         `json:"statusCode"`
-	Data       interface{} `json:"data"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 type requestStartTimeKey struct{}
