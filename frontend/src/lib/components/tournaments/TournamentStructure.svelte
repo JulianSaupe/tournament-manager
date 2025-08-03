@@ -1,36 +1,65 @@
 <script lang="ts">
-    import type {TournamentFormData} from '$lib/types/tournament';
-    import {addRound, calculateTotalRounds, removeRound} from '$lib/utils/tournamentUtils';
+    import type {Round} from "$lib/types/tournament";
+    import { tournamentForm } from '$lib/stores/tournamentForm';
 
-    const {
-        formData,
-        onUpdate = (field: string, value: string | number | boolean) => {},
-        onUpdateRounds = (rounds: any[]) => {}
-    }: {
-        formData: TournamentFormData;
-        onUpdate?: (field: string, value: string | number | boolean) => void;
-        onUpdateRounds?: (rounds: any[]) => void;
-    } = $props();
+    let rounds: Round[] = $state([{
+        name: 'Round 1',
+        groupCount: 1,
+        playersPerGroup: 128,
+        matchesPerGroup: 1,
+        advancingPlayersPerGroup: 1,
+        concurrentGroups: 1,
+    }])
+    const totalRounds = $derived(rounds.length || 0);
 
-    // Handle round operations
-    function handleAddRound() {
-        const updatedFormData = addRound(formData);
-        onUpdateRounds(updatedFormData.rounds);
+    const firstRoundGroupCount = $derived(
+        Math.ceil($tournamentForm.playerCount / rounds[0]?.playersPerGroup || 1)
+    );
+
+    $effect(() => {
+        if (rounds[0]) {
+            rounds[0].groupCount = firstRoundGroupCount;
+        }
+    });
+
+    function handleAddRound(): void {
+        const lastRound = rounds[rounds.length - 1];
+
+        rounds = [...rounds, {
+            name: `Round ${rounds.length + 1}`,
+            groupCount: 1,
+            playersPerGroup: lastRound.groupCount * lastRound.advancingPlayersPerGroup,
+            matchesPerGroup: 1,
+            advancingPlayersPerGroup: 1,
+            concurrentGroups: 1,
+        }]
     }
 
-    function handleRemoveRound(index: number) {
-        const updatedFormData = removeRound(formData, index);
-        onUpdateRounds(updatedFormData.rounds);
+    function handleRemoveRound(index: number): void {
+        rounds = rounds.filter((_, i) => i !== index);
     }
 
-    // Updated to accept null values for temporary editing states
-    function updateRoundField(index: number, field: string, value: number | null) {
-        const updatedRounds = [...formData.rounds];
-        updatedRounds[index] = {...updatedRounds[index], [field]: value};
-        onUpdateRounds(updatedRounds);
-    }
 
-    let totalRounds = $derived(calculateTotalRounds(formData));
+    function updateRoundField(index: number, field: keyof Round, value: number | null): void {
+        if (index < 0 || index >= rounds.length) return;
+
+        const updatedRounds = [...rounds];
+        updatedRounds[index] = {
+            ...updatedRounds[index],
+            [field]: value,
+        };
+
+        if (field === 'playersPerGroup') {
+            const groupCount = Math.ceil($tournamentForm.playerCount / updatedRounds[index].playersPerGroup);
+
+            console.log(groupCount === Infinity, groupCount)
+
+            if (!isNaN(groupCount) && groupCount !== Infinity && updatedRounds[index].playersPerGroup > 0) {
+                updatedRounds[index].groupCount = groupCount;
+            }
+        }
+        rounds = updatedRounds;
+    }
 </script>
 
 <div class="card bg-base-100 shadow-sm">
@@ -42,7 +71,7 @@
 
         <!-- Rounds Configuration -->
         <div class="space-y-6">
-            {#each formData.rounds as round, index}
+            {#each rounds as round, index}
                 <div class="bg-base-100 border border-base-300 rounded-lg p-4">
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="font-medium">{round.name}</h4>
@@ -70,7 +99,6 @@
                             </div>
                         </div>
 
-                        <!-- All inputs in a single line -->
                         <div class="flex flex-wrap gap-3">
                             <!-- Players per Group -->
                             <div class="form-control flex-1 min-w-[150px]">
@@ -216,7 +244,8 @@
                         class="btn btn-outline btn-primary"
                         onclick={handleAddRound}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24"
+                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
                     Add Round

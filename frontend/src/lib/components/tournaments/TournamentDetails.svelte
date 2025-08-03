@@ -1,11 +1,21 @@
 <script lang="ts">
-    import type {TournamentFormData, TournamentFormErrors} from '$lib/types/tournament';
+    import { tournamentForm } from '$lib/stores/tournamentForm';
 
-    const {formData, errors, onUpdate} = $props<{
-        formData: TournamentFormData;
-        errors: TournamentFormErrors;
-        onUpdate: (field: string, value: string | number | boolean) => void;
-    }>();
+    function updateName(name: string): void {
+        $tournamentForm.name = name;
+    }
+
+    function updatePlayerCount(count: number): void {
+        $tournamentForm.playerCount = count;
+    }
+
+    function updateStartDate(date: string): void {
+        $tournamentForm.startDate = date;
+    }
+
+    function updateEndDate(date: string): void {
+        $tournamentForm.endDate = date;
+    }
 </script>
 
 <div class="card bg-base-100 shadow-sm">
@@ -22,14 +32,14 @@
                 <input
                         type="text"
                         id="name"
-                        value={formData.name}
-                        oninput={(e) => onUpdate('name', e.currentTarget.value)}
-                        class="input input-bordered w-full {errors.name ? 'input-error' : ''}"
+                        value={$tournamentForm.name}
+                        oninput={(e) => updateName(e.currentTarget.value)}
+                        class="input input-bordered w-full {$tournamentForm.errors.name ? 'input-error' : ''}"
                         placeholder="Enter tournament name"
                 />
-                {#if errors.name}
+                {#if $tournamentForm.errors.name}
                     <label class="label" for="name">
-                        <span class="label-text-alt text-error">{errors.name}</span>
+                        <span class="label-text-alt text-error">{$tournamentForm.errors.name}</span>
                     </label>
                 {/if}
             </div>
@@ -42,15 +52,15 @@
                 <input
                         type="number"
                         id="playerCount"
-                        value={formData.playerCount}
-                        oninput={(e) => onUpdate('playerCount', parseInt(e.currentTarget.value) || 0)}
+                        value={$tournamentForm.playerCount}
+                        oninput={(e) => updatePlayerCount(parseInt(e.currentTarget.value) || 0)}
                         min="1"
-                        class="input input-bordered w-full {errors.playerCount ? 'input-error' : ''}"
+                        class="input input-bordered w-full {$tournamentForm.errors.playerCount ? 'input-error' : ''}"
                         placeholder="Enter number of players"
                 />
-                {#if errors.playerCount}
+                {#if $tournamentForm.errors.playerCount}
                     <label class="label" for="playerCount">
-                        <span class="label-text-alt text-error">{errors.playerCount}</span>
+                        <span class="label-text-alt text-error">{$tournamentForm.errors.playerCount}</span>
                     </label>
                 {/if}
             </div>
@@ -63,13 +73,13 @@
                 <input
                         type="date"
                         id="startDate"
-                        value={formData.startDate}
-                        oninput={(e) => onUpdate('startDate', e.currentTarget.value)}
-                        class="input input-bordered w-full {errors.startDate ? 'input-error' : ''}"
+                        value={$tournamentForm.startDate}
+                        oninput={(e) => updateStartDate(e.currentTarget.value)}
+                        class="input input-bordered w-full {$tournamentForm.errors.startDate ? 'input-error' : ''}"
                 />
-                {#if errors.startDate}
+                {#if $tournamentForm.errors.startDate}
                     <label class="label" for="startDate">
-                        <span class="label-text-alt text-error">{errors.startDate}</span>
+                        <span class="label-text-alt text-error">{$tournamentForm.errors.startDate}</span>
                     </label>
                 {/if}
             </div>
@@ -82,13 +92,13 @@
                 <input
                         type="date"
                         id="endDate"
-                        value={formData.endDate}
-                        oninput={(e) => onUpdate('endDate', e.currentTarget.value)}
-                        class="input input-bordered w-full {errors.endDate ? 'input-error' : ''}"
+                        value={$tournamentForm.endDate}
+                        oninput={(e) => updateStartDate(e.currentTarget.value)}
+                        class="input input-bordered w-full {$tournamentForm.errors.endDate ? 'input-error' : ''}"
                 />
-                {#if errors.endDate}
+                {#if $tournamentForm.errors.endDate}
                     <label class="label" for="endDate">
-                        <span class="label-text-alt text-error">{errors.endDate}</span>
+                        <span class="label-text-alt text-error">{$tournamentForm.errors.endDate}</span>
                     </label>
                 {/if}
             </div>

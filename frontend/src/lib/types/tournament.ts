@@ -7,11 +7,11 @@
  */
 export interface Round {
     name: string;
-    groupCount: number; // Will be calculated based on playerCount and playersPerGroup
+    groupCount: number;
     playersPerGroup: number;
     matchesPerGroup: number;
     advancingPlayersPerGroup: number;
-    concurrentGroups: number; // Number of groups that can play concurrently
+    concurrentGroups: number;
 }
 
 /**

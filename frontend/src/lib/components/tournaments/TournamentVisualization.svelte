@@ -1,5 +1,8 @@
 <script lang="ts">
-    const {playerCount} = $props<{ playerCount: number }>();
+    import {tournamentForm} from '$lib/stores/tournamentForm';
+
+    // Use the store directly with $ syntax for reactive access
+    const playerCount = $derived($tournamentForm.playerCount);
 </script>
 
 <div class="card bg-base-100 shadow-sm">
