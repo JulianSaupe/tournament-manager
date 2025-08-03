@@ -10,7 +10,7 @@ import (
 
 type TournamentKey struct{}
 
-func TournamentMiddleware(tournamentService input.TournamentService) func(http.Handler) http.Handler {
+func TournamentMiddleware(tournamentService input.TournamentServiceInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()

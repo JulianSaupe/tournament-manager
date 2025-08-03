@@ -14,11 +14,11 @@ import (
 )
 
 type TournamentHandler struct {
-	tournamentService input.TournamentService
-	playerService     input.PlayerService
+	tournamentService input.TournamentServiceInterface
+	playerService     input.PlayerServiceInterface
 }
 
-func NewTournamentHandler(tournamentService input.TournamentService, playerService input.PlayerService) *TournamentHandler {
+func NewTournamentHandler(tournamentService input.TournamentServiceInterface, playerService input.PlayerServiceInterface) *TournamentHandler {
 	return &TournamentHandler{
 		tournamentService: tournamentService,
 		playerService:     playerService,

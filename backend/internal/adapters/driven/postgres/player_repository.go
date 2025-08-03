@@ -14,7 +14,7 @@ type PlayerRepository struct {
 	db *sql.DB
 }
 
-func NewPlayerRepository(db *sql.DB) (output.PlayerRepository, error) {
+func NewPlayerRepository(db *sql.DB) (output.PlayerRepositoryInterface, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}

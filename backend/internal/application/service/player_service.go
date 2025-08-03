@@ -8,10 +8,10 @@ import (
 )
 
 type PlayerService struct {
-	playerRepository output.PlayerRepository
+	playerRepository output.PlayerRepositoryInterface
 }
 
-func NewPlayerService(playerRepository output.PlayerRepository) input.PlayerService {
+func NewPlayerService(playerRepository output.PlayerRepositoryInterface) input.PlayerServiceInterface {
 	return &PlayerService{
 		playerRepository: playerRepository,
 	}

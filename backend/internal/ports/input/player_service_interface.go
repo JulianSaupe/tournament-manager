@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type PlayerService interface {
+type PlayerServiceInterface interface {
 	CreatePlayer(ctx context.Context, name string, tournamentId string) *domain.Player
 
 	DeletePlayer(ctx context.Context, id string)

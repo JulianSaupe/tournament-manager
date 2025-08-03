@@ -26,14 +26,14 @@ type App struct {
 	db     *sql.DB
 
 	// Repositories
-	tournamentRepository output.TournamentRepository
-	userRepository       output.UserRepository
-	playerRepository     output.PlayerRepository
+	tournamentRepository output.TournamentRepositoryInterface
+	userRepository       output.UserRepositoryInterface
+	playerRepository     output.PlayerRepositoryInterface
 
 	// Services
-	tournamentService input.TournamentService
-	userService       input.UserService
-	playerService     input.PlayerService
+	tournamentService input.TournamentServiceInterface
+	userService       input.UserServiceInterface
+	playerService     input.PlayerServiceInterface
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler

@@ -9,7 +9,7 @@ import (
 
 type userKey struct{}
 
-func AuthMiddleware(userService input.UserService) func(http.Handler) http.Handler {
+func AuthMiddleware(userService input.UserServiceInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			username, password, ok := r.BasicAuth()

@@ -5,7 +5,7 @@ import (
 	"context"
 )
 
-type PlayerRepository interface {
+type PlayerRepositoryInterface interface {
 	InsertNewPlayer(ctx context.Context, player *domain.Player) (*domain.Player, error)
 
 	Delete(ctx context.Context, id string) error

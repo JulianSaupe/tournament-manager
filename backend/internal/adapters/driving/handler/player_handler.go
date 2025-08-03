@@ -13,10 +13,10 @@ import (
 )
 
 type PlayerHandler struct {
-	playerService input.PlayerService
+	playerService input.PlayerServiceInterface
 }
 
-func NewPlayerHandler(playerService input.PlayerService) *PlayerHandler {
+func NewPlayerHandler(playerService input.PlayerServiceInterface) *PlayerHandler {
 	return &PlayerHandler{
 		playerService: playerService,
 	}

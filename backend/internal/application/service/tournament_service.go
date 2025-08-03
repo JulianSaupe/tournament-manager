@@ -10,11 +10,11 @@ import (
 
 // TournamentService implements the TournamentService interface
 type TournamentService struct {
-	tournamentRepository output.TournamentRepository
+	tournamentRepository output.TournamentRepositoryInterface
 }
 
 // NewTournamentService creates a new tournament service
-func NewTournamentService(tournamentRepository output.TournamentRepository) input.TournamentService {
+func NewTournamentService(tournamentRepository output.TournamentRepositoryInterface) input.TournamentServiceInterface {
 	return &TournamentService{
 		tournamentRepository: tournamentRepository,
 	}

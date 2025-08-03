@@ -16,7 +16,7 @@ type UserRepository struct {
 }
 
 // NewPostgresUserRepository creates a new PostgreSQL user repository
-func NewPostgresUserRepository(db *sql.DB) (output.UserRepository, error) {
+func NewPostgresUserRepository(db *sql.DB) (output.UserRepositoryInterface, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}

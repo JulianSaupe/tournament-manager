@@ -9,11 +9,11 @@ import (
 
 // UserService implements the UserService interface
 type UserService struct {
-	userRepository output.UserRepository
+	userRepository output.UserRepositoryInterface
 }
 
 // NewUserService creates a new user service
-func NewUserService(userRepository output.UserRepository) input.UserService {
+func NewUserService(userRepository output.UserRepositoryInterface) input.UserServiceInterface {
 	return &UserService{
 		userRepository: userRepository,
 	}

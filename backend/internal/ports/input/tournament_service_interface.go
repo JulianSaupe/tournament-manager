@@ -6,8 +6,8 @@ import (
 	"context"
 )
 
-// TournamentService defines the interface for tournament business operations
-type TournamentService interface {
+// TournamentServiceInterface defines the interface for tournament business operations
+type TournamentServiceInterface interface {
 	// CreateTournament creates a new tournament
 	CreateTournament(ctx context.Context, req *requests.CreateTournamentRequest) *domain.Tournament
 

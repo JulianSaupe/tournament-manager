@@ -21,7 +21,7 @@ type TournamentRepository struct {
 }
 
 // NewTournamentRepository creates a new PostgreSQL tournament repository
-func NewTournamentRepository(db *sql.DB) (output.TournamentRepository, error) {
+func NewTournamentRepository(db *sql.DB) (output.TournamentRepositoryInterface, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}
