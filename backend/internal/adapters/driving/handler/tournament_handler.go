@@ -87,6 +87,7 @@ func (h *TournamentHandler) DeleteTournament(w http.ResponseWriter, r *http.Requ
 	id := chi.URLParam(r, "id")
 	ctx := r.Context()
 	h.tournamentService.DeleteTournament(ctx, id)
+	response.Send(w, r, http.StatusOK, nil)
 }
 
 func (h *TournamentHandler) parseStatusString(statusStr string) (domain.TournamentStatus, error) {
