@@ -93,7 +93,7 @@
                         type="date"
                         id="endDate"
                         value={$tournamentForm.endDate}
-                        oninput={(e) => updateStartDate(e.currentTarget.value)}
+                        oninput={(e) => updateEndDate(e.currentTarget.value)}
                         class="input input-bordered w-full {$tournamentForm.errors.endDate ? 'input-error' : ''}"
                 />
                 {#if $tournamentForm.errors.endDate}
