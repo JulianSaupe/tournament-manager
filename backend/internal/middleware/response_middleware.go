@@ -15,14 +15,6 @@ func CustomRecoverer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rvr := recover(); rvr != nil {
-				logEntry := middleware.GetLogEntry(r)
-				if logEntry != nil {
-					logEntry.Panic(rvr, debug.Stack())
-				} else {
-					_, _ = fmt.Fprintf(os.Stderr, "Panic: %+v\n", rvr)
-					debug.PrintStack()
-				}
-
 				errorMessage := "Internal server error"
 				var err error
 
@@ -37,6 +29,17 @@ func CustomRecoverer(next http.Handler) http.Handler {
 				}
 
 				statusCode := inferStatusCode(err)
+
+				if statusCode == http.StatusInternalServerError {
+					logEntry := middleware.GetLogEntry(r)
+					if logEntry != nil {
+						logEntry.Panic(rvr, debug.Stack())
+					} else {
+						_, _ = fmt.Fprintf(os.Stderr, "Panic: %+v\n", rvr)
+						debug.PrintStack()
+					}
+				}
+
 				response.SendError(w, r, statusCode, errorMessage)
 			}
 		}()
