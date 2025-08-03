@@ -5,7 +5,7 @@ type CreatePlayerRequest struct {
 }
 
 type DeletePlayerRequest struct {
-	Id string `json:"id" validate:"required"`
+	Id string `path:"playerId" validate:"required"`
 }
 
 type UpdatePlayerRequest struct {

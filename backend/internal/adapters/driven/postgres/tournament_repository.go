@@ -285,7 +285,7 @@ func (r *TournamentRepository) findRoundsByTournamentID(ctx context.Context, tou
 func (r *TournamentRepository) insertTournament(ctx context.Context, tx *sql.Tx, tournament *domain.Tournament) (string, error) {
 	var tournamentID string
 	query := `
-        INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
+        INSERT INTO tournaments (name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING id
     `

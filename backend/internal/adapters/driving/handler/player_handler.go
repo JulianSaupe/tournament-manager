@@ -73,9 +73,15 @@ func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	id := chi.URLParam(r, "playerId")
+	params, err := validation.ParseURLParams[requests.DeletePlayerRequest](r)
+	if err != nil {
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	h.playerService.DeletePlayer(ctx, id)
+	ctx := r.Context()
+	// id := chi.URLParam(r, "playerId")
+
+	h.playerService.DeletePlayer(ctx, params.Id)
 	response.Send(w, r, http.StatusOK, nil)
 }

@@ -61,7 +61,7 @@ func (r *PlayerRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if rowsAffected == 0 {
-		return domain.NewNotFoundError("player not found")
+		return domain.NewNotFoundError("player not found for id: " + id)
 	}
 
 	return nil
