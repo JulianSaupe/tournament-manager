@@ -65,5 +65,13 @@ func ValidateCreateTournamentRequest(r *http.Request) *requests.CreateTournament
 		previousRound = &round
 	}
 
+	if previousRound == nil {
+		panic(domain.NewInvalidParameterError("Tournament must have at least one round"))
+	}
+
+	if previousRound.GroupCount != 1 {
+		panic(domain.NewInvalidParameterError("Last round must have exactly one group"))
+	}
+
 	return &req
 }
