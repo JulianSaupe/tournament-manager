@@ -7,8 +7,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
+)
+
+const (
+	queryTimeout = 30 * time.Second
 )
 
 type TournamentRepository struct {
@@ -20,7 +25,6 @@ func NewTournamentRepository(db *sql.DB) (output.TournamentRepository, error) {
 	if db == nil {
 		return nil, errors.New("db cannot be nil")
 	}
-
 	return &TournamentRepository{
 		db: db,
 	}, nil
@@ -28,65 +32,25 @@ func NewTournamentRepository(db *sql.DB) (output.TournamentRepository, error) {
 
 // FindByID retrieves a tournament by its Id
 func (r *TournamentRepository) FindByID(ctx context.Context, id string) (*domain.Tournament, error) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, queryTimeout)
 	defer cancel()
 
-	// Query tournament
-	query := `
-		SELECT id, name, description, start_date, end_date, status, player_count
-		FROM tournaments
-		WHERE id = $1
-	`
-	row := r.db.QueryRowContext(ctx, query, id)
-
-	tournament := new(domain.Tournament)
-	err := row.Scan(
-		&tournament.Id,
-		&tournament.Name,
-		&tournament.Description,
-		&tournament.StartDate,
-		&tournament.EndDate,
-		&tournament.Status,
-		&tournament.PlayerCount,
-	)
-
+	tournament, err := r.findTournamentByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.NewNotFoundError("tournament not found")
-		}
-		if errors.Is(err, context.DeadlineExceeded) {
-			return nil, fmt.Errorf("database query timed out: %w", err)
-		}
-		return nil, fmt.Errorf("error finding tournament: %w", err)
+		return nil, err
 	}
 
-	// Query players for this tournament
-	playersQuery := `
-		SELECT id, name, tournament_id
-		FROM players
-		WHERE tournament_id = $1
-	`
-	rows, err := r.db.QueryContext(ctx, playersQuery, id)
+	players, err := r.findPlayersByTournamentID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("error querying players: %w", err)
+		return nil, err
 	}
-	defer rows.Close()
-
-	var players []domain.Player
-	for rows.Next() {
-		player := domain.Player{}
-		err := rows.Scan(&player.Id, &player.Name, &player.TournamentId)
-		if err != nil {
-			return nil, fmt.Errorf("error scanning player: %w", err)
-		}
-		players = append(players, player)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating players: %w", err)
-	}
-
 	tournament.Players = players
+
+	rounds, err := r.findRoundsByTournamentID(ctx, tournament.Id)
+	if err != nil {
+		return nil, err
+	}
+	tournament.Rounds = rounds
 
 	return tournament, nil
 }
@@ -101,7 +65,11 @@ func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTour
 	if err != nil {
 		return nil, fmt.Errorf("error querying tournaments: %w", err)
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
 
 	tournaments := make([]*domain.IndexTournament, 0)
 	for rows.Next() {
@@ -119,11 +87,9 @@ func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTour
 		}
 		tournaments = append(tournaments, tournament)
 	}
-
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating tournaments: %w", err)
 	}
-
 	return tournaments, nil
 }
 
@@ -132,73 +98,30 @@ func (r *TournamentRepository) InsertNewTournament(ctx context.Context, tourname
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
 	}
-
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				err = errors.Join(err, fmt.Errorf("rollback failed: %w", rollbackErr))
+			}
 		}
 	}()
 
-	// Let PostgreSQL generate UUID if not provided
-	var tournamentID string
-	query := `
-        INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING id
-    `
-	err = tx.QueryRowContext(
-		ctx,
-		query,
-		tournament.Name,
-		tournament.Description,
-		tournament.StartDate,
-		tournament.EndDate,
-		tournament.Status,
-		tournament.PlayerCount,
-		tournament.AllowUnderfilledGroups,
-	).Scan(&tournamentID)
-
+	tournamentID, err := r.insertTournament(ctx, tx, tournament)
 	if err != nil {
-		return nil, fmt.Errorf("error saving tournament: %w", err)
+		return nil, err
 	}
-
 	tournament.Id = tournamentID
 
-	// Handle rounds if they exist
 	if len(tournament.Rounds) > 0 {
-		placeholders := make([]string, len(tournament.Rounds))
-		args := make([]interface{}, 0, len(tournament.Rounds)*8)
-
-		for i, round := range tournament.Rounds {
-			placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d)",
-				i*7+1, i*7+2, i*7+3, i*7+4, i*7+5, i*7+6, i*7+7)
-
-			args = append(args,
-				round.Name,
-				tournamentID,
-				round.MatchCount,
-				round.PlayerCount,
-				round.PlayerAdvancementCount,
-				round.GroupSize,
-				round.ConcurrentGroupCount,
-			)
-		}
-
-		roundQuery := fmt.Sprintf(`
-            INSERT INTO rounds (name, tournament_id, match_count, player_count, player_advancement_count, group_size, concurrent_group_count)
-            VALUES %s
-        `, strings.Join(placeholders, ", "))
-
-		_, err = tx.ExecContext(ctx, roundQuery, args...)
+		err = r.insertRounds(ctx, tx, tournament.Rounds, tournamentID)
 		if err != nil {
-			return nil, fmt.Errorf("error saving rounds: %w", err)
+			return nil, err
 		}
 	}
 
 	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
-
 	return tournament, nil
 }
 
@@ -206,20 +129,16 @@ func (r *TournamentRepository) InsertNewTournament(ctx context.Context, tourname
 func (r *TournamentRepository) Delete(ctx context.Context, id string) error {
 	query := `DELETE FROM tournaments WHERE id = $1`
 	result, err := r.db.ExecContext(ctx, query, id)
-
 	if err != nil {
 		return fmt.Errorf("error deleting tournament: %w", err)
 	}
-
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error getting rows affected: %w", err)
 	}
-
 	if rowsAffected == 0 {
 		return domain.NewNotFoundError("tournament not found")
 	}
-
 	return nil
 }
 
@@ -228,10 +147,11 @@ func (r *TournamentRepository) Update(ctx context.Context, tournament *domain.To
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
 	}
-
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			if rollbackErr := tx.Rollback(); rollbackErr != nil {
+				err = errors.Join(err, fmt.Errorf("rollback failed: %w", rollbackErr))
+			}
 		}
 	}()
 
@@ -244,12 +164,10 @@ func (r *TournamentRepository) Update(ctx context.Context, tournament *domain.To
 	if err != nil {
 		return nil, fmt.Errorf("error updating tournament: %w", err)
 	}
-
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return nil, fmt.Errorf("error getting rows affected: %w", err)
 	}
-
 	if rowsAffected == 0 {
 		return nil, domain.NewNotFoundError("tournament not found")
 	}
@@ -257,6 +175,149 @@ func (r *TournamentRepository) Update(ctx context.Context, tournament *domain.To
 	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
-
 	return tournament, nil
+}
+
+func (r *TournamentRepository) findTournamentByID(ctx context.Context, id string) (*domain.Tournament, error) {
+	query := `
+		SELECT id, name, description, start_date, end_date, status, player_count
+		FROM tournaments
+		WHERE id = $1
+	`
+	row := r.db.QueryRowContext(ctx, query, id)
+	tournament := new(domain.Tournament)
+	err := row.Scan(
+		&tournament.Id,
+		&tournament.Name,
+		&tournament.Description,
+		&tournament.StartDate,
+		&tournament.EndDate,
+		&tournament.Status,
+		&tournament.PlayerCount,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.NewNotFoundError("tournament not found")
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, fmt.Errorf("database query timed out: %w", err)
+		}
+		return nil, fmt.Errorf("error finding tournament: %w", err)
+	}
+	return tournament, nil
+}
+
+func (r *TournamentRepository) findPlayersByTournamentID(ctx context.Context, tournamentID string) ([]domain.Player, error) {
+	query := `
+		SELECT id, name, tournament_id
+		FROM players
+		WHERE tournament_id = $1
+	`
+	rows, err := r.db.QueryContext(ctx, query, tournamentID)
+	if err != nil {
+		return nil, fmt.Errorf("error querying players: %w", err)
+	}
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
+
+	var players []domain.Player
+	for rows.Next() {
+		player := domain.Player{}
+		err := rows.Scan(&player.Id, &player.Name, &player.TournamentId)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning player: %w", err)
+		}
+		players = append(players, player)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating players: %w", err)
+	}
+	return players, nil
+}
+
+func (r *TournamentRepository) findRoundsByTournamentID(ctx context.Context, tournamentID string) ([]domain.Round, error) {
+	query := `
+		SELECT id, name, match_count, player_count, player_advancement_count, group_size, concurrent_group_count
+		FROM rounds
+	`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("error querying rounds: %w", err)
+	}
+	defer func(rows *sql.Rows) {
+		if err := rows.Close(); err != nil {
+			log.Printf("failed to close rows: %v", err)
+		}
+	}(rows)
+
+	var rounds []domain.Round
+	for rows.Next() {
+		round := domain.Round{}
+		err := rows.Scan(&round.Id, &round.Name, &round.MatchCount, &round.PlayerCount, &round.PlayerAdvancementCount, &round.GroupSize, &round.ConcurrentGroupCount)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning round: %w", err)
+		}
+		round.TournamentId = tournamentID
+		round.Groups = make([]domain.Group, 0)
+		rounds = append(rounds, round)
+	}
+	return rounds, nil
+}
+
+func (r *TournamentRepository) insertTournament(ctx context.Context, tx *sql.Tx, tournament *domain.Tournament) (string, error) {
+	var tournamentID string
+	query := `
+        INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id
+    `
+	err := tx.QueryRowContext(
+		ctx,
+		query,
+		tournament.Name,
+		tournament.Description,
+		tournament.StartDate,
+		tournament.EndDate,
+		tournament.Status,
+		tournament.PlayerCount,
+		tournament.AllowUnderfilledGroups,
+	).Scan(&tournamentID)
+	if err != nil {
+		return "", fmt.Errorf("error saving tournament: %w", err)
+	}
+	return tournamentID, nil
+}
+
+func (r *TournamentRepository) insertRounds(ctx context.Context, tx *sql.Tx, rounds []domain.Round, tournamentID string) error {
+	placeholders := make([]string, len(rounds))
+	args := make([]interface{}, 0, len(rounds)*7)
+
+	for i, round := range rounds {
+		// Use string concatenation instead of fmt.Sprintf to avoid $ escaping issues
+		start := i*7 + 1
+		placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d)",
+			start, start+1, start+2, start+3, start+4, start+5, start+6)
+		args = append(args,
+			round.Name,
+			tournamentID,
+			round.MatchCount,
+			round.PlayerCount,
+			round.PlayerAdvancementCount,
+			round.GroupSize,
+			round.ConcurrentGroupCount,
+		)
+	}
+
+	roundQuery := fmt.Sprintf(`
+        INSERT INTO rounds (name, tournament_id, match_count, player_count, player_advancement_count, group_size, concurrent_group_count)
+        VALUES %s`, strings.Join(placeholders, ", "))
+
+	_, err := tx.ExecContext(ctx, roundQuery, args...)
+	if err != nil {
+		return fmt.Errorf("error saving rounds: %w", err)
+	}
+	return nil
 }
