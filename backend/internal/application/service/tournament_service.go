@@ -1,6 +1,7 @@
 package service
 
 import (
+	"Tournament/internal/adapters/driving/requests"
 	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
@@ -21,23 +22,44 @@ func NewTournamentService(tournamentRepository output.TournamentRepository) inpu
 }
 
 // CreateTournament creates a new tournament
-func (s *TournamentService) CreateTournament(ctx context.Context, name, description, startDate, endDate string) *domain.Tournament {
-	tournament := &domain.Tournament{
-		Id:          uuid.New().String(),
-		Name:        name,
-		Description: description,
-		StartDate:   startDate,
-		EndDate:     endDate,
-		Status:      domain.StatusDraft,
+func (s *TournamentService) CreateTournament(ctx context.Context, req *requests.CreateTournamentRequest) *domain.Tournament {
+	rounds := make([]domain.Round, 0)
+	var tournamentId = uuid.New().String()
+
+	for _, round := range req.Rounds {
+		var newRound = domain.Round{
+			Id:                     uuid.New().String(),
+			Name:                   round.Name,
+			TournamentId:           tournamentId,
+			MatchCount:             round.MatchCount,
+			PlayerAdvancementCount: round.PlayerAdvancementCount,
+			PlayerCount:            round.GroupCount * round.GroupSize,
+			GroupSize:              round.GroupSize,
+			ConcurrentGroupCount:   round.ConcurrentGroupCount,
+			Groups:                 make([]domain.Group, 0),
+		}
+
+		rounds = append(rounds, newRound)
 	}
 
-	tournament, err := s.tournamentRepository.Save(ctx, tournament)
+	var newTournament = domain.Tournament{
+		Id:                     tournamentId,
+		Name:                   req.Name,
+		Description:            req.Description,
+		StartDate:              req.StartDate,
+		EndDate:                req.EndDate,
+		Status:                 domain.StatusDraft,
+		Rounds:                 rounds,
+		AllowUnderfilledGroups: req.AllowUnderfilledGroups,
+	}
+
+	savedTournament, err := s.tournamentRepository.Save(ctx, &newTournament)
 
 	if err != nil {
 		panic(err)
 	}
 
-	return tournament
+	return savedTournament
 }
 
 // GetTournament retrieves a tournament by Id

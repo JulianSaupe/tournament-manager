@@ -2,8 +2,8 @@ package application
 
 import (
 	"Tournament/internal/adapters/driven/postgres"
+	"Tournament/internal/adapters/driving/handler"
 	"Tournament/internal/adapters/driving/response"
-	httpHandler "Tournament/internal/adapters/driving/tournament"
 	"Tournament/internal/application/service"
 	"Tournament/internal/config"
 	"Tournament/internal/middleware"
@@ -36,7 +36,7 @@ type App struct {
 	playerService     input.PlayerService
 
 	// Handlers
-	tournamentHandler *httpHandler.Handler
+	tournamentHandler *handler.TournamentHandler
 }
 
 // NewApp creates a new application instance
@@ -117,7 +117,7 @@ func (a *App) initializeDependencies() error {
 	a.playerService = service.NewPlayerService(a.playerRepository)
 
 	// Initialize handlers
-	a.tournamentHandler = httpHandler.NewTournamentHandler(a.tournamentService, a.playerService)
+	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService)
 
 	return nil
 }
@@ -128,7 +128,7 @@ func (a *App) registerRoutes() {
 	a.router.Use(chiMiddleware.RequestID)
 	a.router.Use(chiMiddleware.RealIP)
 	a.router.Use(chiMiddleware.Logger)
-	// a.router.Use(middleware2.AuthMiddleware(a.userService))
+	// a.router.Use(middleware.AuthMiddleware(a.userService))
 	a.router.Use(middleware.CustomRecoverer)
 	a.router.Use(response.RequestStartTimeMiddleware)
 

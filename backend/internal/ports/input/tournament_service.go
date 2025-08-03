@@ -1,6 +1,7 @@
 package input
 
 import (
+	"Tournament/internal/adapters/driving/requests"
 	"Tournament/internal/domain"
 	"context"
 )
@@ -8,7 +9,7 @@ import (
 // TournamentService defines the interface for tournament business operations
 type TournamentService interface {
 	// CreateTournament creates a new tournament
-	CreateTournament(ctx context.Context, name, description, startDate, endDate string) *domain.Tournament
+	CreateTournament(ctx context.Context, req *requests.CreateTournamentRequest) *domain.Tournament
 
 	// GetTournament retrieves a tournament by Id
 	GetTournament(ctx context.Context, id string) *domain.Tournament

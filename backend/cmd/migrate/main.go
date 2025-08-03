@@ -69,9 +69,9 @@ func main() {
 
 func printUsage() {
 	fmt.Println("Usage:")
-	fmt.Println("  migrate create -name <migration_name>  Create a new migration")
-	fmt.Println("  migrate list                          List all migrations")
-	fmt.Println("  migrate run                           Run all pending migrations")
+	fmt.Println("  migrate create 				Create a new migration")
+	fmt.Println("  migrate list                 List all migrations")
+	fmt.Println("  migrate run                  Run all pending migrations")
 }
 
 // createMigration creates new up and down migration files with the current timestamp

@@ -3,15 +3,16 @@ package domain
 // Tournament represents a tournament entity
 type Tournament struct {
 	// Table: tournaments
-	Id          string           `json:"id"`
-	Name        string           `json:"name"`
-	Description string           `json:"description"`
-	StartDate   string           `json:"startDate"`
-	EndDate     string           `json:"endDate"`
-	Status      TournamentStatus `json:"status"`
-	Players     []Player         `json:"players"`
-	PlayerCount int              `json:"playerCount"`
-	Rounds      []Round          `json:"rounds"`
+	Id                     string           `json:"id"`
+	Name                   string           `json:"name"`
+	Description            string           `json:"description"`
+	StartDate              string           `json:"startDate"`
+	EndDate                string           `json:"endDate"`
+	Status                 TournamentStatus `json:"status"`
+	Players                []Player         `json:"players"`
+	PlayerCount            int              `json:"playerCount"`
+	Rounds                 []Round          `json:"rounds"`
+	AllowUnderfilledGroups bool             `json:"allowUnderfilledGroups"`
 }
 
 type Round struct {
@@ -23,6 +24,7 @@ type Round struct {
 	PlayerCount            int     `json:"playerCount"`
 	PlayerAdvancementCount int     `json:"playerAdvancementCount"`
 	GroupSize              int     `json:"groupSize"`
+	ConcurrentGroupCount   int     `json:"concurrentGroupCount"`
 	Groups                 []Group `json:"groups"`
 }
 

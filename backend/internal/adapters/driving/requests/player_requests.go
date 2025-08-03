@@ -1,4 +1,4 @@
-package player
+package requests
 
 type CreatePlayerRequest struct {
 	Name string `json:"name" validate:"required,min=3,max=255"`

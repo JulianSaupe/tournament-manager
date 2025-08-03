@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -128,11 +129,22 @@ func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTour
 
 // Save persists a tournament
 func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tournament) (*domain.Tournament, error) {
+	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("error starting transaction: %w", err)
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
 	query := `
-		INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO tournaments (id, name, description, start_date, end_date, status, player_count, allow_underfilled_groups)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`
-	_, err := r.db.ExecContext(
+	_, err = tx.ExecContext(
 		ctx,
 		query,
 		tournament.Id,
@@ -142,10 +154,47 @@ func (r *TournamentRepository) Save(ctx context.Context, tournament *domain.Tour
 		tournament.EndDate,
 		tournament.Status,
 		tournament.PlayerCount,
+		tournament.AllowUnderfilledGroups,
 	)
 
 	if err != nil {
 		return nil, fmt.Errorf("error saving tournament: %w", err)
+	}
+
+	// Build batch insert query
+	if len(tournament.Rounds) > 0 {
+		placeholders := make([]string, len(tournament.Rounds))
+		args := make([]interface{}, 0, len(tournament.Rounds)*8)
+
+		for i, round := range tournament.Rounds {
+			placeholders[i] = fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d, $%d)",
+				i*8+1, i*8+2, i*8+3, i*8+4, i*8+5, i*8+6, i*8+7, i*8+8)
+
+			args = append(args,
+				round.Id,
+				round.Name,
+				round.TournamentId,
+				round.MatchCount,
+				round.PlayerCount,
+				round.PlayerAdvancementCount,
+				round.GroupSize,
+				round.ConcurrentGroupCount,
+			)
+		}
+
+		roundQuery := fmt.Sprintf(`
+        INSERT INTO rounds (id, name, tournament_id, match_count, player_count, player_advancement_count, group_size, concurrent_group_count)
+        VALUES %s
+    `, strings.Join(placeholders, ", "))
+
+		_, err = tx.ExecContext(ctx, roundQuery, args...)
+		if err != nil {
+			return nil, fmt.Errorf("error saving rounds: %w", err)
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, fmt.Errorf("error committing transaction: %w", err)
 	}
 
 	return tournament, nil

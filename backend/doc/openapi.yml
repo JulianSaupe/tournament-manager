@@ -276,10 +276,43 @@ components:
         endDate:
           type: string
           format: date
+        allowUnderfilledGroups:
+          type: boolean
+        playerCount:
+          type: integer
+        rounds:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreateTournamentRoundRequest'
       required:
         - name
         - startDate
         - endDate
+        - allowUnderfilledGroups
+        - playerCount
+        - rounds
+    CreateTournamentRoundRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        matchCount:
+          type: integer
+        playerAdvancementCount:
+          type: integer
+        groupSize:
+          type: integer
+        groupCount:
+          type: integer
+        concurrentGroupCount:
+          type: integer
+      required:
+        - name
+        - matchCount
+        - playerAdvancementCount
+        - groupSize
+        - groupCount
+        - concurrentGroupCount
     UpdateTournamentStatusRequest:
       type: object
       properties:

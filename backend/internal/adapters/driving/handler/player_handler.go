@@ -1,6 +1,7 @@
-package player
+package handler
 
 import (
+	"Tournament/internal/adapters/driving/requests"
 	"Tournament/internal/adapters/driving/response"
 	"Tournament/internal/adapters/driving/validation"
 	"Tournament/internal/domain"
@@ -11,17 +12,17 @@ import (
 	"net/http"
 )
 
-type Handler struct {
+type PlayerHandler struct {
 	playerService input.PlayerService
 }
 
-func NewPlayerHandler(playerService input.PlayerService) *Handler {
-	return &Handler{
+func NewPlayerHandler(playerService input.PlayerService) *PlayerHandler {
+	return &PlayerHandler{
 		playerService: playerService,
 	}
 }
 
-func (h *Handler) RegisterRoutes(router chi.Router) {
+func (h *PlayerHandler) RegisterRoutes(router chi.Router) {
 	router.Get("/", h.ListPlayers)
 	router.Get("/{id}", h.GetPlayer)
 
@@ -33,7 +34,7 @@ func (h *Handler) RegisterRoutes(router chi.Router) {
 	})
 }
 
-func (h *Handler) ListPlayers(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerHandler) ListPlayers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tournament := ctx.Value(middleware.TournamentKey{}).(*domain.Tournament)
 
@@ -41,27 +42,27 @@ func (h *Handler) ListPlayers(w http.ResponseWriter, r *http.Request) {
 	response.Send(w, r, http.StatusOK, players)
 }
 
-func (h *Handler) GetPlayer(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerHandler) GetPlayer(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	player := h.playerService.GetPlayer(r.Context(), id)
 
 	response.Send(w, r, http.StatusOK, player)
 }
 
-func (h *Handler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tournament := ctx.Value(middleware.TournamentKey{}).(*domain.Tournament)
 
-	var req = validation.ValidateRequest[CreatePlayerRequest](r)
+	var req = validation.ValidateRequest[requests.CreatePlayerRequest](r)
 
 	player := h.playerService.CreatePlayer(ctx, req.Name, tournament.Id)
 	response.Send(w, r, http.StatusCreated, player)
 }
 
-func (h *Handler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerHandler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
-	var req UpdatePlayerRequest
+	var req requests.UpdatePlayerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return
@@ -71,10 +72,10 @@ func (h *Handler) UpdatePlayer(w http.ResponseWriter, r *http.Request) {
 	response.Send(w, r, http.StatusOK, player)
 }
 
-func (h *Handler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
+func (h *PlayerHandler) DeletePlayer(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req DeletePlayerRequest
+	var req requests.DeletePlayerRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return

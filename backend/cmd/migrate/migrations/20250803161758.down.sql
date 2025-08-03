@@ -1,0 +1,1 @@
+ALTER TABLE tournaments DROP COLUMN allow_underfilled_groups;
