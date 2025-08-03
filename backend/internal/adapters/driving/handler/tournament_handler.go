@@ -8,6 +8,7 @@ import (
 	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
 	"encoding/json"
+	"errors"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )
@@ -28,21 +29,17 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	playerRouter := chi.NewRouter()
 	playerHandler := NewPlayerHandler(h.playerService)
 	playerHandler.RegisterRoutes(playerRouter)
-
 	router.Route("/tournament", func(router chi.Router) {
 		router.Get("/", h.ListTournaments)
 		router.Post("/", h.CreateTournament)
-
 		router.Route("/{id}", func(router chi.Router) {
 			router.Use(middleware.TournamentMiddleware(h.tournamentService))
 			router.Patch("/status", h.UpdateTournamentStatus)
 			router.Get("/", h.GetTournament)
-
 			router.Group(func(router chi.Router) {
 				router.Use(middleware.TournamentActiveMiddleware())
 				router.Delete("/", h.DeleteTournament)
 			})
-
 			router.Mount("/player", playerRouter)
 		})
 	})
@@ -50,10 +47,8 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 
 func (h *TournamentHandler) CreateTournament(w http.ResponseWriter, r *http.Request) {
 	var req = validation.ValidateCreateTournamentRequest(r)
-
 	ctx := r.Context()
 	tournament := h.tournamentService.CreateTournament(ctx, req)
-
 	response.Send(w, r, http.StatusCreated, tournament)
 }
 
@@ -66,43 +61,45 @@ func (h *TournamentHandler) GetTournament(w http.ResponseWriter, r *http.Request
 func (h *TournamentHandler) ListTournaments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	tournaments := h.tournamentService.ListTournaments(ctx)
-
 	response.Send(w, r, http.StatusOK, tournaments)
 }
 
 func (h *TournamentHandler) UpdateTournamentStatus(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-
 	var req requests.UpdateTournamentStatusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var status domain.TournamentStatus
-	switch req.Status {
-	case "DRAFT":
-		status = domain.StatusDraft
-	case "ACTIVE":
-		status = domain.StatusActive
-	case "COMPLETED":
-		status = domain.StatusCompleted
-	case "CANCELLED":
-		status = domain.StatusCancelled
-	default:
-		response.SendError(w, r, http.StatusBadRequest, "Invalid status")
+	status, err := h.parseStatusString(req.Status)
+	if err != nil {
+		response.SendError(w, r, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	ctx := r.Context()
 	tournament := h.tournamentService.UpdateTournamentStatus(ctx, id, status)
-
 	response.Send(w, r, http.StatusOK, tournament)
 }
 
 func (h *TournamentHandler) DeleteTournament(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	ctx := r.Context()
-
 	h.tournamentService.DeleteTournament(ctx, id)
+}
+
+func (h *TournamentHandler) parseStatusString(statusStr string) (domain.TournamentStatus, error) {
+	switch statusStr {
+	case "DRAFT":
+		return domain.StatusDraft, nil
+	case "ACTIVE":
+		return domain.StatusActive, nil
+	case "COMPLETED":
+		return domain.StatusCompleted, nil
+	case "CANCELLED":
+		return domain.StatusCancelled, nil
+	default:
+		return "", errors.New("invalid status")
+	}
 }
