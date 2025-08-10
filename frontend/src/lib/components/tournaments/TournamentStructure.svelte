@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Round } from '$lib/types/tournament';
 	import { tournamentForm } from '$lib/stores/tournamentForm';
+	import type { TournamentRoundData } from '$lib/validation/tournamentSchema';
 
 	let rounds: Round[] = $state([
 		{
@@ -18,10 +19,28 @@
 		Math.ceil($tournamentForm.playerCount / rounds[0]?.playersPerGroup || 1)
 	);
 
+	// Transform Round objects to backend-expected TournamentRoundData format
+	function transformRoundToTournamentRoundData(round: Round): TournamentRoundData {
+		return {
+			name: round.name,
+			matchCount: round.matchesPerGroup,
+			playerAdvancementCount: round.advancingPlayersPerGroup,
+			groupSize: round.playersPerGroup,
+			groupCount: round.groupCount,
+			concurrentGroupCount: round.concurrentGroups
+		};
+	}
+
 	$effect(() => {
 		if (rounds[0]) {
 			rounds[0].groupCount = firstRoundGroupCount;
 		}
+	});
+
+	// Synchronize rounds data with form store
+	$effect(() => {
+		const transformedRounds = rounds.map(transformRoundToTournamentRoundData);
+		$tournamentForm.rounds = transformedRounds;
 	});
 
 	function handleAddRound(): void {
@@ -57,8 +76,6 @@
 			const groupCount = Math.ceil(
 				$tournamentForm.playerCount / updatedRounds[index].playersPerGroup
 			);
-
-			console.log(groupCount === Infinity, groupCount);
 
 			if (
 				!isNaN(groupCount) &&
