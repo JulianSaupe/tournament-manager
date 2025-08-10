@@ -3,21 +3,25 @@
     import {tournamentForm} from '$lib/stores/tournamentForm';
     import type {TournamentRoundData} from '$lib/validation/tournamentSchema';
 
+    // Simplified state - just rounds and auto-calculation mode
     let rounds: Round[] = $state([
         {
             name: 'Round 1',
             groupCount: 1,
-            playersPerGroup: 128,
+            playersPerGroup: 8,
             matchesPerGroup: 1,
             advancingPlayersPerGroup: 1,
             concurrentGroups: 1
         }
     ]);
-    const totalRounds = $derived(rounds.length || 0);
 
-    const firstRoundGroupCount = $derived(
-        Math.ceil($tournamentForm.playerCount / rounds[0]?.playersPerGroup || 1)
-    );
+    let autoCalculate: boolean = $state(true);
+
+    // Derived calculations
+    const totalRounds = $derived(rounds.length || 0);
+    const totalMatches = $derived(calculateTotalMatches());
+    const estimatedDuration = $derived(calculateTournamentDuration());
+    const validationStatus = $derived(checkValidation());
 
     // Transform Round objects to backend-expected TournamentRoundData format
     function transformRoundToTournamentRoundData(round: Round): TournamentRoundData {
@@ -31,9 +35,37 @@
         };
     }
 
+    // Auto-recalculate group counts when needed
     $effect(() => {
-        if (rounds[0]) {
-            rounds[0].groupCount = firstRoundGroupCount;
+        if (autoCalculate && rounds.length > 0) {
+            const updatedRounds = [...rounds];
+            let hasChanges = false;
+            
+            // First round: calculate groups based on total players
+            if (updatedRounds[0]) {
+                const newGroupCount = Math.ceil($tournamentForm.playerCount / updatedRounds[0].playersPerGroup);
+                if (updatedRounds[0].groupCount !== newGroupCount) {
+                    updatedRounds[0].groupCount = newGroupCount;
+                    hasChanges = true;
+                }
+            }
+            
+            // Subsequent rounds: calculate groups based on advancing players from previous round
+            for (let i = 1; i < updatedRounds.length; i++) {
+                const prevRound = updatedRounds[i - 1];
+                const currentRound = updatedRounds[i];
+                const advancingPlayers = prevRound.groupCount * prevRound.advancingPlayersPerGroup;
+                const newGroupCount = Math.ceil(advancingPlayers / currentRound.playersPerGroup);
+                
+                if (updatedRounds[i].groupCount !== newGroupCount) {
+                    updatedRounds[i].groupCount = newGroupCount;
+                    hasChanges = true;
+                }
+            }
+            
+            if (hasChanges) {
+                rounds = updatedRounds;
+            }
         }
     });
 
@@ -42,28 +74,130 @@
         $tournamentForm.rounds = rounds.map(transformRoundToTournamentRoundData);
     });
 
-    function handleAddRound(): void {
+    // Calculation helpers
+    function calculateTotalMatches(): number {
+        return rounds.reduce((total, round) => {
+            return total + (round.groupCount * round.matchesPerGroup);
+        }, 0);
+    }
+
+    function calculateTournamentDuration(): number {
+        const avgMatchMinutes = 25;
+        const setupTime = 5;
+        
+        return rounds.reduce((total, round) => {
+            const roundMatches = round.groupCount * round.matchesPerGroup;
+            const parallelMatches = Math.min(round.concurrentGroups, roundMatches);
+            const roundDuration = Math.ceil(roundMatches / parallelMatches) * (avgMatchMinutes + setupTime);
+            return total + roundDuration;
+        }, 0);
+    }
+
+    function checkValidation(): 'good' | 'warning' | 'error' {
+        // Check if final round has exactly 1 group
         const lastRound = rounds[rounds.length - 1];
+        if (!lastRound || lastRound.groupCount !== 1) {
+            return 'error';
+        }
 
-        rounds = [
-            ...rounds,
-            {
-                name: `Round ${rounds.length + 1}`,
-                groupCount: (lastRound.advancingPlayersPerGroup * lastRound.groupCount) / lastRound.playersPerGroup,
-                playersPerGroup: lastRound.groupCount * lastRound.advancingPlayersPerGroup,
-                matchesPerGroup: 1,
-                advancingPlayersPerGroup: 1,
-                concurrentGroups: 1
+        // Check player progression
+        for (let i = 0; i < rounds.length; i++) {
+            const round = rounds[i];
+            const prevRound = i > 0 ? rounds[i - 1] : null;
+            
+            if (!$tournamentForm.allowUnderfilledGroups) {
+                const expectedPlayers = prevRound 
+                    ? prevRound.groupCount * prevRound.advancingPlayersPerGroup
+                    : $tournamentForm.playerCount;
+                
+                const actualPlayers = round.groupCount * round.playersPerGroup;
+                
+                if (actualPlayers !== expectedPlayers) {
+                    return 'error';
+                }
             }
-        ];
+
+            if (round.advancingPlayersPerGroup >= round.playersPerGroup) {
+                return 'error';
+            }
+        }
+
+        // Warning for long tournaments
+        if (estimatedDuration > 8 * 60) {
+            return 'warning';
+        }
+
+        return 'good';
     }
 
-    function handleRemoveRound(index: number): void {
-        rounds = rounds.filter((_, i) => i !== index);
+    function getValidationMessage(round: Round, index: number): string {
+        const prevRound = index > 0 ? rounds[index - 1] : null;
+        const expectedPlayers = prevRound 
+            ? prevRound.groupCount * prevRound.advancingPlayersPerGroup
+            : $tournamentForm.playerCount;
+        
+        const actualPlayers = round.groupCount * round.playersPerGroup;
+        
+        if (actualPlayers !== expectedPlayers && !$tournamentForm.allowUnderfilledGroups) {
+            return `Expected ${expectedPlayers} players, but configured for ${actualPlayers}. Click "Quick Fix" to adjust.`;
+        }
+        return '';
     }
 
-    function updateRoundField(index: number, field: keyof Round, value: number | null): void {
-        if (index < 0 || index >= rounds.length) return;
+    // Action handlers - Fixed addRound function
+    function addRound(): void {
+        console.log('Adding round...'); // Debug log
+        
+        const lastRound = rounds[rounds.length - 1];
+        const advancingPlayers = lastRound.advancingPlayersPerGroup * lastRound.groupCount;
+        
+        // Smart defaults for new round
+        const playersPerGroup = Math.min(8, Math.max(4, advancingPlayers));
+        const groupCount = Math.ceil(advancingPlayers / playersPerGroup);
+        
+        const newRound: Round = {
+            name: `Round ${rounds.length + 1}`,
+            groupCount: groupCount,
+            playersPerGroup: playersPerGroup,
+            matchesPerGroup: 1,
+            advancingPlayersPerGroup: Math.max(1, Math.floor(playersPerGroup / 2)),
+            concurrentGroups: Math.min(groupCount, 2)
+        };
+        
+        console.log('New round:', newRound); // Debug log
+        
+        // Create a completely new array to trigger reactivity
+        rounds = [...rounds, newRound];
+        
+        console.log('Updated rounds:', rounds); // Debug log
+    }
+
+    function removeRound(index: number): void {
+        if (rounds.length > 1) {
+            rounds = rounds.filter((_, i) => i !== index);
+        }
+    }
+
+    function quickFix(index: number): void {
+        const updatedRounds = [...rounds];
+        const round = updatedRounds[index];
+        const prevRound = index > 0 ? updatedRounds[index - 1] : null;
+        const expectedPlayers = prevRound 
+            ? prevRound.groupCount * prevRound.advancingPlayersPerGroup
+            : $tournamentForm.playerCount;
+
+        // Try to fix by adjusting group count first
+        const newGroupCount = Math.ceil(expectedPlayers / round.playersPerGroup);
+        updatedRounds[index] = {
+            ...round,
+            groupCount: newGroupCount
+        };
+        
+        rounds = updatedRounds;
+    }
+
+    function updateRoundField(index: number, field: keyof Round, value: number): void {
+        if (index < 0 || index >= rounds.length || value < 0) return;
 
         const updatedRounds = [...rounds];
         updatedRounds[index] = {
@@ -71,219 +205,232 @@
             [field]: value
         };
 
-        if (field === 'playersPerGroup') {
-            const groupCount = Math.ceil(
-                $tournamentForm.playerCount / updatedRounds[index].playersPerGroup
-            );
-
-            if (
-                !isNaN(groupCount) &&
-                groupCount !== Infinity &&
-                updatedRounds[index].playersPerGroup > 0
-            ) {
-                updatedRounds[index].groupCount = groupCount;
-            }
+        // Enforce constraints
+        if (field === 'advancingPlayersPerGroup') {
+            updatedRounds[index].advancingPlayersPerGroup = Math.min(value, updatedRounds[index].playersPerGroup - 1);
         }
+
+        if (field === 'concurrentGroups') {
+            updatedRounds[index].concurrentGroups = Math.min(value, updatedRounds[index].groupCount);
+        }
+
         rounds = updatedRounds;
     }
 </script>
 
 <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
-        <div class="mb-4 card-title flex items-center justify-between">
-            <h2 class="card-title">Tournament Structure</h2>
+        <div class="mb-6 flex items-center justify-between">
+            <h2 class="text-xl font-semibold">Tournament Structure</h2>
             <span class="badge badge-primary">{totalRounds} Rounds</span>
         </div>
 
-        <!-- Rounds Configuration -->
-        <div class="space-y-6">
-            {#each rounds as round, index}
-                <div class="rounded-lg border border-base-300 bg-base-100 p-4">
-                    <div class="mb-4 flex items-center justify-between">
-                        <h4 class="font-medium">{round.name}</h4>
-                        {#if index > 0}
-                            <button
-                                    type="button"
-                                    class="btn btn-outline btn-sm btn-error"
-                                    onclick={() => handleRemoveRound(index)}
-                            >
-                                Remove
-                            </button>
-                        {/if}
-                    </div>
+        <!-- Auto-Calculate Toggle -->
+        <div class="mb-6 flex items-center gap-4">
+            <label class="cursor-pointer label">
+                <span class="label-text mr-3">Auto-calculate group counts</span>
+                <input type="checkbox" class="toggle toggle-primary" bind:checked={autoCalculate} />
+            </label>
+            <div class="text-sm text-base-content/70">
+                When enabled, group counts are automatically calculated based on player count and advancement
+            </div>
+        </div>
 
-                    <!-- Round configuration -->
-                    <div class="flex flex-col space-y-4">
-                        <!-- Group information display -->
-                        <div class="flex items-center justify-between rounded-lg bg-base-200 p-3">
-                            <div class="flex items-center">
-                                <div class="mr-2 badge badge-primary">{round.groupCount}</div>
-                                <span class="text-sm font-medium">Groups</span>
+        <!-- Tournament Overview Stats -->
+        <div class="mb-6 grid grid-cols-4 gap-4">
+            <div class="stat bg-base-200 rounded-lg p-3">
+                <div class="stat-title text-xs">Total Matches</div>
+                <div class="stat-value text-xl">{totalMatches}</div>
+            </div>
+            <div class="stat bg-base-200 rounded-lg p-3">
+                <div class="stat-title text-xs">Est. Duration</div>
+                <div class="stat-value text-xl">{Math.floor(estimatedDuration / 60)}h {estimatedDuration % 60}m</div>
+            </div>
+            <div class="stat bg-base-200 rounded-lg p-3">
+                <div class="stat-title text-xs">Final Groups</div>
+                <div class="stat-value text-xl">{rounds[rounds.length - 1]?.groupCount || 0}</div>
+            </div>
+            <div class="stat bg-base-200 rounded-lg p-3">
+                <div class="stat-title text-xs">Status</div>
+                <div class="stat-value text-lg {validationStatus === 'good' ? 'text-success' : validationStatus === 'warning' ? 'text-warning' : 'text-error'}">
+                    {validationStatus === 'good' ? '✓ Valid' : validationStatus === 'warning' ? '⚠ Long' : '✗ Issues'}
+                </div>
+            </div>
+        </div>
+
+        <!-- Player Flow Visualization -->
+        <div class="mb-6 overflow-x-auto">
+            <div class="flex items-center gap-3 min-w-fit p-2">
+                {#each rounds as round, index}
+                    <div class="flex flex-col items-center">
+                        <div class="badge badge-sm mb-2">{round.name}</div>
+                        <div class="bg-base-200 rounded-lg p-3 min-w-[100px] text-center {getValidationMessage(round, index) ? 'border-2 border-error' : ''}">
+                            <div class="text-lg font-bold">{round.groupCount}</div>
+                            <div class="text-xs text-base-content/70">groups</div>
+                            <div class="text-sm mt-1">{round.groupCount * round.playersPerGroup} players</div>
+                        </div>
+                    </div>
+                    
+                    {#if index < rounds.length - 1}
+                        <div class="flex flex-col items-center px-2">
+                            <div class="text-xs text-base-content/60 mb-1 text-center">
+                                {round.advancingPlayersPerGroup * round.groupCount} advance
                             </div>
-                            <div class="text-sm text-base-content/70">
-                                Total: {round.groupCount * (round.playersPerGroup || 0) || 0} players
+                            <svg class="w-6 h-4 text-base-content/40" fill="currentColor" viewBox="0 0 20 10">
+                                <path d="M12 1l6 4-6 4V6H2V4h10V1z"/>
+                            </svg>
+                        </div>
+                    {/if}
+                {/each}
+            </div>
+        </div>
+
+        <!-- Round Configuration -->
+        <div class="space-y-4">
+            {#each rounds as round, index (index)}
+                <div class="card bg-base-50 border {getValidationMessage(round, index) ? 'border-error' : 'border-base-300'}">
+                    <div class="card-body p-4">
+                        <!-- Round Header -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <h4 class="font-medium">{round.name}</h4>
+                                {#if getValidationMessage(round, index)}
+                                    <div class="tooltip tooltip-error" data-tip={getValidationMessage(round, index)}>
+                                        <div class="badge badge-error badge-sm">!</div>
+                                    </div>
+                                {/if}
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                {#if getValidationMessage(round, index)}
+                                    <button type="button" class="btn btn-xs btn-success" onclick={() => quickFix(index)}>
+                                        Quick Fix
+                                    </button>
+                                {/if}
+                                
+                                {#if rounds.length > 1}
+                                    <button type="button" class="btn btn-xs btn-error" onclick={() => removeRound(index)}>
+                                        Remove
+                                    </button>
+                                {/if}
                             </div>
                         </div>
 
-                        <div class="flex flex-wrap gap-3">
+                        <!-- Input Grid -->
+                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
                             <!-- Players per Group -->
-                            <div class="form-control min-w-[150px] flex-1">
-                                <label class="label" for="playersPerGroup">
-                                    <span class="label-text">Players per Group</span>
+                            <div class="form-control">
+                                <label for="playersPerGroup-{index}" class="label">
+                                    <span class="label-text text-sm">Players per Group</span>
                                 </label>
-                                <input
-                                        type="number"
-                                        class="input-bordered input w-full"
+                                
+                                <div class="join">
+                                    <input 
+                                        id="playersPerGroup-{index}"
+                                        type="number" 
+                                        class="input input-bordered input-sm join-item w-16"
                                         min="2"
-                                        value={round.playersPerGroup || ''}
-                                        oninput={(e) => {
-										const value = e.currentTarget.value;
-										if (value === '') {
-											// Allow empty value during editing
-											updateRoundField(index, 'playersPerGroup', null);
-										} else {
-											updateRoundField(index, 'playersPerGroup', parseInt(value));
-										}
-									}}
-                                        onblur={(e) => {
-										// Apply fallback only when field loses focus
-										const value = parseInt(e.currentTarget.value);
-										if (isNaN(value) || value < 2) {
-											updateRoundField(index, 'playersPerGroup', 2);
-											e.currentTarget.value = '2';
-										}
-									}}
-                                />
+                                        value={round.playersPerGroup}
+                                        oninput={(e) => updateRoundField(index, 'playersPerGroup', parseInt(e.currentTarget.value) || 2)} />
+                                    
+                                    <button type="button" class="btn btn-sm join-item px-2" 
+                                            onclick={() => updateRoundField(index, 'playersPerGroup', Math.max(2, round.playersPerGroup - 1))}>
+                                        −
+                                    </button>
+                                    <button type="button" class="btn btn-sm join-item px-2" 
+                                            onclick={() => updateRoundField(index, 'playersPerGroup', round.playersPerGroup + 1)}>
+                                        +
+                                    </button>
+                                </div>
+                                
+                                <div class="label">
+                                    <span class="label-text-alt text-xs">
+                                        = {round.groupCount} groups
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Matches per Group -->
-                            <div class="form-control min-w-[150px] flex-1">
-                                <label class="label" for="matchesPerGroup">
-                                    <span class="label-text">Matches per Group</span>
+                            <div class="form-control">
+                                <label for="matchesPerGroup-{index}" class="label">
+                                    <span class="label-text text-sm">Matches per Group</span>
                                 </label>
-                                <input
-                                        type="number"
-                                        class="input-bordered input w-full"
-                                        min="1"
-                                        value={round.matchesPerGroup || ''}
-                                        oninput={(e) => {
-										const value = e.currentTarget.value;
-										if (value === '') {
-											// Allow empty value during editing
-											updateRoundField(index, 'matchesPerGroup', null);
-										} else {
-											updateRoundField(index, 'matchesPerGroup', parseInt(value));
-										}
-									}}
-                                        onblur={(e) => {
-										// Apply fallback only when field loses focus
-										const value = parseInt(e.currentTarget.value);
-										if (isNaN(value) || value < 1) {
-											updateRoundField(index, 'matchesPerGroup', 1);
-											e.currentTarget.value = '1';
-										}
-									}}
-                                />
+                                <input 
+                                    id="matchesPerGroup-{index}"
+                                    type="number" 
+                                    class="input input-bordered input-sm"
+                                    min="1"
+                                    value={round.matchesPerGroup}
+                                    oninput={(e) => updateRoundField(index, 'matchesPerGroup', parseInt(e.currentTarget.value) || 1)} />
                             </div>
 
-                            <!-- Advancing Players per Group -->
-                            <div class="form-control min-w-[150px] flex-1">
-                                <label class="label" for="advancingPlayersPerGroup">
-                                    <span class="label-text">Advancing Players</span>
+                            <!-- Advancing Players -->
+                            <div class="form-control">
+                                <label for="advancingPlayers-{index}" class="label">
+                                    <span class="label-text text-sm">Advancing per Group</span>
                                 </label>
-                                <input
-                                        type="number"
-                                        class="input-bordered input w-full"
-                                        min="1"
-                                        value={round.advancingPlayersPerGroup || ''}
-                                        oninput={(e) => {
-										const value = e.currentTarget.value;
-										if (value === '') {
-											// Allow empty value during editing
-											updateRoundField(index, 'advancingPlayersPerGroup', null);
-										} else {
-											updateRoundField(index, 'advancingPlayersPerGroup', parseInt(value));
-										}
-									}}
-                                        onblur={(e) => {
-										// Apply fallback only when field loses focus
-										const value = parseInt(e.currentTarget.value);
-										if (isNaN(value) || value < 1) {
-											updateRoundField(index, 'advancingPlayersPerGroup', 1);
-											e.currentTarget.value = '1';
-										} else if (round.playersPerGroup && value >= round.playersPerGroup) {
-											// Ensure advancing players is less than total players
-											const maxAdvancing = Math.max(1, round.playersPerGroup - 1);
-											updateRoundField(index, 'advancingPlayersPerGroup', maxAdvancing);
-											e.currentTarget.value = maxAdvancing.toString();
-										}
-									}}
-                                />
+                                
+                                <input 
+                                    id="advancingPlayers-{index}"
+                                    type="number" 
+                                    class="input input-bordered input-sm"
+                                    min="0"
+                                    max={round.playersPerGroup - 1}
+                                    value={round.advancingPlayersPerGroup}
+                                    oninput={(e) => updateRoundField(index, 'advancingPlayersPerGroup', parseInt(e.currentTarget.value) || 0)} />
+                                
+                                <div class="label">
+                                    <span class="label-text-alt text-xs">
+                                        max {round.playersPerGroup - 1}
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Concurrent Groups -->
-                            <div class="form-control min-w-[150px] flex-1">
-                                <label class="label" for="concurrentGroups">
-                                    <span class="label-text">Concurrent Groups</span>
+                            <div class="form-control">
+                                <label for="concurrentGroups-{index}" class="label">
+                                    <span class="label-text text-sm">Concurrent Groups</span>
                                 </label>
-                                <input
-                                        type="number"
-                                        class="input-bordered input w-full"
-                                        min="1"
-                                        max={round.groupCount}
-                                        value={round.concurrentGroups || ''}
-                                        oninput={(e) => {
-										const value = e.currentTarget.value;
-										if (value === '') {
-											// Allow empty value during editing
-											updateRoundField(index, 'concurrentGroups', null);
-										} else {
-											updateRoundField(index, 'concurrentGroups', parseInt(value));
-										}
-									}}
-                                        onblur={(e) => {
-										// Apply fallback only when field loses focus
-										const value = parseInt(e.currentTarget.value);
-										if (isNaN(value) || value < 1) {
-											updateRoundField(index, 'concurrentGroups', 1);
-											e.currentTarget.value = '1';
-										} else if (value > round.groupCount) {
-											// Ensure concurrent groups is not more than total groups
-											updateRoundField(index, 'concurrentGroups', round.groupCount);
-											e.currentTarget.value = round.groupCount.toString();
-										}
-									}}
-                                />
-                                <label class="label" for="concurrentGroups">
-									<span class="label-text-alt text-base-content/70"
-                                    >Groups that can play at the same time</span
-                                    >
-                                </label>
+                                <input 
+                                    id="concurrentGroups-{index}"
+                                    type="number" 
+                                    class="input input-bordered input-sm"
+                                    min="1"
+                                    max={round.groupCount}
+                                    value={round.concurrentGroups}
+                                    oninput={(e) => updateRoundField(index, 'concurrentGroups', parseInt(e.currentTarget.value) || 1)} />
+                                <div class="label">
+                                    <span class="label-text-alt text-xs">max {round.groupCount}</span>
+                                </div>
+                            </div>
+
+                            <!-- Round Summary -->
+                            <div class="form-control">
+                                <div class="label">
+                                    <span class="label-text text-sm">Round Summary</span>
+                                </div>
+                                <div class="bg-base-200 rounded p-2 text-center">
+                                    <div class="text-sm font-semibold">{round.groupCount * round.matchesPerGroup}</div>
+                                    <div class="text-xs text-base-content/70">total matches</div>
+                                    <div class="text-xs text-base-content/70 mt-1">
+                                        {round.advancingPlayersPerGroup * round.groupCount} advance
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             {/each}
+        </div>
 
-            <!-- Add Round Button -->
-            <div class="mt-4 flex justify-center">
-                <button type="button" class="btn btn-outline btn-primary" onclick={handleAddRound}>
-                    <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="mr-2 h-5 w-5"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                    >
-                        <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M12 4v16m8-8H4"
-                        />
-                    </svg>
-                    Add Round
-                </button>
-            </div>
+        <!-- Add Round Button -->
+        <div class="mt-6 text-center">
+            <button type="button" class="btn btn-primary" onclick={() => addRound()}>
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Add Round
+            </button>
         </div>
     </div>
 </div>
