@@ -4,10 +4,10 @@
 @plugin '@tailwindcss/typography';
 @plugin "daisyui";
 @plugin "daisyui/theme" {
-    name: "silk-custom";
+    name: 'silk-custom';
     default: false;
     prefersdark: false;
-    color-scheme: "light";
+    color-scheme: 'light';
     --color-base-100: oklch(97% 0.004 67.78);
     --color-base-200: oklch(95% 0.008 61.42);
     --color-base-300: oklch(90% 0.008 61.42);
