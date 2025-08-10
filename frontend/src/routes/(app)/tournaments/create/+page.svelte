@@ -40,13 +40,15 @@
             isSubmitting = true;
             submitError = '';
 
-            const response = await fetch('/api/tournament', {
+            const response = await fetch('http://localhost:3000/api/tournament', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(currentFormData)
             });
+
+            console.log('Response:', response);
 
             if (!response.ok) {
                 const errorData = await response.text();
