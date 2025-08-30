@@ -8,10 +8,8 @@
         validateTournamentForm
     } from '$lib/stores/tournamentForm';
 
-    // Import components
     import TournamentDetails from '$lib/components/tournaments/TournamentDetails.svelte';
     import TournamentStructure from '$lib/components/tournaments/TournamentStructure.svelte';
-    // import TournamentVisualization from '$lib/components/tournaments/TournamentVisualization.svelte';
 
     let isSubmitting = false;
     let submitError = '';
@@ -105,9 +103,6 @@
 
         <!-- Tournament Structure Component -->
         <TournamentStructure/>
-
-        <!-- Tournament Visualization Component -->
-        <!-- <TournamentVisualization /> -->
 
         <!-- Form Actions -->
         <div class="mt-8 card-actions justify-end">

@@ -4,8 +4,9 @@ import (
 	"Tournament/internal/adapters/driving/requests"
 	"Tournament/internal/domain"
 	"encoding/json"
-	"github.com/go-playground/validator/v10"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func ValidateRequest[T any](r *http.Request) *T {
