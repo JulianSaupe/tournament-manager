@@ -1,11 +1,11 @@
 <script lang="ts">
-    import {goto} from '$app/navigation';
+    import { goto } from '$app/navigation';
+    import { enhance } from '$app/forms';
     import {
         resetTournamentForm,
         tournamentForm,
         tournamentFormErrors,
-        tournamentFormValid,
-        validateTournamentForm
+        tournamentFormValid
     } from '$lib/stores/tournamentForm';
 
     import TournamentDetails from '$lib/components/tournaments/TournamentDetails.svelte';
@@ -14,71 +14,45 @@
     let isSubmitting = false;
     let submitError = '';
 
-    // Form submission
-    async function handleSubmit(event: Event) {
-        event.preventDefault();
-
-        // Get current form data
-        const currentFormData = $tournamentForm;
-
-        // Validate form data
-        const validation = validateTournamentForm(currentFormData);
-
-        // Update error store
-        tournamentFormErrors.set(validation.errors);
-        tournamentFormValid.set(validation.isValid);
-
-        if (!validation.isValid) {
-            submitError = 'Please fix the validation errors before submitting.';
-            return;
-        }
-
-        // Submit to backend
-        try {
-            isSubmitting = true;
-            submitError = '';
-
-            const response = await fetch('http://localhost:3000/api/tournament', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(currentFormData)
-            });
-
-            console.log('Response:', response);
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(`Failed to create tournament: ${errorData}`);
-            }
-
-            const createdTournament = await response.json();
-            console.log('Tournament created successfully:', createdTournament);
-
-            // Reset form and navigate to tournaments list
-            resetTournamentForm();
-            await goto('/');
-
-        } catch (error) {
-            console.error('Error creating tournament:', error);
-            submitError = error instanceof Error ? error.message : 'An error occurred while creating the tournament';
-        } finally {
-            isSubmitting = false;
-        }
-    }
-
     // Cancel and go back to home page
     function handleCancel() {
         resetTournamentForm();
         goto('/');
     }
+
+    const handleEnhance = (_event: any) => {
+        // pending
+        isSubmitting = true;
+        submitError = '';
+        tournamentFormErrors.set({});
+        tournamentFormValid.set(true);
+
+        return async (payload: any) => {
+            // result handler
+            isSubmitting = false;
+            const result = payload?.result;
+            const update = payload?.update;
+            if (result && result.type === 'failure') {
+                const data: any = result.data || {};
+                if (data.errors) tournamentFormErrors.set(data.errors);
+                tournamentFormValid.set(false);
+                submitError = data.message || data.backendError || 'An error occurred while creating the tournament';
+                if (typeof update === 'function') {
+                    await update();
+                }
+            } else {
+                // On success/redirect, SvelteKit will navigate. Optionally reset store
+                resetTournamentForm();
+            }
+        };
+    };
 </script>
 
 <div class="container mx-auto">
     <h1 class="mb-6 text-2xl">Create New Tournament</h1>
 
-    <form onsubmit={handleSubmit} class="space-y-6">
+    <form method="POST" use:enhance={handleEnhance} class="space-y-6">
+        <input type="hidden" name="payload" value={JSON.stringify($tournamentForm)} />
         <!-- Display form-level error messages -->
         {#if submitError}
             <div class="alert alert-error">
@@ -109,7 +83,7 @@
             <button
                     type="button"
                     class="btn btn-ghost"
-                    onclick={handleCancel}
+                    on:click={handleCancel}
                     disabled={isSubmitting}
             >
                 Cancel
