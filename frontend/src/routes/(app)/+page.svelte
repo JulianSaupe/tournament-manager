@@ -1,22 +1,11 @@
 <script lang="ts">
     import {goto} from '$app/navigation';
-    import {CircleCheckBig, Clipboard, SquarePen} from 'lucide-svelte';
-    import type {IndexTournament} from './+page.server';
-    import type {PageData} from './$types';
+    import {Check, CircleCheckBig, Clipboard, Funnel, Info, SquarePen} from 'lucide-svelte';
+    import moment from 'moment';
+    import type {Tournament} from "$lib/types/tournament/tournament";
+    import {TournamentStatus} from "$lib/types/tournament/tournament";
 
-    export let data: PageData;
-
-    type TournamentStatus = 'draft' | 'active' | 'completed' | 'cancelled';
-
-    type Tournament = {
-        id: string;
-        name: string;
-        description: string;
-        startDate: string;
-        endDate: string;
-        status: TournamentStatus;
-        playerCount?: number;
-    };
+    let {data} = $props();
 
     type StatusConfig = {
         name: string;
@@ -56,14 +45,7 @@
         }
     };
 
-    function formatDate(dateString: string): string {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    }
+    const formatDate = (dateString: string): string => moment(dateString).format('MMM D, YYYY');
 
     function getTournamentsByStatus(
         tournaments: Tournament[]
@@ -80,28 +62,18 @@
         );
     }
 
-    function normalizeStatus(status: string): TournamentStatus {
-        const s = status.toLowerCase();
-        if (s === 'draft' || s === 'active' || s === 'completed' || s === 'cancelled') return s;
-        return 'draft';
-    }
-
-    const tournaments: Tournament[] = (Array.isArray(data.tournaments) ? data.tournaments : []).map((t: IndexTournament) => ({
-        ...t,
-        status: normalizeStatus(t.status)
-    }));
-
+    const tournaments: Tournament[] = Array.isArray(data.tournaments) ? data.tournaments : [];
     const tournamentsByStatus = getTournamentsByStatus(tournaments);
-    const activeTournaments = tournamentsByStatus['active'] || [];
+    const activeTournaments = tournamentsByStatus[TournamentStatus.ACTIVE] || [];
     const totalTournaments = tournaments.length;
     const activeTournamentCount = activeTournaments.length;
-    const draftTournamentCount = (tournamentsByStatus['draft'] || []).length;
-    const completedTournamentCount = (tournamentsByStatus['completed'] || []).length;
+    const draftTournamentCount = (tournamentsByStatus[TournamentStatus.DRAFT] || []).length;
+    const completedTournamentCount = (tournamentsByStatus[TournamentStatus.COMPLETED] || []).length;
 
-    let sortField: keyof Tournament = 'name';
-    let sortDirection: 'asc' | 'desc' = 'asc';
-    let statusFilter: 'all' | 'draft' | 'active' | 'completed' | 'cancelled' = 'all';
-    let searchTerm: string = '';
+    let sortField: keyof Tournament = $state('name');
+    let sortDirection: 'asc' | 'desc' = $state('asc');
+    let statusFilter: TournamentStatus | null = $state(null);
+    let searchTerm: string = $state('');
 
     function sortTournaments(tournaments: Tournament[]): Tournament[] {
         return [...tournaments].sort((a, b) => {
@@ -134,10 +106,13 @@
 
     function filterTournaments(tournaments: Tournament[]): Tournament[] {
         let result = tournaments;
-        if (statusFilter !== 'all') {
+
+        if (statusFilter !== null) {
             result = result.filter((t) => t.status === statusFilter);
         }
+
         const q = searchTerm.trim().toLowerCase();
+
         if (q) {
             result = result.filter((t) =>
                 t.name.toLowerCase().includes(q) || (t.description || '').toLowerCase().includes(q)
@@ -150,9 +125,8 @@
         goto('/tournaments/create');
     }
 
-    $: filteredTournaments = filterTournaments(tournaments);
-    $: sortedTournaments = sortTournaments(filteredTournaments);
-    const error = data.error;
+    let filteredTournaments = $derived(filterTournaments(tournaments));
+    let sortedTournaments = $derived(sortTournaments(filteredTournaments));
 </script>
 
 <div class="w-full">
@@ -210,11 +184,10 @@
                 <span class="mr-2 badge badge-success">Active</span>
                 Tournaments
             </h2>
-            <button class="btn btn-sm btn-primary" on:click={navigateToCreate}>
+            <button class="btn btn-sm btn-primary" onclick={navigateToCreate}>
                 <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="mr-1 h-5 w-5"
-                        fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                 >
@@ -266,19 +239,7 @@
             </div>
         {:else}
             <div class="alert alert-info">
-                <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        class="h-5 w-5 shrink-0 stroke-current sm:h-6 sm:w-6"
-                >
-                    <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                </svg>
+                <Info/>
                 <span>No active tournaments found.</span>
             </div>
         {/if}
@@ -289,53 +250,60 @@
         <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             <h2 class="text-xl font-semibold sm:text-2xl">All Tournaments</h2>
             <div class="flex gap-2">
-                <input class="input input-sm input-bordered" placeholder="Search..." bind:value={searchTerm} />
+                <input class="input input-sm input-bordered" placeholder="Search..." bind:value={searchTerm}/>
                 <div class="dropdown dropdown-end">
                     <div tabindex="0" role="button" class="btn btn-outline btn-sm">
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="mr-1 h-4 w-4 sm:h-5 sm:w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                        >
-                            <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-                            />
-                        </svg>
+                        <Funnel/>
                         <span class="hidden sm:inline">Filter</span>
                     </div>
-                    <ul
-                            tabindex="0"
-                            class="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow"
-                    >
-                        <li><a href="#" on:click|preventDefault={() => (statusFilter = 'all')}>All Statuses</a></li>
-                        <li><a href="#" on:click|preventDefault={() => (statusFilter = 'active')}>Active Only</a></li>
-                        <li><a href="#" on:click|preventDefault={() => (statusFilter = 'draft')}>Draft Only</a></li>
-                        <li><a href="#" on:click|preventDefault={() => (statusFilter = 'completed')}>Completed Only</a></li>
-                        <li><a href="#" on:click|preventDefault={() => (statusFilter = 'cancelled')}>Cancelled Only</a></li>
+                    <ul class="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+                        <li>
+                            <button onclick={() => (statusFilter = null)} class="justify-between">
+                                All
+
+                                {#if statusFilter === null}
+                                    <Check/>
+                                {/if}
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick={() => (statusFilter = TournamentStatus.ACTIVE)} class="justify-between">
+                                Active
+
+                                {#if statusFilter === TournamentStatus.ACTIVE}
+                                    <Check/>
+                                {/if}
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick={() => (statusFilter = TournamentStatus.DRAFT)} class="justify-between">
+                                Draft
+
+                                {#if statusFilter === TournamentStatus.DRAFT}
+                                    <Check/>
+                                {/if}
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick={() => (statusFilter = TournamentStatus.COMPLETED)} class="justify-between">
+                                Completed
+
+                                {#if statusFilter === TournamentStatus.COMPLETED}
+                                    <Check/>
+                                {/if}
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick={() => (statusFilter = TournamentStatus.CANCELLED)} class="justify-between">
+                                Cancelled
+
+                                {#if statusFilter === TournamentStatus.CANCELLED}
+                                    <Check/>
+                                {/if}
+                            </button>
+                        </li>
                     </ul>
                 </div>
-                <button class="btn btn-outline btn-sm">
-                    <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="mr-1 h-4 w-4 sm:h-5 sm:w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                    >
-                        <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                        />
-                    </svg>
-                    <span class="hidden sm:inline">Export</span>
-                </button>
             </div>
         </div>
 
@@ -344,34 +312,31 @@
             <table class="table w-full table-zebra">
                 <thead>
                 <tr>
-                    <th class="cursor-pointer" on:click={() => setSorting('name')}>
+                    <th class="cursor-pointer select-none" onclick={() => setSorting('name')}>
                         Name
                         {#if sortField === 'name'}
                             <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
                         {/if}
                     </th>
-                    <th class="cursor-pointer" on:click={() => setSorting('status')}>
+                    <th class="cursor-pointer select-none" onclick={() => setSorting('status')}>
                         Status
                         {#if sortField === 'status'}
                             <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
                         {/if}
                     </th>
-                    <th
-                            class="hidden cursor-pointer md:table-cell"
-                            on:click={() => setSorting('startDate')}
-                    >
+                    <th class="hidden cursor-pointer md:table-cell select-none" onclick={() => setSorting('startDate')}>
                         Start Date
                         {#if sortField === 'startDate'}
                             <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
                         {/if}
                     </th>
-                    <th class="hidden cursor-pointer md:table-cell" on:click={() => setSorting('endDate')}>
+                    <th class="hidden cursor-pointer md:table-cell select-none" onclick={() => setSorting('endDate')}>
                         End Date
                         {#if sortField === 'endDate'}
                             <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>
                         {/if}
                     </th>
-                    <th class="cursor-pointer" on:click={() => setSorting('playerCount')}>
+                    <th class="cursor-pointer select-none" onclick={() => setSorting('playerCount')}>
                         Players
                         {#if sortField === 'playerCount'}
                             <span>{sortDirection === 'asc' ? '↑' : '↓'}</span>

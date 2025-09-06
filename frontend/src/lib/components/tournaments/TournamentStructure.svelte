@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type {Round} from '$lib/types/tournament';
+    import type {Round} from '$lib/types/tournament/tournament';
     import {tournamentForm} from '$lib/stores/tournamentForm';
     import type {TournamentRoundData} from '$lib/validation/tournamentSchema';
 
