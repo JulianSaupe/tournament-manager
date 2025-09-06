@@ -12,10 +12,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"log"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // App represents the application with all its dependencies
@@ -29,11 +30,13 @@ type App struct {
 	tournamentRepository output.TournamentRepositoryInterface
 	userRepository       output.UserRepositoryInterface
 	playerRepository     output.PlayerRepositoryInterface
+	qualifyingRepository output.QualifyingRepositoryInterface
 
 	// Services
 	tournamentService input.TournamentServiceInterface
 	userService       input.UserServiceInterface
 	playerService     input.PlayerServiceInterface
+	qualifyingService input.QualifyingServiceInterface
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler
@@ -111,13 +114,19 @@ func (a *App) initializeDependencies() error {
 		return fmt.Errorf("failed to initialize player repository: %w", err)
 	}
 
+	a.qualifyingRepository, err = postgres.NewQualifyingRepository(a.db)
+	if err != nil {
+		return fmt.Errorf("failed to initialize qualifying repository: %w", err)
+	}
+
 	// Initialize services
 	a.tournamentService = service.NewTournamentService(a.tournamentRepository)
 	a.userService = service.NewUserService(a.userRepository)
 	a.playerService = service.NewPlayerService(a.playerRepository)
+	a.qualifyingService = service.NewQualifyingService(a.qualifyingRepository)
 
 	// Initialize handlers
-	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService)
+	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService, a.qualifyingService)
 
 	return nil
 }

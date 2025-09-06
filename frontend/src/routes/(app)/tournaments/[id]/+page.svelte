@@ -173,7 +173,7 @@
                 {#each qualifying.players as player}
                     <tr>
                         <td>{player.position}</td>
-                        <td>player.name</td>
+                        <td>{player.name}</td>
                         <td class="hidden md:table-cell">{player.bestTime}</td>
                         <td class="hidden md:table-cell">{moment(player.signupDate).format('dd.MM.YYYY')}</td>
                         <td>

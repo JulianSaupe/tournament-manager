@@ -9,19 +9,26 @@ import (
 	"Tournament/internal/ports/input"
 	"encoding/json"
 	"errors"
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type TournamentHandler struct {
 	tournamentService input.TournamentServiceInterface
 	playerService     input.PlayerServiceInterface
+	qualifyingService input.QualifyingServiceInterface
 }
 
-func NewTournamentHandler(tournamentService input.TournamentServiceInterface, playerService input.PlayerServiceInterface) *TournamentHandler {
+func NewTournamentHandler(
+	tournamentService input.TournamentServiceInterface,
+	playerService input.PlayerServiceInterface,
+	qualifyingService input.QualifyingServiceInterface,
+) *TournamentHandler {
 	return &TournamentHandler{
 		tournamentService: tournamentService,
 		playerService:     playerService,
+		qualifyingService: qualifyingService,
 	}
 }
 
@@ -36,6 +43,7 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 			router.Use(middleware.TournamentMiddleware(h.tournamentService))
 			router.Patch("/status", h.UpdateTournamentStatus)
 			router.Get("/", h.GetTournament)
+			router.Get("/qualifying", h.GetQualifying)
 			router.Group(func(router chi.Router) {
 				router.Use(middleware.TournamentActiveMiddleware())
 				router.Delete("/", h.DeleteTournament)
@@ -88,6 +96,13 @@ func (h *TournamentHandler) DeleteTournament(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	h.tournamentService.DeleteTournament(ctx, id)
 	response.Send(w, r, http.StatusOK, nil)
+}
+
+func (h *TournamentHandler) GetQualifying(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	ctx := r.Context()
+	qualifying := h.qualifyingService.GetQualifyingByTournamentId(ctx, id)
+	response.Send(w, r, http.StatusOK, qualifying)
 }
 
 func (h *TournamentHandler) parseStatusString(statusStr string) (domain.TournamentStatus, error) {
