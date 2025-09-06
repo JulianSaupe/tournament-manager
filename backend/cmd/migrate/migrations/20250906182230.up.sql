@@ -1,0 +1,3 @@
+ALTER TABLE qualifying
+    ALTER COLUMN time SET NOT NULL,
+    ALTER COLUMN time SET DEFAULT -1;
