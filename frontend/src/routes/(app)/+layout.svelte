@@ -53,12 +53,12 @@
                         </svg>
                     </button>
                 </div>
-                <button
-                        class="btn text-xl font-bold text-primary normal-case btn-ghost"
+                <a
+                        class="text-xl font-bold text-primary normal-case"
                         onclick={navigateToHome}
                 >
                     Tournament Manager
-                </button>
+                </a>
             </div>
             <div class="navbar-end"></div>
         </div>

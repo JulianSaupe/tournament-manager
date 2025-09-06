@@ -68,6 +68,7 @@ type IndexTournament struct {
 	StartDate   string           `json:"startDate"`
 	EndDate     string           `json:"endDate"`
 	Status      TournamentStatus `json:"status"`
+	PlayerCount int              `json:"playerCount"`
 }
 
 // TournamentStatus represents the status of a tournament

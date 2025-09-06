@@ -49,7 +49,7 @@ func (r *TournamentRepository) FindAll(ctx context.Context) ([]*domain.IndexTour
 	defer cancel()
 
 	query := `
-		SELECT id, name, description, start_date, end_date, status
+		SELECT id, name, description, start_date, end_date, status, player_count
 		FROM tournaments
 	`
 	rows, err := r.db.QueryContext(ctx, query)
@@ -170,6 +170,7 @@ func (r *TournamentRepository) scanTournamentList(rows *sql.Rows) ([]*domain.Ind
 			&tournament.StartDate,
 			&tournament.EndDate,
 			&tournament.Status,
+			&tournament.PlayerCount,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning tournament: %w", err)
