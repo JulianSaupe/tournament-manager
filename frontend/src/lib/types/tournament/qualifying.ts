@@ -5,7 +5,13 @@ export interface Qualifying {
 
 export interface QualifyingPlayer {
     name: string;
-    bestTime: string;
+    time: number;
     position: number;
     signupDate: string;
+}
+
+export enum QualifyingFilter {
+    ALL = 'all',
+    QUALIFIED = 'qualified',
+    UNQUALIFIED = 'unqualified',
 }

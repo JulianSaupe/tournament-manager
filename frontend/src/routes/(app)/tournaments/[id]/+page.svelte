@@ -1,9 +1,9 @@
 <script lang="ts">
     import {Calendar, Check, Funnel, Info, User} from "lucide-svelte";
-    import {type Tournament, TournamentStatus} from "$lib/types/tournament/tournament";
+    import {type Tournament} from "$lib/types/tournament/tournament";
     import {statusConfig} from "$lib/types/tournament/statusConfig";
     import moment from "moment/moment";
-    import type {Qualifying} from "$lib/types/tournament/qualifying";
+    import {type Qualifying, QualifyingFilter} from "$lib/types/tournament/qualifying";
 
     let {data} = $props();
 
@@ -12,7 +12,7 @@
 
     let sortField: 'position' | 'name' | 'signupDate' | 'time' = $state('name');
     let sortDirection: 'asc' | 'desc' = $state('asc');
-    let statusFilter: TournamentStatus | null = $state(null);
+    let statusFilter: QualifyingFilter = $state(QualifyingFilter.ALL);
 
     function setSorting(field: 'position' | 'name' | 'signupDate' | 'time') {
         if (sortField === field) {
@@ -71,16 +71,12 @@
     </div>
 </div>
 
-<!-- All Tournaments Table -->
 <div class="mb-8">
     <div class="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <h2 class="flex items-center text-xl font-semibold sm:text-2xl">
             Qualifying
         </h2>
-    </div>
-
-    {#if qualifying?.players.length > 0}
-        <div class="flex gap-2">
+        <div class="flex gap-2 mb-2">
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="btn btn-outline btn-sm">
                     <Funnel/>
@@ -88,46 +84,28 @@
                 </div>
                 <ul class="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
                     <li>
-                        <button onclick={() => (statusFilter = null)} class="justify-between">
+                        <button onclick={() => (statusFilter = QualifyingFilter.ALL)} class="justify-between">
                             All
 
-                            {#if statusFilter === null}
+                            {#if statusFilter === QualifyingFilter.ALL}
                                 <Check/>
                             {/if}
                         </button>
                     </li>
                     <li>
-                        <button onclick={() => (statusFilter = TournamentStatus.ACTIVE)} class="justify-between">
-                            Active
+                        <button onclick={() => (statusFilter = QualifyingFilter.QUALIFIED)} class="justify-between">
+                            Qualified
 
-                            {#if statusFilter === TournamentStatus.ACTIVE}
+                            {#if statusFilter === QualifyingFilter.QUALIFIED}
                                 <Check/>
                             {/if}
                         </button>
                     </li>
                     <li>
-                        <button onclick={() => (statusFilter = TournamentStatus.DRAFT)} class="justify-between">
-                            Draft
+                        <button onclick={() => (statusFilter = QualifyingFilter.UNQUALIFIED)} class="justify-between">
+                            Unqualified
 
-                            {#if statusFilter === TournamentStatus.DRAFT}
-                                <Check/>
-                            {/if}
-                        </button>
-                    </li>
-                    <li>
-                        <button onclick={() => (statusFilter = TournamentStatus.COMPLETED)} class="justify-between">
-                            Completed
-
-                            {#if statusFilter === TournamentStatus.COMPLETED}
-                                <Check/>
-                            {/if}
-                        </button>
-                    </li>
-                    <li>
-                        <button onclick={() => (statusFilter = TournamentStatus.CANCELLED)} class="justify-between">
-                            Cancelled
-
-                            {#if statusFilter === TournamentStatus.CANCELLED}
+                            {#if statusFilter === QualifyingFilter.UNQUALIFIED}
                                 <Check/>
                             {/if}
                         </button>
@@ -135,7 +113,9 @@
                 </ul>
             </div>
         </div>
+    </div>
 
+    {#if qualifying?.players.length > 0}
         <!-- Table -->
         <div class="hidden overflow-x-auto rounded-box bg-base-100 shadow sm:block">
             <table class="table w-full table-zebra">
@@ -174,8 +154,8 @@
                     <tr>
                         <td>{player.position}</td>
                         <td>{player.name}</td>
-                        <td class="hidden md:table-cell">{player.bestTime}</td>
-                        <td class="hidden md:table-cell">{moment(player.signupDate).format('dd.MM.YYYY')}</td>
+                        <td class="hidden md:table-cell">{player.time === -1 ? '-' : player.time}</td>
+                        <td class="hidden md:table-cell">{moment(player.signupDate).format('MMM D, YYYY')}</td>
                         <td>
                             <div class="flex gap-2">
                                 <button class="btn btn-outline btn-xs">Edit</button>

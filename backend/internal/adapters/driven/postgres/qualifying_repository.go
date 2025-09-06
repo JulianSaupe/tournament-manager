@@ -43,10 +43,10 @@ func (r *QualifyingRepository) FindByTournamentId(ctx context.Context, id string
 		player := new(domain.QualifyingPlayer)
 		err := rows.Scan(
 			&player.PlayerId,
-			&player.PlayerName,
+			&player.Name,
 			&player.Position,
 			&player.SignupDate,
-			&player.BestTime,
+			&player.Time,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning tournament: %w", err)
