@@ -24,7 +24,6 @@
     function handleSubmit(event: Event) {
         event.preventDefault();
         if (!validate()) return;
-        // No backend changes allowed; simulate a successful signup locally
         submitted = true;
     }
 
@@ -36,78 +35,79 @@
     }
 </script>
 
-<div class="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500/80 dark:from-sky-700 dark:via-indigo-700 dark:to-fuchsia-700">
-    <div class="container mx-auto max-w-xl py-10 md:py-16">
-        <div class="mb-6 text-base-100">
-            <h1 class="text-2xl font-semibold">Tournament Signup</h1>
-            <p class="opacity-90">Tournament ID: {data.id}</p>
-        </div>
-
-        {#if submitted}
-            <div class="card bg-base-100 shadow-lg">
-                <div class="card-body">
-                    <div class="flex items-center gap-3">
-                        <CircleCheckBig class="h-6 w-6 text-success"/>
-                        <h2 class="card-title">You're signed up!</h2>
-                    </div>
-                    <p class="text-base-content/70">
-                        Thanks, {name}. You have entered tournament
-                        <span class="badge badge-outline">{data.id}</span>.
-                    </p>
-                    <div class="mt-4 card-actions justify-end">
-                        <button class="btn btn-ghost" onclick={resetForm}>Signup another player</button>
-                    </div>
-                </div>
+<div class="min-h-[calc(100vh-0rem)]">
+    <div class="container mx-auto max-w-xl px-4 py-12 flex min-h-[calc(100vh-0rem)] items-center justify-center">
+        <div class="w-full">
+            <div class="mb-6 text-center">
+                <h1 class="text-3xl font-semibold">Tournament Signup</h1>
             </div>
-        {:else}
-            <form onsubmit={handleSubmit} class="space-y-6">
+
+            {#if submitted}
                 <div class="card bg-base-100 shadow-lg">
                     <div class="card-body">
-                        <h2 class="card-title">Player Information</h2>
-                        <div class="form-control w-full">
-                            <label for="name" class="label">
-                                <span class="label-text">Name</span>
-                            </label>
-                            <input
-                                    id="name"
-                                    type="text"
-                                    value={name}
-                                    oninput={(e) => (name = e.currentTarget.value)}
-                                    class={`input-bordered input w-full ${errors.name ? 'input-error' : ''}`}
-                                    placeholder="Enter your name"
-                            />
-                            {#if errors.name}
-                                <label class="label" for="name">
-                                    <span class="label-text-alt text-error">{errors.name}</span>
-                                </label>
-                            {/if}
+                        <div class="flex items-center gap-3">
+                            <CircleCheckBig class="h-6 w-6 text-success"/>
+                            <h2 class="card-title">You're signed up!</h2>
                         </div>
-
-                        <div class="form-control w-full">
-                            <label for="email" class="label">
-                                <span class="label-text">Email</span>
-                            </label>
-                            <input
-                                    id="email"
-                                    type="email"
-                                    value={email}
-                                    oninput={(e) => (email = e.currentTarget.value)}
-                                    class={`input-bordered input w-full ${errors.email ? 'input-error' : ''}`}
-                                    placeholder="Enter your email"
-                            />
-                            {#if errors.email}
-                                <label class="label" for="email">
-                                    <span class="label-text-alt text-error">{errors.email}</span>
-                                </label>
-                            {/if}
+                        <p class="text-base-content/70">
+                            Thanks, {name}. You have entered tournament
+                            <span class="badge badge-outline">{data.id}</span>.
+                        </p>
+                        <div class="mt-4 card-actions justify-center">
+                            <button class="btn btn-ghost" onclick={resetForm}>Signup another player</button>
                         </div>
                     </div>
                 </div>
+            {:else}
+                <form onsubmit={handleSubmit} class="space-y-6">
+                    <div class="card bg-base-100 shadow-lg">
+                        <div class="card-body">
+                            <h2 class="card-title">Player Information</h2>
+                            <div class="form-control w-full">
+                                <label for="name" class="label">
+                                    <span class="label-text">Name</span>
+                                </label>
+                                <input
+                                        id="name"
+                                        type="text"
+                                        value={name}
+                                        oninput={(e) => (name = e.currentTarget.value)}
+                                        class={`input-bordered input w-full ${errors.name ? 'input-error' : ''}`}
+                                        placeholder="Enter your name"
+                                />
+                                {#if errors.name}
+                                    <label class="label" for="name">
+                                        <span class="label-text-alt text-error">{errors.name}</span>
+                                    </label>
+                                {/if}
+                            </div>
 
-                <div class="card-actions justify-end">
-                    <button type="submit" class="btn btn-primary">Sign Up</button>
-                </div>
-            </form>
-        {/if}
+                            <div class="form-control w-full">
+                                <label for="email" class="label">
+                                    <span class="label-text">Email</span>
+                                </label>
+                                <input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        oninput={(e) => (email = e.currentTarget.value)}
+                                        class={`input-bordered input w-full ${errors.email ? 'input-error' : ''}`}
+                                        placeholder="Enter your email"
+                                />
+                                {#if errors.email}
+                                    <label class="label" for="email">
+                                        <span class="label-text-alt text-error">{errors.email}</span>
+                                    </label>
+                                {/if}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-actions justify-center">
+                        <button type="submit" class="btn btn-primary w-full">Sign Up</button>
+                    </div>
+                </form>
+            {/if}
+        </div>
     </div>
 </div>
