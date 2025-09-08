@@ -1,15 +1,16 @@
 <script lang="ts">
-	import '../../app.css';
-	let { children } = $props();
+    import '../../app.css';
+
+    let {children} = $props();
 </script>
 
 <svelte:head>
-	<title>Tournament Manager</title>
-	<meta name="description" content="Professional tournament management system" />
+    <title>Tournament Manager</title>
+    <meta name="description" content="Professional tournament management system"/>
 </svelte:head>
 
 <div class="min-h-screen bg-base-100">
-	<main class="w-full p-4 md:p-8">
-		{@render children?.()}
-	</main>
+    <main class="w-full p-">
+        {@render children?.()}
+    </main>
 </div>
