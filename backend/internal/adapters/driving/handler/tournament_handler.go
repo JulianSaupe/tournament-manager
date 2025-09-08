@@ -36,6 +36,11 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	playerRouter := chi.NewRouter()
 	playerHandler := NewPlayerHandler(h.playerService)
 	playerHandler.RegisterRoutes(playerRouter)
+
+	qualifyingRouter := chi.NewRouter()
+	qualifyingHandler := NewQualifyingHandler(h.qualifyingService)
+	qualifyingHandler.RegisterRoutes(qualifyingRouter)
+
 	router.Route("/tournament", func(router chi.Router) {
 		router.Get("/", h.ListTournaments)
 		router.Post("/", h.CreateTournament)
@@ -43,12 +48,12 @@ func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 			router.Use(middleware.TournamentMiddleware(h.tournamentService))
 			router.Patch("/status", h.UpdateTournamentStatus)
 			router.Get("/", h.GetTournament)
-			router.Get("/qualifying", h.GetQualifying)
 			router.Group(func(router chi.Router) {
 				router.Use(middleware.TournamentActiveMiddleware())
 				router.Delete("/", h.DeleteTournament)
 			})
 			router.Mount("/player", playerRouter)
+			router.Mount("/qualifying", qualifyingRouter)
 		})
 	})
 }
@@ -96,13 +101,6 @@ func (h *TournamentHandler) DeleteTournament(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	h.tournamentService.DeleteTournament(ctx, id)
 	response.Send(w, r, http.StatusOK, nil)
-}
-
-func (h *TournamentHandler) GetQualifying(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
-	ctx := r.Context()
-	qualifying := h.qualifyingService.GetQualifyingByTournamentId(ctx, id)
-	response.Send(w, r, http.StatusOK, qualifying)
 }
 
 func (h *TournamentHandler) parseStatusString(statusStr string) (domain.TournamentStatus, error) {

@@ -8,8 +8,9 @@ import (
 	"Tournament/internal/middleware"
 	"Tournament/internal/ports/input"
 	"encoding/json"
-	"github.com/go-chi/chi/v5"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type PlayerHandler struct {
