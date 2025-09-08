@@ -79,11 +79,26 @@ func (r *QualifyingRepository) DeleteByTournamentId(ctx context.Context, id stri
 	return r.checkRowsAffected(result, "qualifying not found")
 }
 
+func (r *QualifyingRepository) AddPlayer(ctx context.Context, tournamentId string, playerId string) error {
+	ctx, cancel := context.WithTimeout(ctx, queryTimeout)
+	defer cancel()
+
+	query := `INSERT INTO qualifying (tournament_id, player_id) VALUES ($1, $2)`
+	result, err := r.db.ExecContext(ctx, query, tournamentId, playerId)
+
+	if err != nil {
+		return fmt.Errorf("error adding player to qualifying: %w", err)
+	}
+
+	return r.checkRowsAffected(result, "error adding player to qualifying")
+}
+
 func (r *QualifyingRepository) checkRowsAffected(result sql.Result, notFoundMsg string) error {
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("error getting rows affected: %w", err)
 	}
+	// TODO: refactor this
 	if rowsAffected == 0 {
 		return domain.NewNotFoundError(notFoundMsg)
 	}

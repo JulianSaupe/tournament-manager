@@ -34,7 +34,7 @@ func NewTournamentHandler(
 
 func (h *TournamentHandler) RegisterRoutes(router chi.Router) {
 	playerRouter := chi.NewRouter()
-	playerHandler := NewPlayerHandler(h.playerService)
+	playerHandler := NewPlayerHandler(h.playerService, h.qualifyingService)
 	playerHandler.RegisterRoutes(playerRouter)
 
 	qualifyingRouter := chi.NewRouter()

@@ -14,12 +14,17 @@ import (
 )
 
 type PlayerHandler struct {
-	playerService input.PlayerServiceInterface
+	playerService     input.PlayerServiceInterface
+	qualifyingService input.QualifyingServiceInterface
 }
 
-func NewPlayerHandler(playerService input.PlayerServiceInterface) *PlayerHandler {
+func NewPlayerHandler(
+	playerService input.PlayerServiceInterface,
+	qualifyingService input.QualifyingServiceInterface,
+) *PlayerHandler {
 	return &PlayerHandler{
-		playerService: playerService,
+		playerService:     playerService,
+		qualifyingService: qualifyingService,
 	}
 }
 
@@ -57,6 +62,9 @@ func (h *PlayerHandler) CreatePlayer(w http.ResponseWriter, r *http.Request) {
 	var req = validation.ValidateRequest[requests.CreatePlayerRequest](r)
 
 	player := h.playerService.CreatePlayer(ctx, req.Name, tournament.Id)
+
+	h.qualifyingService.AddPlayerToQualifying(ctx, tournament.Id, player.Id)
+
 	response.Send(w, r, http.StatusCreated, player)
 }
 

@@ -29,3 +29,11 @@ func (q QualifyingService) GetQualifyingByTournamentId(ctx context.Context, id s
 func (q QualifyingService) DeleteQualifyingByTournamentId(ctx context.Context, id string) {
 	panic("implement me")
 }
+
+func (q QualifyingService) AddPlayerToQualifying(ctx context.Context, tournamentId string, playerId string) {
+	err := q.qualifyingRepository.AddPlayer(ctx, tournamentId, playerId)
+
+	if err != nil {
+		panic(err)
+	}
+}
