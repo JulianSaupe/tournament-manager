@@ -1,4 +1,4 @@
-use auth::auth_service_server::{AuthService, AuthServiceServer};
+use auth::grpc_auth_service_server::{GrpcAuthService, GrpcAuthServiceServer};
 use auth::{LoginRequest, LoginResponse};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::Serialize;
@@ -8,8 +8,13 @@ pub mod auth {
     tonic::include_proto!("authentication");
 }
 
+const JWT_SECRET: &[u8] = b"secret";
+const TOKEN_EXPIRATION: i64 = 10_000_000_000;
+const ADMIN_USER: &str = "admin";
+const ADMIN_PASS: &str = "password";
+
 #[derive(Debug, Default)]
-pub struct MyAuthService {}
+pub struct AuthService {}
 
 #[derive(Debug, Serialize)]
 struct Claims {
@@ -17,35 +22,38 @@ struct Claims {
     exp: i64,
 }
 
+fn generate_token(username: &str) -> Result<String, Status> {
+    let claims = Claims {
+        sub: username.to_owned(),
+        exp: TOKEN_EXPIRATION,
+    };
+    encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(JWT_SECRET),
+    )
+    .map_err(|_| Status::internal("Failed to create token"))
+}
+
 #[tonic::async_trait]
-impl AuthService for MyAuthService {
+impl GrpcAuthService for AuthService {
     async fn login(
         &self,
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
         println!("Got a login request: {:?}", request);
+        let login_req = request.into_inner();
 
-        let req = request.into_inner();
+        let success = login_req.username == ADMIN_USER && login_req.password == ADMIN_PASS;
 
-        let success = req.username == "admin" && req.password == "password";
-
-        let message = if success {
-            "Login successful".to_string()
+        let (message, token) = if success {
+            (
+                "Login successful".to_string(),
+                generate_token(&login_req.username)?,
+            )
         } else {
-            "Invalid credentials".to_string()
+            ("Invalid credentials".to_string(), String::new())
         };
-
-        let claims = Claims {
-            sub: "admin".to_owned(),
-            exp: 10000000000,
-        };
-
-        let token = encode(
-            &Header::default(),
-            &claims,
-            &EncodingKey::from_secret("secret".as_ref()),
-        )
-        .map_err(|_| Status::internal("Failed to create token"))?;
 
         let reply = LoginResponse {
             success,
@@ -60,14 +68,13 @@ impl AuthService for MyAuthService {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "[::1]:50051".parse()?;
-    let auth_service = MyAuthService::default();
+    let auth_service = AuthService::default();
 
     println!("AuthService Server listening on {}", addr);
 
     Server::builder()
-        .add_service(AuthServiceServer::new(auth_service))
+        .add_service(GrpcAuthServiceServer::new(auth_service))
         .serve(addr)
         .await?;
-
     Ok(())
 }

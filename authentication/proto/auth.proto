@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package authentication;
 
-service AuthService {
+service GrpcAuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
 }
 
