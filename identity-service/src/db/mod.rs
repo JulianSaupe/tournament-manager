@@ -33,7 +33,7 @@ pub async fn init_pool() -> Result<DbPool, sqlx::Error> {
         .connect(&database_url)
         .await?;
 
-    sqlx::migrate!().run(&pool).await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
 
     println!("Database connection pool established");
     Ok(pool)

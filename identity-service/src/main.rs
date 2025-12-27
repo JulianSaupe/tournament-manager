@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = "[::1]:5000".parse()?;
     let authentication_service = AuthenticationService::default();
-    let account_service = AccountService::default();
+    let account_service = AccountService::new(db_pool);
 
     println!("Server listening on {}", addr);
 

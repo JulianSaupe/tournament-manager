@@ -1,14 +1,14 @@
+use crate::utils::hash_string;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::utils::hash_string;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-    pub password_hash: String,
-    pub created_at: i64,
+    id: String,
+    username: String,
+    email: String,
+    password_hash: String,
+    created_at: i64,
 }
 
 impl Account {

@@ -987,7 +987,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "identity-management"
+name = "identity-service"
 version = "0.1.0"
 dependencies = [
  "argon2",
