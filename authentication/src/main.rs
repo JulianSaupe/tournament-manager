@@ -1,8 +1,13 @@
-use auth::grpc_auth_service_server::{GrpcAuthService, GrpcAuthServiceServer};
+use auth::authentication_service_server::{AuthenticationService, AuthenticationServiceServer};
 use auth::{LoginRequest, LoginResponse};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::Serialize;
 use tonic::{transport::Server, Request, Response, Status};
+
+pub mod models;
+mod utils;
+
+use models::Account;
 
 pub mod auth {
     tonic::include_proto!("authentication");
@@ -36,20 +41,19 @@ fn generate_token(username: &str) -> Result<String, Status> {
 }
 
 #[tonic::async_trait]
-impl GrpcAuthService for AuthService {
+impl AuthenticationService for AuthService {
     async fn login(
         &self,
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
-        println!("Got a login request: {:?}", request);
         let login_req = request.into_inner();
 
-        let success = login_req.username == ADMIN_USER && login_req.password == ADMIN_PASS;
+        let success = login_req.email == ADMIN_USER && login_req.password == ADMIN_PASS;
 
         let (message, token) = if success {
             (
                 "Login successful".to_string(),
-                generate_token(&login_req.username)?,
+                generate_token(&login_req.email)?,
             )
         } else {
             ("Invalid credentials".to_string(), String::new())
@@ -73,7 +77,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("AuthService Server listening on {}", addr);
 
     Server::builder()
-        .add_service(GrpcAuthServiceServer::new(auth_service))
+        .add_service(AuthenticationServiceServer::new(auth_service))
         .serve(addr)
         .await?;
     Ok(())

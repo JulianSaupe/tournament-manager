@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package account;
+
+service AccountService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+}
+
+// Create
+message CreateRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message CreateResponse{
+  string userId = 1;
+  bool success = 2;
+}
+
+// Delete
+message DeleteRequest {
+  string userId = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
+
+// Reset password
+message ResetPasswordRequest {
+  string userId = 1;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+}
