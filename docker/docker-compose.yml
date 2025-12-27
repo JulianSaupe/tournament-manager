@@ -14,6 +14,21 @@ services:
     networks:
       - tournament-network
 
+  auth-database:
+    image: postgres:14
+    container_name: auth_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authentication
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
+    networks:
+      - tournament-network
+
 #  api:
 #    build:
 #      context: ../backend
@@ -41,4 +56,6 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  auth_data:
     driver: local

@@ -4,10 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-jsonwebtoken = "9.3.1"
-tonic = "0.12.3"
-prost = "0.13.5"
+jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
+tonic = "0.14.2"
+prost = "0.14.1"
+tonic-prost = "*"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+serde = { version = "1.0.225", features = ["derive"] }
 
 [build-dependencies]
-tonic-build = "0.12.3"
+tonic-prost-build = "*"

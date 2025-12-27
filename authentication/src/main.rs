@@ -1,14 +1,21 @@
+use auth::auth_service_server::{AuthService, AuthServiceServer};
+use auth::{LoginRequest, LoginResponse};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use serde::Serialize;
 use tonic::{transport::Server, Request, Response, Status};
 
 pub mod auth {
     tonic::include_proto!("authentication");
 }
 
-use auth::auth_service_server::{AuthService, AuthServiceServer};
-use auth::{LoginRequest, LoginResponse};
-
 #[derive(Debug, Default)]
 pub struct MyAuthService {}
+
+#[derive(Debug, Serialize)]
+struct Claims {
+    sub: String,
+    exp: i64,
+}
 
 #[tonic::async_trait]
 impl AuthService for MyAuthService {
@@ -21,16 +28,24 @@ impl AuthService for MyAuthService {
         let req = request.into_inner();
 
         let success = req.username == "admin" && req.password == "password";
-        let token = if success {
-            "sample_jwt_token".to_string()
-        } else {
-            String::new()
-        };
+
         let message = if success {
             "Login successful".to_string()
         } else {
             "Invalid credentials".to_string()
         };
+
+        let claims = Claims {
+            sub: "admin".to_owned(),
+            exp: 10000000000,
+        };
+
+        let token = encode(
+            &Header::default(),
+            &claims,
+            &EncodingKey::from_secret("secret".as_ref()),
+        )
+        .map_err(|_| Status::internal("Failed to create token"))?;
 
         let reply = LoginResponse {
             success,
