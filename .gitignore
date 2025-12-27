@@ -33,4 +33,4 @@ go.work.sum
 .junie/
 
 # Rust
-/identity-management/target
+/identity-service/target
