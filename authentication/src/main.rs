@@ -6,6 +6,7 @@ use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::Serialize;
 use tonic::{transport::Server, Status};
 
+mod db;
 mod models;
 mod proto;
 mod service;
@@ -35,6 +36,8 @@ fn generate_token(username: &str) -> Result<String, Status> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let db_pool = db::init_pool().await?;
+
     let addr = "[::1]:50051".parse()?;
     let authentication_service = AuthenticationService::default();
     let account_service = AccountService::default();

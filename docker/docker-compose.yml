@@ -16,16 +16,14 @@ services:
 
   auth-database:
     image: postgres:14
-    container_name: auth_postgres
+    container_name: identity_service_postgres
     restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: authentication
+    env_file:
+      - ./.identity-service.env
     ports:
       - "5433:5432"
     volumes:
-      - auth_data:/var/lib/postgresql/data
+      - identity_data:/var/lib/postgresql/data
     networks:
       - tournament-network
 
@@ -57,5 +55,5 @@ networks:
 volumes:
   postgres_data:
     driver: local
-  auth_data:
+  identity_data:
     driver: local
