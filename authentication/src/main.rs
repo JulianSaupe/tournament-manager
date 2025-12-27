@@ -1,4 +1,6 @@
+use crate::proto::account::account_service_server::AccountServiceServer;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
+use crate::service::account::AccountService;
 use crate::service::authentication::AuthenticationService;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::Serialize;
@@ -34,12 +36,14 @@ fn generate_token(username: &str) -> Result<String, Status> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "[::1]:50051".parse()?;
-    let auth_service = AuthenticationService::default();
+    let authentication_service = AuthenticationService::default();
+    let account_service = AccountService::default();
 
-    println!("AuthService Server listening on {}", addr);
+    println!("Server listening on {}", addr);
 
     Server::builder()
-        .add_service(AuthenticationServiceServer::new(auth_service))
+        .add_service(AuthenticationServiceServer::new(authentication_service))
+        .add_service(AccountServiceServer::new(account_service))
         .serve(addr)
         .await?;
     Ok(())

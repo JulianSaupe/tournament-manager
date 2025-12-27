@@ -28,12 +28,12 @@ impl AuthenticationServiceTrait for AuthenticationService {
             ("Invalid credentials".to_string(), String::new())
         };
 
-        let reply = LoginResponse {
+        let response = LoginResponse {
             success,
             token,
             message,
         };
 
-        Ok(Response::new(reply))
+        Ok(Response::new(response))
     }
 }
