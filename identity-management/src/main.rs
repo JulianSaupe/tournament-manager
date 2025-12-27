@@ -38,7 +38,7 @@ fn generate_token(username: &str) -> Result<String, Status> {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_pool = db::init_pool().await?;
 
-    let addr = "[::1]:50051".parse()?;
+    let addr = "[::1]:5000".parse()?;
     let authentication_service = AuthenticationService::default();
     let account_service = AccountService::default();
 

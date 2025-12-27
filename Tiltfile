@@ -2,6 +2,7 @@
 docker_compose('./docker/docker-compose.yml')
 
 dc_resource('postgres', labels=["Backend"])
+dc_resource('identity-service-database', labels=["Identity-Service"])
 
 # Define the backend service
 local_resource(
@@ -29,9 +30,12 @@ print("""
 Tournament Manager Development Environment
 
 Services:
-- PostgreSQL Database: localhost:5432
+- PostgreSQL Database:
+    - backend: localhost:5432
+    - identity service: localhost:5433
 - API: http://localhost:3000
 - Frontend: http://localhost:5173
+- Identity Service: http://localhost:5000
 
 Commands:
 - tilt up: Start all services
