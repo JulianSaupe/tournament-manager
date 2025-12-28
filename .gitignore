@@ -1,5 +1,5 @@
-/backend/doc/Tournament API
-/backend/cmd/api/tmp
+/backend/engine/doc/Tournament API
+/backend/engine/cmd/api/tmp
 /tmp
 
 # Binaries for programs and plugins
@@ -18,9 +18,6 @@ coverage.*
 *.coverprofile
 profile.cov
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
 # Go workspace file
 go.work
 go.work.sum
@@ -33,4 +30,4 @@ go.work.sum
 .junie/
 
 # Rust
-/identity-service/target
+*/identity-service/target

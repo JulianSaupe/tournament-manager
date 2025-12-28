@@ -10,7 +10,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the source code
-COPY . .
+COPY .. .
 
 # Build the application
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/tournament-api ./cmd/api
