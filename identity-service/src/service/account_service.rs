@@ -1,3 +1,4 @@
+use crate::db::AccountRepository;
 use crate::proto::account::account_service_server::AccountService as AccountServiceTrait;
 use crate::proto::account::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,
@@ -7,12 +8,12 @@ use crate::utils::hash_string;
 use tonic::{Request, Response, Status};
 
 pub struct AccountService {
-    db_pool: sqlx::PgPool,
+    repository: AccountRepository,
 }
 
 impl AccountService {
-    pub fn new(db_pool: sqlx::PgPool) -> Self {
-        Self { db_pool }
+    pub fn new(repository: AccountRepository) -> Self {
+        Self { repository }
     }
 }
 
@@ -24,17 +25,11 @@ impl AccountServiceTrait for AccountService {
     ) -> Result<Response<CreateResponse>, Status> {
         let create_req = request.into_inner();
 
-        let id: uuid::Uuid = sqlx::query_scalar(
-            r#"
-                INSERT INTO accounts (username, email, password) VALUES ($1, $2, $3) RETURNING id
-            "#,
-        )
-        .bind(create_req.username)
-        .bind(create_req.email)
-        .bind(hash_string(&create_req.password).unwrap())
-        .fetch_one(&self.db_pool)
-        .await
-        .map_err(|_| Status::internal("Failed to create account"))?;
+        let id = self
+            .repository
+            .create_account(create_req.username, create_req.email, create_req.password)
+            .await
+            .map_err(|_| Status::internal("Failed to create account"))?;
 
         let response = CreateResponse {
             success: true,
@@ -50,9 +45,8 @@ impl AccountServiceTrait for AccountService {
     ) -> Result<Response<DeleteResponse>, Status> {
         let delete_req = request.into_inner();
 
-        sqlx::query(r#"DELETE FROM accounts WHERE id = $1"#)
-            .bind(uuid::Uuid::parse_str(&delete_req.user_id).unwrap())
-            .execute(&self.db_pool)
+        self.repository
+            .delete(&delete_req.user_id)
             .await
             .map_err(|_| Status::internal("Failed to delete account"))?;
 

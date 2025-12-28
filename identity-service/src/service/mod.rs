@@ -1,2 +1,2 @@
-pub mod account;
-pub mod authentication;
+pub mod account_service;
+pub mod authentication_service;

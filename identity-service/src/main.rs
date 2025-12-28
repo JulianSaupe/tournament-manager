@@ -1,7 +1,8 @@
+use crate::db::{AccountRepository, Database};
 use crate::proto::account::account_service_server::AccountServiceServer;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
-use crate::service::account::AccountService;
-use crate::service::authentication::AuthenticationService;
+use crate::service::account_service::AccountService;
+use crate::service::authentication_service::AuthenticationService;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use serde::Serialize;
 use tonic::{transport::Server, Status};
@@ -36,11 +37,19 @@ fn generate_token(username: &str) -> Result<String, Status> {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db_pool = db::init_pool().await?;
+    let database_url = db::get_database_url().map_err(|e| {
+        sqlx::Error::Configuration(Box::new(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            e,
+        )))
+    })?;
+
+    let database = Database::new(&database_url).await?;
+    let account_repository = AccountRepository::new(database).await;
 
     let addr = "[::1]:5000".parse()?;
     let authentication_service = AuthenticationService::default();
-    let account_service = AccountService::new(db_pool);
+    let account_service = AccountService::new(account_repository);
 
     println!("Server listening on {}", addr);
 

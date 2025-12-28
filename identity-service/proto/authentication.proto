@@ -4,6 +4,7 @@ package authentication;
 
 service AuthenticationService {
   rpc Login(LoginRequest) returns (LoginResponse);
+  rpc ExtendLifetime(ExtendLifetimeRequest) returns (ExtendLifetimeResponse);
 }
 
 message LoginRequest {
@@ -15,4 +16,12 @@ message LoginResponse{
   bool success = 1;
   string token = 2;
   string message = 3;
+}
+
+message ExtendLifetimeRequest {
+  string token = 1;
+}
+
+message ExtendLifetimeResponse {
+  string token = 1;
 }

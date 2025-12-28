@@ -1,6 +1,8 @@
 use crate::generate_token;
 use crate::proto::authentication::authentication_service_server::AuthenticationService as AuthenticationServiceTrait;
-use crate::proto::authentication::{LoginRequest, LoginResponse};
+use crate::proto::authentication::{
+    ExtendLifetimeRequest, ExtendLifetimeResponse, LoginRequest, LoginResponse,
+};
 use tonic::{Request, Response, Status};
 
 const ADMIN_USER: &str = "admin";
@@ -35,5 +37,12 @@ impl AuthenticationServiceTrait for AuthenticationService {
         };
 
         Ok(Response::new(response))
+    }
+
+    async fn extend_lifetime(
+        &self,
+        request: Request<ExtendLifetimeRequest>,
+    ) -> Result<Response<ExtendLifetimeResponse>, Status> {
+        todo!()
     }
 }
