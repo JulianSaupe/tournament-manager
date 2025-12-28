@@ -1,39 +1,16 @@
-use crate::db::{AccountRepository, Database};
+use crate::db::{AccountRepository, AccountRepositoryTrait, Database};
 use crate::proto::account::account_service_server::AccountServiceServer;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::service::account_service::AccountService;
 use crate::service::authentication_service::AuthenticationService;
-use jsonwebtoken::{encode, EncodingKey, Header};
-use serde::Serialize;
-use tonic::{transport::Server, Status};
+use std::sync::Arc;
+use tonic::transport::Server;
 
 mod db;
 mod models;
 mod proto;
 mod service;
 mod utils;
-
-const JWT_SECRET: &[u8] = b"secret";
-const TOKEN_EXPIRATION: i64 = 10_000_000_000;
-
-#[derive(Debug, Serialize)]
-struct Claims {
-    sub: String,
-    exp: i64,
-}
-
-fn generate_token(username: &str) -> Result<String, Status> {
-    let claims = Claims {
-        sub: username.to_owned(),
-        exp: TOKEN_EXPIRATION,
-    };
-    encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(JWT_SECRET),
-    )
-    .map_err(|_| Status::internal("Failed to create token"))
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -45,11 +22,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     let database = Database::new(&database_url).await?;
-    let account_repository = AccountRepository::new(database).await;
+    let account_repository: Arc<dyn AccountRepositoryTrait> =
+        Arc::new(AccountRepository::new(database));
 
     let addr = "[::1]:5000".parse()?;
-    let authentication_service = AuthenticationService::default();
-    let account_service = AccountService::new(account_repository);
+    let authentication_service = AuthenticationService::new(account_repository.clone());
+    let account_service = AccountService::new(account_repository.clone());
 
     println!("Server listening on {}", addr);
 

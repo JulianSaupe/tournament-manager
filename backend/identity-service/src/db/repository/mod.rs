@@ -1,3 +1,3 @@
 mod account_repository;
 
-pub use account_repository::AccountRepository;
+pub use account_repository::{AccountRepository, AccountRepositoryTrait};

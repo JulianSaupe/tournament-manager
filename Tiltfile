@@ -7,7 +7,7 @@ dc_resource('identity-service-database', labels=["Identity-Service"])
 # Define the backend service
 local_resource(
     'API',
-    serve_cmd='cd backend/cmd/api && go run main.go',
+    serve_cmd='cd backend/engine/cmd/api && go run main.go',
     resource_deps=['postgres'],  # Ensure database is running before frontend
     labels=['Backend'],
     deps=['backend/']

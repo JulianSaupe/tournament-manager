@@ -3,25 +3,21 @@ use argon2::{
     Argon2,
 };
 
-pub fn hash_string(input: &str) -> Result<String, argon2::password_hash::Error> {
+mod token;
+pub use token::*;
+
+pub fn hash_string(password: &str) -> Result<String, argon2::password_hash::Error> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2
-        .hash_password(input.as_bytes(), &salt)?
-        .hash
-        .unwrap()
-        .to_string();
+    let hash = argon2.hash_password(password.as_bytes(), &salt)?;
 
-    Ok(password_hash)
+    Ok(hash.to_string())
 }
 
-pub fn verify_hash(input: &str, hash: &str) -> bool {
-    PasswordHash::new(hash)
-        .ok()
-        .map(|h| {
-            Argon2::default()
-                .verify_password(input.as_bytes(), &h)
-                .is_ok()
-        })
-        .unwrap_or(false)
+pub fn verify_hash(password: &str, hash: &str) -> bool {
+    let parsed_hash = PasswordHash::new(hash).ok().unwrap();
+
+    Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok()
 }

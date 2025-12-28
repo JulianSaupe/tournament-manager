@@ -1,15 +1,21 @@
-use crate::generate_token;
+use crate::db::{AccountRepository, AccountRepositoryTrait};
 use crate::proto::authentication::authentication_service_server::AuthenticationService as AuthenticationServiceTrait;
 use crate::proto::authentication::{
     ExtendLifetimeRequest, ExtendLifetimeResponse, LoginRequest, LoginResponse,
 };
+use crate::utils::{generate_token, hash_string, verify_hash};
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
-const ADMIN_USER: &str = "admin";
-const ADMIN_PASS: &str = "password";
+pub struct AuthenticationService {
+    account_repository: Arc<dyn AccountRepositoryTrait>,
+}
 
-#[derive(Debug, Default)]
-pub struct AuthenticationService {}
+impl AuthenticationService {
+    pub fn new(account_repository: Arc<dyn AccountRepositoryTrait>) -> Self {
+        AuthenticationService { account_repository }
+    }
+}
 
 #[tonic::async_trait]
 impl AuthenticationServiceTrait for AuthenticationService {
@@ -19,7 +25,13 @@ impl AuthenticationServiceTrait for AuthenticationService {
     ) -> Result<Response<LoginResponse>, Status> {
         let login_req = request.into_inner();
 
-        let success = login_req.email == ADMIN_USER && login_req.password == ADMIN_PASS;
+        let password_hash = self
+            .account_repository
+            .find_by_email_and_password(&login_req.email)
+            .await;
+
+        let success =
+            password_hash.is_some() && verify_hash(&login_req.password, &password_hash.unwrap());
 
         let (message, token) = if success {
             (

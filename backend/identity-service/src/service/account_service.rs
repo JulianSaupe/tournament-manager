@@ -1,19 +1,20 @@
-use crate::db::AccountRepository;
+use crate::db::{AccountRepository, AccountRepositoryTrait};
 use crate::proto::account::account_service_server::AccountService as AccountServiceTrait;
 use crate::proto::account::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,
     ResetPasswordResponse,
 };
 use crate::utils::hash_string;
+use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
 pub struct AccountService {
-    repository: AccountRepository,
+    account_repository: Arc<dyn AccountRepositoryTrait>,
 }
 
 impl AccountService {
-    pub fn new(repository: AccountRepository) -> Self {
-        Self { repository }
+    pub fn new(account_repository: Arc<dyn AccountRepositoryTrait>) -> Self {
+        Self { account_repository }
     }
 }
 
@@ -26,7 +27,7 @@ impl AccountServiceTrait for AccountService {
         let create_req = request.into_inner();
 
         let id = self
-            .repository
+            .account_repository
             .create_account(create_req.username, create_req.email, create_req.password)
             .await
             .map_err(|_| Status::internal("Failed to create account"))?;
@@ -45,7 +46,7 @@ impl AccountServiceTrait for AccountService {
     ) -> Result<Response<DeleteResponse>, Status> {
         let delete_req = request.into_inner();
 
-        self.repository
+        self.account_repository
             .delete(&delete_req.user_id)
             .await
             .map_err(|_| Status::internal("Failed to delete account"))?;
