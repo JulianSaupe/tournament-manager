@@ -1,19 +1,19 @@
-use crate::db::{AccountRepository, AccountRepositoryTrait};
+use crate::db::UserRepositoryTrait;
 use crate::proto::authentication::authentication_service_server::AuthenticationService as AuthenticationServiceTrait;
 use crate::proto::authentication::{
     ExtendLifetimeRequest, ExtendLifetimeResponse, LoginRequest, LoginResponse,
 };
-use crate::utils::{generate_token, hash_string, verify_hash};
+use crate::utils::{generate_token, verify_hash};
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
 pub struct AuthenticationService {
-    account_repository: Arc<dyn AccountRepositoryTrait>,
+    user_repository: Arc<dyn UserRepositoryTrait>,
 }
 
 impl AuthenticationService {
-    pub fn new(account_repository: Arc<dyn AccountRepositoryTrait>) -> Self {
-        AuthenticationService { account_repository }
+    pub fn new(user_repository: Arc<dyn UserRepositoryTrait>) -> Self {
+        AuthenticationService { user_repository }
     }
 }
 
@@ -26,7 +26,7 @@ impl AuthenticationServiceTrait for AuthenticationService {
         let login_req = request.into_inner();
 
         let password_hash = self
-            .account_repository
+            .user_repository
             .find_by_email_and_password(&login_req.email)
             .await;
 

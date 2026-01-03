@@ -4,7 +4,7 @@ mod repository;
 pub use database::Database;
 pub use repository::*;
 
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::postgres::PgPool;
 use std::env;
 
 pub type DbPool = PgPool;

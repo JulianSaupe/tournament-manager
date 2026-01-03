@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package account;
+package user;
 
-service AccountService {
+service UserService {
   rpc Create(CreateRequest) returns (CreateResponse);
   rpc Delete(DeleteRequest) returns (DeleteResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);

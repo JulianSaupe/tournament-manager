@@ -1,5 +1,5 @@
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     tonic_prost_build::compile_protos("proto/authentication.proto")?;
-    tonic_prost_build::compile_protos("proto/account.proto")?;
+    tonic_prost_build::compile_protos("proto/user.proto")?;
     Ok(())
 }

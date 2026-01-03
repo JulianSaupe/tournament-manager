@@ -1,25 +1,24 @@
-use crate::db::{AccountRepository, AccountRepositoryTrait};
-use crate::proto::account::account_service_server::AccountService as AccountServiceTrait;
-use crate::proto::account::{
+use crate::db::UserRepositoryTrait;
+use crate::proto::user::user_service_server::UserService as UserServiceTrait;
+use crate::proto::user::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,
     ResetPasswordResponse,
 };
-use crate::utils::hash_string;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
-pub struct AccountService {
-    account_repository: Arc<dyn AccountRepositoryTrait>,
+pub struct UserService {
+    user_repository: Arc<dyn UserRepositoryTrait>,
 }
 
-impl AccountService {
-    pub fn new(account_repository: Arc<dyn AccountRepositoryTrait>) -> Self {
-        Self { account_repository }
+impl UserService {
+    pub fn new(user_repository: Arc<dyn UserRepositoryTrait>) -> Self {
+        Self { user_repository }
     }
 }
 
 #[tonic::async_trait]
-impl AccountServiceTrait for AccountService {
+impl UserServiceTrait for UserService {
     async fn create(
         &self,
         request: Request<CreateRequest>,
@@ -27,10 +26,10 @@ impl AccountServiceTrait for AccountService {
         let create_req = request.into_inner();
 
         let id = self
-            .account_repository
-            .create_account(create_req.username, create_req.email, create_req.password)
+            .user_repository
+            .create_user(create_req.username, create_req.email, create_req.password)
             .await
-            .map_err(|_| Status::internal("Failed to create account"))?;
+            .map_err(|_| Status::internal("Failed to create user"))?;
 
         let response = CreateResponse {
             success: true,
@@ -46,10 +45,10 @@ impl AccountServiceTrait for AccountService {
     ) -> Result<Response<DeleteResponse>, Status> {
         let delete_req = request.into_inner();
 
-        self.account_repository
+        self.user_repository
             .delete(&delete_req.user_id)
             .await
-            .map_err(|_| Status::internal("Failed to delete account"))?;
+            .map_err(|_| Status::internal("Failed to delete user"))?;
 
         let response = DeleteResponse { success: true };
 

@@ -12,9 +12,12 @@ impl Database {
             .connect(&database_url)
             .await?;
 
+        println!("Database connection pool established");
+        println!("Running migrations...");
+
         sqlx::migrate!("./migrations").run(&pool).await?;
 
-        println!("Database connection pool established");
+        println!("Migrations completed");
 
         Ok(Self { pool })
     }
