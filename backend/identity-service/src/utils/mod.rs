@@ -3,9 +3,6 @@ use argon2::{
     Argon2,
 };
 
-mod token;
-pub use token::*;
-
 pub fn hash_string(password: &str) -> Result<String, argon2::password_hash::Error> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();

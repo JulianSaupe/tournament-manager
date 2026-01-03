@@ -1,4 +1,3 @@
-use crate::utils::hash_string;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

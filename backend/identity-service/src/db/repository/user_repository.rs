@@ -23,7 +23,7 @@ pub trait UserRepositoryTrait: Send + Sync {
 
     async fn delete(&self, id: &String) -> Result<(), String>;
 
-    async fn find_by_email_and_password(&self, email: &str) -> Option<String>;
+    async fn find_by_email(&self, email: &str) -> Option<(Uuid, String)>;
 }
 
 #[tonic::async_trait]
@@ -51,7 +51,7 @@ impl UserRepositoryTrait for UserRepository {
 
     async fn delete(&self, id: &String) -> Result<(), String> {
         sqlx::query(r#"DELETE FROM users WHERE id = $1"#)
-            .bind(uuid::Uuid::parse_str(id).unwrap())
+            .bind(Uuid::parse_str(id).unwrap())
             .execute(self.database.pool())
             .await
             .map_err(|_| "Failed to delete user")?;
@@ -59,14 +59,14 @@ impl UserRepositoryTrait for UserRepository {
         Ok(())
     }
 
-    async fn find_by_email_and_password(&self, email: &str) -> Option<String> {
-        let password_hash: String =
-            sqlx::query_scalar(r#"SELECT password FROM users WHERE email = $1"#)
+    async fn find_by_email(&self, email: &str) -> Option<(Uuid, String)> {
+        let result: Option<(Uuid, String)> =
+            sqlx::query_as(r#"SELECT id, password FROM users WHERE email = $1"#)
                 .bind(email)
-                .fetch_one(self.database.pool())
+                .fetch_optional(self.database.pool())
                 .await
                 .ok()?;
 
-        Some(password_hash)
+        result
     }
 }

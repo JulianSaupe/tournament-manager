@@ -16,13 +16,13 @@ message CreateRequest {
 }
 
 message CreateResponse{
-  string userId = 1;
+  string user_id = 1;
   bool success = 2;
 }
 
 // Delete
 message DeleteRequest {
-  string userId = 1;
+  string user_id = 1;
 }
 
 message DeleteResponse {
@@ -31,7 +31,7 @@ message DeleteResponse {
 
 // Reset password
 message ResetPasswordRequest {
-  string userId = 1;
+  string user_id = 1;
 }
 
 message ResetPasswordResponse {

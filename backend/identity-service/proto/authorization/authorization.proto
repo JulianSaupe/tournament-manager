@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package authorization;
+
+service AuthorizationService {
+  rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
+  rpc GetUserPermissions(GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
+  rpc ValidateAccess(ValidateAccessRequest) returns (ValidateAccessResponse);
+}
+
+// Check Permission
+message CheckPermissionRequest {
+  string user_id = 1;
+  string resource = 2;
+  string action = 3;
+}
+
+message CheckPermissionResponse {
+  bool allowed = 1;
+  string message = 2;
+}
+
+// Get User Permissions
+message GetUserPermissionsRequest {
+  string user_id = 1;
+}
+
+message GetUserPermissionsResponse {
+  repeated string permission_ids = 1;
+  bool success = 2;
+  string message = 3;
+}
+
+// Validate Access
+message ValidateAccessRequest {
+  string user_id = 1;
+  repeated string required_permissions = 2;
+}
+
+message ValidateAccessResponse {
+  bool authorized = 1;
+  repeated string missing_permissions = 2;
+  string message = 3;
+}

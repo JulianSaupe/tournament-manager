@@ -1,6 +1,7 @@
 use crate::db::DbPool;
 use sqlx::postgres::PgPoolOptions;
 
+#[derive(Clone)]
 pub struct Database {
     pool: DbPool,
 }
