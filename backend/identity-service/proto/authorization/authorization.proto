@@ -26,9 +26,8 @@ message GetUserPermissionsRequest {
 }
 
 message GetUserPermissionsResponse {
-  repeated string permission_ids = 1;
+  repeated string permission_names = 1;
   bool success = 2;
-  string message = 3;
 }
 
 // Validate Access

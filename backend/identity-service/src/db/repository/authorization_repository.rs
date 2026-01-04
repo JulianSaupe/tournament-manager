@@ -20,6 +20,7 @@ pub trait AuthorizationRepositoryTrait: Send + Sync {
     async fn revoke_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String>;
     async fn get_roles_for_user(&self, user_id: Uuid) -> Result<Vec<Role>, String>;
     async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
+    async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String>;
 }
 
 #[tonic::async_trait]
@@ -75,5 +76,20 @@ impl AuthorizationRepositoryTrait for AuthorizationRepository {
         .map_err(|e| format!("Failed to get role by name: {}", e))?;
 
         Ok(role)
+    }
+
+    async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String> {
+        let permissions: Vec<String> = sqlx::query_scalar(
+            r#"SELECT p.name FROM permissions p
+                    INNER JOIN role_permissions rp ON p.id = rp.permission_id
+                    INNER JOIN users_roles ur ON rp.role_id = ur.role_id
+                    WHERE ur.user_id = $1"#,
+        )
+        .bind(user_id)
+        .fetch_all(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to get user permissions: {}", e))?;
+
+        Ok(permissions)
     }
 }

@@ -3,8 +3,10 @@ use crate::db::{
     UserRepository, UserRepositoryTrait,
 };
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
+use crate::proto::authorization::authorization_service_server::AuthorizationServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
 use crate::service::authentication_service::AuthenticationService;
+use crate::service::authorization_service::AuthorizationService;
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 use tonic::transport::Server;
@@ -35,16 +37,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let authorization_repository: Arc<dyn AuthorizationRepositoryTrait> =
         Arc::new(db::AuthorizationRepository::new(database.clone()));
 
-    let addr = "[::1]:5000".parse()?;
     let authentication_service =
         AuthenticationService::new(user_repository.clone(), session_repository.clone());
+
     let user_service = UserService::new(user_repository.clone(), authorization_repository.clone());
 
+    let authorization_service = AuthorizationService::new(authorization_repository.clone());
+
+    let addr = "[::1]:5000".parse()?;
     println!("Server listening on {}", addr);
 
     Server::builder()
         .add_service(AuthenticationServiceServer::new(authentication_service))
         .add_service(UserServiceServer::new(user_service))
+        .add_service(AuthorizationServiceServer::new(authorization_service))
         .serve(addr)
         .await?;
     Ok(())
