@@ -1,4 +1,4 @@
-use crate::db::UserRepositoryTrait;
+use crate::db::{AuthorizationRepositoryTrait, UserRepositoryTrait};
 use crate::proto::user::user_service_server::UserService as UserServiceTrait;
 use crate::proto::user::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,
@@ -9,11 +9,18 @@ use tonic::{Request, Response, Status};
 
 pub struct UserService {
     user_repository: Arc<dyn UserRepositoryTrait>,
+    authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
 }
 
 impl UserService {
-    pub fn new(user_repository: Arc<dyn UserRepositoryTrait>) -> Self {
-        Self { user_repository }
+    pub fn new(
+        user_repository: Arc<dyn UserRepositoryTrait>,
+        authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+    ) -> Self {
+        Self {
+            user_repository,
+            authorization_repository,
+        }
     }
 }
 
@@ -30,6 +37,11 @@ impl UserServiceTrait for UserService {
             .create_user(create_req.username, create_req.email, create_req.password)
             .await
             .map_err(|_| Status::internal("Failed to create user"))?;
+
+        self.authorization_repository
+            .assign_role_by_name(id, "user")
+            .await
+            .unwrap();
 
         let response = CreateResponse {
             success: true,

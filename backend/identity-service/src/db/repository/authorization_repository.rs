@@ -1,0 +1,79 @@
+use crate::db::Database;
+use crate::models::role::Role;
+use sqlx::Row;
+use uuid::Uuid;
+
+pub struct AuthorizationRepository {
+    database: Database,
+}
+
+impl AuthorizationRepository {
+    pub fn new(database: Database) -> Self {
+        Self { database }
+    }
+}
+
+#[tonic::async_trait]
+pub trait AuthorizationRepositoryTrait: Send + Sync {
+    async fn assign_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String>;
+    async fn assign_role_by_name(&self, user_id: Uuid, role_name: &str) -> Result<(), String>;
+    async fn revoke_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String>;
+    async fn get_roles_for_user(&self, user_id: Uuid) -> Result<Vec<Role>, String>;
+    async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
+}
+
+#[tonic::async_trait]
+impl AuthorizationRepositoryTrait for AuthorizationRepository {
+    async fn assign_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String> {
+        sqlx::query(r#"INSERT INTO users_roles (user_id, role_id) VALUES ($1, $2)"#)
+            .bind(user_id)
+            .bind(role_id)
+            .execute(self.database.pool())
+            .await
+            .map_err(|e| format!("Failed to assign role to user: {}", e))?;
+
+        Ok(())
+    }
+
+    async fn assign_role_by_name(&self, user_id: Uuid, role_name: &str) -> Result<(), String> {
+        let role: Role = self.get_role_by_name(role_name).await?;
+        self.assign_role(user_id, role.id).await
+    }
+
+    async fn revoke_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String> {
+        sqlx::query(r#"DELETE FROM users_roles WHERE user_id = $1 AND role_id = $2"#)
+            .bind(user_id)
+            .bind(role_id)
+            .execute(self.database.pool())
+            .await
+            .map_err(|e| format!("Failed to revoke role from user: {}", e))?;
+
+        Ok(())
+    }
+
+    async fn get_roles_for_user(&self, user_id: Uuid) -> Result<Vec<Role>, String> {
+        let roles: Vec<Role> = sqlx::query_as(
+            r#"SELECT r.id, r.name, r.description, r.created_at, r.updated_at
+                   FROM users_roles ur INNER JOIN roles r ON ur.role_id = r.id
+                   WHERE ur.user_id = $1"#,
+        )
+        .bind(user_id)
+        .fetch_all(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to get roles for user: {}", e))?;
+
+        Ok(roles)
+    }
+
+    async fn get_role_by_name(&self, name: &str) -> Result<Role, String> {
+        let role: Role = sqlx::query_as(
+            r#"SELECT id, name, description, created_at, updated_at FROM roles WHERE name = $1"#,
+        )
+        .bind(name)
+        .fetch_one(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to get role by name: {}", e))?;
+
+        Ok(role)
+    }
+}

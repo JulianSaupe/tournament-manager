@@ -1,5 +1,6 @@
 use crate::db::{
-    Database, SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
+    AuthorizationRepositoryTrait, Database, SessionRepository, SessionRepositoryTrait,
+    UserRepository, UserRepositoryTrait,
 };
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
@@ -24,15 +25,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     let database = Database::new(&database_url).await?;
+
     let user_repository: Arc<dyn UserRepositoryTrait> =
         Arc::new(UserRepository::new(database.clone()));
+
     let session_repository: Arc<dyn SessionRepositoryTrait> =
         Arc::new(SessionRepository::new(database.clone()));
+
+    let authorization_repository: Arc<dyn AuthorizationRepositoryTrait> =
+        Arc::new(db::AuthorizationRepository::new(database.clone()));
 
     let addr = "[::1]:5000".parse()?;
     let authentication_service =
         AuthenticationService::new(user_repository.clone(), session_repository.clone());
-    let user_service = UserService::new(user_repository.clone());
+    let user_service = UserService::new(user_repository.clone(), authorization_repository.clone());
 
     println!("Server listening on {}", addr);
 
