@@ -62,7 +62,6 @@ impl AuthenticationServiceTrait for AuthenticationService {
             }));
         }
 
-        // Create session
         let session = self
             .session_repository
             .create_session(
@@ -114,7 +113,6 @@ impl AuthenticationServiceTrait for AuthenticationService {
 
         match session {
             Some(sess) => {
-                // Update last accessed time
                 let _ = self
                     .session_repository
                     .update_last_accessed(session_id)

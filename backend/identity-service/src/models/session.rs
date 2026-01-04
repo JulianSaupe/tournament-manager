@@ -13,9 +13,3 @@ pub struct Session {
     pub expires_at: DateTime<Utc>,
     pub last_accessed_at: DateTime<Utc>,
 }
-
-impl Session {
-    pub fn is_expired(&self) -> bool {
-        Utc::now() > self.expires_at
-    }
-}
