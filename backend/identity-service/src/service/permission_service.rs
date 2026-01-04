@@ -1,21 +1,22 @@
-use crate::db::AuthorizationRepositoryTrait;
+use crate::db::PermissionRepositoryTrait;
 use crate::proto::authorization::permission_service_server::PermissionService as PermissionServiceTrait;
 use crate::proto::authorization::{
     CreatePermissionRequest, CreatePermissionResponse, DeletePermissionRequest,
-    DeletePermissionResponse, GetPermissionRequest, GetPermissionResponse, ListPermissionsRequest,
-    ListPermissionsResponse, UpdatePermissionRequest, UpdatePermissionResponse,
+    DeletePermissionResponse, GetPermissionByNameRequest, GetPermissionResponse,
+    ListPermissionsRequest, ListPermissionsResponse, UpdatePermissionRequest,
+    UpdatePermissionResponse,
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
 pub struct PermissionService {
-    authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+    permission_repository: Arc<dyn PermissionRepositoryTrait>,
 }
 
 impl PermissionService {
-    pub fn new(authorization_repository: Arc<dyn AuthorizationRepositoryTrait>) -> Self {
+    pub fn new(permission_repository: Arc<dyn PermissionRepositoryTrait>) -> Self {
         Self {
-            authorization_repository,
+            permission_repository,
         }
     }
 }
@@ -29,7 +30,7 @@ impl PermissionServiceTrait for PermissionService {
         let permission_req = request.into_inner();
 
         let permission_id = self
-            .authorization_repository
+            .permission_repository
             .create_permission(&permission_req.name)
             .await
             .map_err(|e| Status::internal("Failed to create permission:"))?;
@@ -40,11 +41,22 @@ impl PermissionServiceTrait for PermissionService {
         }))
     }
 
-    async fn get_permission(
+    async fn get_permission_by_name(
         &self,
-        request: Request<GetPermissionRequest>,
+        request: Request<GetPermissionByNameRequest>,
     ) -> Result<Response<GetPermissionResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let permission = self
+            .permission_repository
+            .get_permission_by_name(&permission_req.permission_name)
+            .await
+            .map_err(|e| Status::internal("Failed to get permission by name:"))?;
+
+        Ok(Response::new(GetPermissionResponse {
+            permission: Some(permission.into()),
+            success: true,
+        }))
     }
 
     async fn list_permissions(

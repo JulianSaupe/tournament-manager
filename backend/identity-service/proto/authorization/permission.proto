@@ -6,7 +6,7 @@ import "google/protobuf/timestamp.proto";
 
 service PermissionService {
   rpc CreatePermission(CreatePermissionRequest) returns (CreatePermissionResponse);
-  rpc GetPermission(GetPermissionRequest) returns (GetPermissionResponse);
+  rpc GetPermissionByName(GetPermissionByNameRequest) returns (GetPermissionResponse);
   rpc ListPermissions(ListPermissionsRequest) returns (ListPermissionsResponse);
   rpc UpdatePermission(UpdatePermissionRequest) returns (UpdatePermissionResponse);
   rpc DeletePermission(DeletePermissionRequest) returns (DeletePermissionResponse);
@@ -16,8 +16,6 @@ message Permission {
   string id = 1;
   string name = 2;
   string description = 3;
-  string resource = 4;
-  string action = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
 }
@@ -26,8 +24,6 @@ message Permission {
 message CreatePermissionRequest {
   string name = 1;
   string description = 2;
-  string resource = 3;
-  string action = 4;
 }
 
 message CreatePermissionResponse {
@@ -36,14 +32,13 @@ message CreatePermissionResponse {
 }
 
 // Get Permission
-message GetPermissionRequest {
-  string permission_id = 1;
+message GetPermissionByNameRequest {
+  string permission_name = 1;
 }
 
 message GetPermissionResponse {
   Permission permission = 1;
   bool success = 2;
-  string message = 3;
 }
 
 // List Permissions

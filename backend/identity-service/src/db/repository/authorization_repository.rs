@@ -1,6 +1,5 @@
 use crate::db::Database;
 use crate::models::role::Role;
-use sqlx::Row;
 use uuid::Uuid;
 
 pub struct AuthorizationRepository {
@@ -21,7 +20,6 @@ pub trait AuthorizationRepositoryTrait: Send + Sync {
     async fn get_roles_for_user(&self, user_id: Uuid) -> Result<Vec<Role>, String>;
     async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
     async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String>;
-    async fn create_permission(&self, name: &str) -> Result<Uuid, String>;
     async fn assign_permission_to_role(
         &self,
         role_id: Uuid,
@@ -97,17 +95,6 @@ impl AuthorizationRepositoryTrait for AuthorizationRepository {
         .map_err(|e| format!("Failed to get user permissions: {}", e))?;
 
         Ok(permissions)
-    }
-
-    async fn create_permission(&self, name: &str) -> Result<Uuid, String> {
-        let permission_id =
-            sqlx::query_scalar(r#"INSERT INTO permissions (name) VALUES ($1) RETURNING id"#)
-                .bind(name)
-                .fetch_one(self.database.pool())
-                .await
-                .map_err(|e| format!("Failed to create permission: {}", e))?;
-
-        Ok(permission_id)
     }
 
     async fn assign_permission_to_role(

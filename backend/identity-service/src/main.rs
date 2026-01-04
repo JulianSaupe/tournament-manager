@@ -1,6 +1,6 @@
 use crate::db::{
-    AuthorizationRepositoryTrait, Database, SessionRepository, SessionRepositoryTrait,
-    UserRepository, UserRepositoryTrait,
+    AuthorizationRepositoryTrait, Database, PermissionRepositoryTrait, SessionRepository,
+    SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::proto::authorization::authorization_service_server::AuthorizationServiceServer;
@@ -41,12 +41,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let authorization_repository: Arc<dyn AuthorizationRepositoryTrait> =
         Arc::new(db::AuthorizationRepository::new(database.clone()));
 
+    let permission_repository: Arc<dyn PermissionRepositoryTrait> =
+        Arc::new(db::PermissionRepository::new(database.clone()));
+
     let authentication_service =
         AuthenticationService::new(user_repository.clone(), session_repository.clone());
 
     let user_service = UserService::new(user_repository.clone(), authorization_repository.clone());
     let authorization_service = AuthorizationService::new(authorization_repository.clone());
-    let permission_service = PermissionService::new(authorization_repository.clone());
+    let permission_service = PermissionService::new(permission_repository.clone());
     let role_service = RoleService::new(authorization_repository.clone());
 
     let addr = "[::1]:5000".parse()?;
