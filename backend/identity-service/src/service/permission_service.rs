@@ -80,13 +80,39 @@ impl PermissionServiceTrait for PermissionService {
         &self,
         request: Request<UpdatePermissionRequest>,
     ) -> Result<Response<UpdatePermissionResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let permission_id = uuid::Uuid::parse_str(&permission_req.permission_id)
+            .map_err(|e| Status::invalid_argument(format!("Invalid permission id: {}", e)))?;
+
+        self.permission_repository
+            .update_permission(permission_id, &permission_req.name)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to update permission: {}", e)))?;
+
+        Ok(Response::new(UpdatePermissionResponse {
+            success: true,
+            message: "Permission updated successfully.".to_string(),
+        }))
     }
 
     async fn delete_permission(
         &self,
         request: Request<DeletePermissionRequest>,
     ) -> Result<Response<DeletePermissionResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let permission_id = uuid::Uuid::parse_str(&permission_req.permission_id)
+            .map_err(|e| Status::invalid_argument(format!("Invalid permission id: {}", e)))?;
+
+        self.permission_repository
+            .delete_permission(permission_id)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to delete permission: {}", e)))?;
+
+        Ok(Response::new(DeletePermissionResponse {
+            success: true,
+            message: "Permission deleted successfully.".to_string(),
+        }))
     }
 }

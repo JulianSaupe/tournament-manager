@@ -57,9 +57,6 @@ message ListPermissionsResponse {
 message UpdatePermissionRequest {
   string permission_id = 1;
   string name = 2;
-  string description = 3;
-  string resource = 4;
-  string action = 5;
 }
 
 message UpdatePermissionResponse {

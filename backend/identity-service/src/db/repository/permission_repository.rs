@@ -16,8 +16,8 @@ impl PermissionRepository {
 pub trait PermissionRepositoryTrait: Send + Sync {
     async fn create_permission(&self, name: &str) -> Result<Uuid, String>;
     async fn list_permissions(&self) -> Result<Vec<Permission>, String>;
-    async fn update_permission_by_name(&self, name: &str, new_name: &str) -> Result<(), String>;
-    async fn delete_permission_by_name(&self, name: &str) -> Result<(), String>;
+    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), String>;
+    async fn delete_permission(&self, id: Uuid) -> Result<(), String>;
     async fn get_permission_by_name(&self, name: &str) -> Result<Permission, String>;
 }
 
@@ -45,13 +45,13 @@ impl PermissionRepositoryTrait for PermissionRepository {
         Ok(permissions)
     }
 
-    async fn update_permission_by_name(&self, name: &str, new_name: &str) -> Result<(), String> {
+    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), String> {
         sqlx::query(
             r#"UPDATE permissions
                     SET name = $2, updated_at = now()
-                    WHERE name = $1"#,
+                    WHERE id = $1"#,
         )
-        .bind(name)
+        .bind(id)
         .bind(new_name)
         .execute(self.database.pool())
         .await
@@ -60,9 +60,9 @@ impl PermissionRepositoryTrait for PermissionRepository {
         Ok(())
     }
 
-    async fn delete_permission_by_name(&self, name: &str) -> Result<(), String> {
-        sqlx::query(r#"DELETE FROM permissions WHERE name = $1"#)
-            .bind(name)
+    async fn delete_permission(&self, id: Uuid) -> Result<(), String> {
+        sqlx::query(r#"DELETE FROM permissions WHERE id = $1"#)
+            .bind(id)
             .execute(self.database.pool())
             .await
             .map_err(|e| format!("Failed to delete permission: {}", e))?;
