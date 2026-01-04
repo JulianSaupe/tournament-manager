@@ -5,7 +5,7 @@ use uuid::Uuid;
 pub struct Permission {
     pub id: Uuid,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
@@ -15,7 +15,7 @@ impl From<Permission> for crate::proto::authorization::Permission {
         Self {
             id: permission.id.to_string(),
             name: permission.name,
-            description: permission.description,
+            description: permission.description.unwrap_or_default(),
             created_at: Some(prost_types::Timestamp {
                 seconds: permission.created_at.timestamp(),
                 nanos: permission.created_at.timestamp_subsec_nanos() as i32,

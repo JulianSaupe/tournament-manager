@@ -46,12 +46,16 @@ impl PermissionRepositoryTrait for PermissionRepository {
     }
 
     async fn update_permission_by_name(&self, name: &str, new_name: &str) -> Result<(), String> {
-        sqlx::query(r#"UPDATE permissions SET name = $2 WHERE name = $1"#)
-            .bind(name)
-            .bind(new_name)
-            .execute(self.database.pool())
-            .await
-            .map_err(|e| format!("Failed to update permission: {}", e))?;
+        sqlx::query(
+            r#"UPDATE permissions
+                    SET name = $2, updated_at = now()
+                    WHERE name = $1"#,
+        )
+        .bind(name)
+        .bind(new_name)
+        .execute(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to update permission: {}", e))?;
 
         Ok(())
     }

@@ -63,7 +63,17 @@ impl PermissionServiceTrait for PermissionService {
         &self,
         request: Request<ListPermissionsRequest>,
     ) -> Result<Response<ListPermissionsResponse>, Status> {
-        todo!()
+        let permissions = self
+            .permission_repository
+            .list_permissions()
+            .await
+            .map_err(|e| Status::internal(format!("Failed to list permissions: {}", e)))?;
+
+        Ok(Response::new(ListPermissionsResponse {
+            count: permissions.len() as i32,
+            permissions: permissions.into_iter().map(Into::into).collect(),
+            success: true,
+        }))
     }
 
     async fn update_permission(

@@ -45,14 +45,12 @@ message GetPermissionResponse {
 message ListPermissionsRequest {
   int32 page = 1;
   int32 page_size = 2;
-  string filter = 3;
 }
 
 message ListPermissionsResponse {
   repeated Permission permissions = 1;
-  int32 total_count = 2;
+  int32 count = 2;
   bool success = 3;
-  string message = 4;
 }
 
 // Update Permission
