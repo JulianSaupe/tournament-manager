@@ -31,3 +31,4 @@ go.work.sum
 
 # Rust
 */identity-service/target
+*.lock
