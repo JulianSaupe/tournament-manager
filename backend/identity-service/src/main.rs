@@ -2,6 +2,7 @@ use crate::db::{
     AuthorizationRepositoryTrait, Database, PermissionRepositoryTrait, RoleRepositoryTrait,
     SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
+use crate::interceptor::auth_interceptor::AuthInterceptor;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::proto::authorization::authorization_service_server::AuthorizationServiceServer;
 use crate::proto::authorization::permission_service_server::PermissionServiceServer;
@@ -14,8 +15,10 @@ use crate::service::role_service::RoleService;
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 use tonic::transport::Server;
+use tonic_async_interceptor::async_interceptor;
 
 mod db;
+mod interceptor;
 mod models;
 mod proto;
 mod service;
@@ -63,6 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Server listening on {}", addr);
 
     Server::builder()
+        .layer(async_interceptor(AuthInterceptor))
         .add_service(AuthenticationServiceServer::new(authentication_service))
         .add_service(UserServiceServer::new(user_service))
         .add_service(AuthorizationServiceServer::new(authorization_service))

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tonic = "0.14.2"
+tonic = { version = "0.14.2", features = ["transport"] }
 prost = "0.14.1"
 tonic-prost = "*"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
@@ -15,6 +15,7 @@ argon2 = "0.5.3"
 rand_core = "0.9.3"
 sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
 prost-types = "0.14.1"
+tonic-async-interceptor = "0.14.1"
 
 [build-dependencies]
 tonic-prost-build = "*"
