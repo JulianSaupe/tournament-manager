@@ -33,7 +33,6 @@ message CreatePermissionRequest {
 message CreatePermissionResponse {
   string permission_id = 1;
   bool success = 2;
-  string message = 3;
 }
 
 // Get Permission

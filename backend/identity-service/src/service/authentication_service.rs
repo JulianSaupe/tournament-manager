@@ -112,20 +112,20 @@ impl AuthenticationServiceTrait for AuthenticationService {
             .map_err(|e| Status::internal(format!("Failed to validate session: {}", e)))?;
 
         match session {
-            Some(sess) => {
+            Some(session_data) => {
                 let _ = self
                     .session_repository
                     .update_last_accessed(session_id)
                     .await;
 
                 let expires_at = Timestamp {
-                    seconds: sess.expires_at.timestamp(),
-                    nanos: sess.expires_at.timestamp_subsec_nanos() as i32,
+                    seconds: session_data.expires_at.timestamp(),
+                    nanos: session_data.expires_at.timestamp_subsec_nanos() as i32,
                 };
 
                 Ok(Response::new(ValidateSessionResponse {
                     valid: true,
-                    user_id: sess.user_id.to_string(),
+                    user_id: session_data.user_id.to_string(),
                     expires_at: Some(expires_at),
                     message: "Session is valid".to_string(),
                 }))

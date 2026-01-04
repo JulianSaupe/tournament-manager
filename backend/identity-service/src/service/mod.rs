@@ -1,3 +1,4 @@
 pub mod authentication_service;
 pub mod authorization_service;
+pub mod permission_service;
 pub mod user_service;
