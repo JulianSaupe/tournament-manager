@@ -5,10 +5,12 @@ use crate::db::{
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::proto::authorization::authorization_service_server::AuthorizationServiceServer;
 use crate::proto::authorization::permission_service_server::PermissionServiceServer;
+use crate::proto::authorization::role_service_server::RoleServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
 use crate::service::authentication_service::AuthenticationService;
 use crate::service::authorization_service::AuthorizationService;
 use crate::service::permission_service::PermissionService;
+use crate::service::role_service::RoleService;
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 use tonic::transport::Server;
@@ -45,6 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_service = UserService::new(user_repository.clone(), authorization_repository.clone());
     let authorization_service = AuthorizationService::new(authorization_repository.clone());
     let permission_service = PermissionService::new(authorization_repository.clone());
+    let role_service = RoleService::new(authorization_repository.clone());
 
     let addr = "[::1]:5000".parse()?;
     println!("Server listening on {}", addr);
@@ -54,6 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_service(UserServiceServer::new(user_service))
         .add_service(AuthorizationServiceServer::new(authorization_service))
         .add_service(PermissionServiceServer::new(permission_service))
+        .add_service(RoleServiceServer::new(role_service))
         .serve(addr)
         .await?;
     Ok(())

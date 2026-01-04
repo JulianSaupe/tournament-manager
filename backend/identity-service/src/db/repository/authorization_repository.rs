@@ -22,6 +22,11 @@ pub trait AuthorizationRepositoryTrait: Send + Sync {
     async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
     async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String>;
     async fn create_permission(&self, name: &str) -> Result<Uuid, String>;
+    async fn assign_permission_to_role(
+        &self,
+        role_id: Uuid,
+        permission_id: Uuid,
+    ) -> Result<(), String>;
 }
 
 #[tonic::async_trait]
@@ -103,5 +108,20 @@ impl AuthorizationRepositoryTrait for AuthorizationRepository {
                 .map_err(|e| format!("Failed to create permission: {}", e))?;
 
         Ok(permission_id)
+    }
+
+    async fn assign_permission_to_role(
+        &self,
+        role_id: Uuid,
+        permission_id: Uuid,
+    ) -> Result<(), String> {
+        sqlx::query(r#"INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2)"#)
+            .bind(role_id)
+            .bind(permission_id)
+            .execute(self.database.pool())
+            .await
+            .map_err(|e| format!("Failed to assign permission to role: {}", e))?;
+
+        Ok(())
     }
 }
