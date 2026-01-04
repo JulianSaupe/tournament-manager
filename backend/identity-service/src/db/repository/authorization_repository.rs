@@ -15,10 +15,8 @@ impl AuthorizationRepository {
 #[tonic::async_trait]
 pub trait AuthorizationRepositoryTrait: Send + Sync {
     async fn assign_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String>;
-    async fn assign_role_by_name(&self, user_id: Uuid, role_name: &str) -> Result<(), String>;
     async fn revoke_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String>;
     async fn get_roles_for_user(&self, user_id: Uuid) -> Result<Vec<Role>, String>;
-    async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
     async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String>;
     async fn assign_permission_to_role(
         &self,
@@ -38,11 +36,6 @@ impl AuthorizationRepositoryTrait for AuthorizationRepository {
             .map_err(|e| format!("Failed to assign role to user: {}", e))?;
 
         Ok(())
-    }
-
-    async fn assign_role_by_name(&self, user_id: Uuid, role_name: &str) -> Result<(), String> {
-        let role: Role = self.get_role_by_name(role_name).await?;
-        self.assign_role(user_id, role.id).await
     }
 
     async fn revoke_role(&self, user_id: Uuid, role_id: Uuid) -> Result<(), String> {
@@ -68,18 +61,6 @@ impl AuthorizationRepositoryTrait for AuthorizationRepository {
         .map_err(|e| format!("Failed to get roles for user: {}", e))?;
 
         Ok(roles)
-    }
-
-    async fn get_role_by_name(&self, name: &str) -> Result<Role, String> {
-        let role: Role = sqlx::query_as(
-            r#"SELECT id, name, description, created_at, updated_at FROM roles WHERE name = $1"#,
-        )
-        .bind(name)
-        .fetch_one(self.database.pool())
-        .await
-        .map_err(|e| format!("Failed to get role by name: {}", e))?;
-
-        Ok(role)
     }
 
     async fn get_user_permissions(&self, user_id: Uuid) -> Result<Vec<String>, String> {

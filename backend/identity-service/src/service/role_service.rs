@@ -1,4 +1,4 @@
-use crate::db::AuthorizationRepositoryTrait;
+use crate::db::{AuthorizationRepositoryTrait, RoleRepositoryTrait};
 use crate::proto::authorization::role_service_server::RoleService as RoleServiceTrait;
 use crate::proto::authorization::{
     AssignPermissionToRoleRequest, AssignPermissionToRoleResponse, CreateRoleRequest,
@@ -13,12 +13,17 @@ use uuid::Uuid;
 
 pub struct RoleService {
     authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+    role_repository: Arc<dyn RoleRepositoryTrait>,
 }
 
 impl RoleService {
-    pub fn new(authorization_repository: Arc<dyn AuthorizationRepositoryTrait>) -> Self {
+    pub fn new(
+        authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+        role_repository: Arc<dyn RoleRepositoryTrait>,
+    ) -> Self {
         Self {
             authorization_repository,
+            role_repository,
         }
     }
 }
@@ -29,7 +34,18 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<CreateRoleRequest>,
     ) -> Result<Response<CreateRoleResponse>, Status> {
-        todo!()
+        let role_req = request.into_inner();
+
+        let role = self
+            .role_repository
+            .create_role(&role_req.name, &role_req.description)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to create role: {}", e)))?;
+
+        Ok(Response::new(CreateRoleResponse {
+            success: true,
+            role: Some(role.into()),
+        }))
     }
 
     async fn get_role(
@@ -43,7 +59,19 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<ListRolesRequest>,
     ) -> Result<Response<ListRolesResponse>, Status> {
-        todo!()
+        let list_req = request.into_inner();
+
+        let roles = self
+            .role_repository
+            .list_roles()
+            .await
+            .map_err(|e| Status::internal(format!("Failed to list roles: {}", e)))?;
+
+        Ok(Response::new(ListRolesResponse {
+            count: roles.len() as i32,
+            roles: roles.into_iter().map(|role| role.into()).collect(),
+            success: true,
+        }))
     }
 
     async fn update_role(
@@ -57,7 +85,19 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<DeleteRoleRequest>,
     ) -> Result<Response<DeleteRoleResponse>, Status> {
-        todo!()
+        let role_id = Uuid::parse_str(&request.into_inner().role_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
+        })?;
+
+        self.role_repository
+            .delete_role(role_id)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to delete role: {}", e)))?;
+
+        Ok(Response::new(DeleteRoleResponse {
+            success: true,
+            message: "Role deleted successfully".to_string(),
+        }))
     }
 
     async fn assign_permission_to_role(
@@ -89,7 +129,26 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<RemovePermissionFromRoleRequest>,
     ) -> Result<Response<RemovePermissionFromRoleResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let role_id = Uuid::parse_str(&permission_req.role_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
+        })?;
+
+        let permission_id = Uuid::parse_str(&permission_req.permission_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse permission ID: must be a valid UUID.")
+        })?;
+
+        self.role_repository
+            .remove_permission_from_role(role_id, permission_id)
+            .await
+            .map_err(|e| {
+                Status::internal(format!("Failed to remove permission from role: {}", e))
+            })?;
+
+        Ok(Response::new(RemovePermissionFromRoleResponse {
+            success: true,
+        }))
     }
 
     async fn get_role_permissions(
