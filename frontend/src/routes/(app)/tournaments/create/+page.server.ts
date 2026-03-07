@@ -73,7 +73,6 @@ export const actions: Actions = {
 					values: data
 				});
 			}
-
 		} catch (err) {
 			return fail(500, {
 				message: 'Could not contact backend service',

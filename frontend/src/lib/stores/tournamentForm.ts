@@ -24,20 +24,23 @@ export const tournamentFormErrors = writable<Record<string, string>>({});
 export const tournamentFormValid = writable<boolean>(false);
 
 // Validation function
-export function validateTournamentForm(data: TournamentFormData): { isValid: boolean; errors: Record<string, string> } {
+export function validateTournamentForm(data: TournamentFormData): {
+	isValid: boolean;
+	errors: Record<string, string>;
+} {
 	try {
 		tournamentSchema.parse(data);
 		return { isValid: true, errors: {} };
 	} catch (error) {
 		const errors: Record<string, string> = {};
-		
+
 		if (error instanceof z.ZodError) {
 			error.issues.forEach((issue) => {
 				const path = issue.path.join('.');
 				errors[path] = issue.message;
 			});
 		}
-		
+
 		return { isValid: false, errors };
 	}
 }

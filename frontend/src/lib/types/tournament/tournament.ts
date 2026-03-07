@@ -1,11 +1,11 @@
 export interface Tournament {
-    id: string;
-    name: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    status: TournamentStatus;
-    playerCount?: number;
+	id: string;
+	name: string;
+	description: string;
+	startDate: string;
+	endDate: string;
+	status: TournamentStatus;
+	playerCount?: number;
 }
 
 export interface Round {
@@ -18,8 +18,8 @@ export interface Round {
 }
 
 export enum TournamentStatus {
-    DRAFT = 'draft',
-    ACTIVE = 'active',
-    COMPLETED = 'completed',
-    CANCELLED = 'cancelled'
+	DRAFT = 'draft',
+	ACTIVE = 'active',
+	COMPLETED = 'completed',
+	CANCELLED = 'cancelled'
 }
