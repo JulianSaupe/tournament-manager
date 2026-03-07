@@ -62,8 +62,10 @@ impl App {
         let addr = format!("[::1]:{}", self.config.server_port).parse()?;
         println!("Server listening on {}", addr);
 
+        let interceptor = AuthInterceptor::new(self.config.auth.token.clone());
+
         Server::builder()
-            .layer(async_interceptor(AuthInterceptor))
+            .layer(async_interceptor(interceptor))
             .add_service(AuthenticationServiceServer::new(authentication_service))
             .add_service(UserServiceServer::new(user_service))
             .add_service(AuthorizationServiceServer::new(authorization_service))
