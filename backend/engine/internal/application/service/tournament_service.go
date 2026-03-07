@@ -1,22 +1,26 @@
 package service
 
 import (
+	"Tournament/internal/adapters/driven/event"
 	"Tournament/internal/adapters/driving/requests"
 	"Tournament/internal/domain"
 	"Tournament/internal/ports/input"
 	"Tournament/internal/ports/output"
 	"context"
+	"log"
 )
 
 // TournamentService implements the TournamentService interface
 type TournamentService struct {
 	tournamentRepository output.TournamentRepositoryInterface
+	eventBroker          *event.Broker
 }
 
 // NewTournamentService creates a new tournament service
-func NewTournamentService(tournamentRepository output.TournamentRepositoryInterface) input.TournamentServiceInterface {
+func NewTournamentService(tournamentRepository output.TournamentRepositoryInterface, eventBroker *event.Broker) input.TournamentServiceInterface {
 	return &TournamentService{
 		tournamentRepository: tournamentRepository,
+		eventBroker:          eventBroker,
 	}
 }
 
@@ -25,6 +29,8 @@ func (s *TournamentService) CreateTournament(ctx context.Context, req *requests.
 	newTournament := s.buildTournamentFromRequest(req)
 	savedTournament, err := s.tournamentRepository.InsertNewTournament(ctx, &newTournament)
 	s.handleRepositoryError(err)
+	log.Println("Tournament created successfully. Sending event...")
+	s.eventBroker.Publish("tournament.created", savedTournament)
 	return savedTournament
 }
 

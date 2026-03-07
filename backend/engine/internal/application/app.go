@@ -129,7 +129,7 @@ func (a *App) initializeDependencies() error {
 	}
 
 	// Initialize services
-	a.tournamentService = service.NewTournamentService(a.tournamentRepository)
+	a.tournamentService = service.NewTournamentService(a.tournamentRepository, a.broker)
 	a.userService = service.NewUserService(a.userRepository)
 	a.playerService = service.NewPlayerService(a.playerRepository)
 	a.qualifyingService = service.NewQualifyingService(a.qualifyingRepository)
