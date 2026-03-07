@@ -59,11 +59,13 @@ export const actions: Actions = {
 
 			if (!response.ok) {
 				let backendError = '';
+
 				try {
 					backendError = await response.text();
 				} catch {
 					backendError = response.statusText || 'Unknown backend error';
 				}
+
 				return fail(response.status, {
 					message: 'Failed to create tournament',
 					backendError,
@@ -71,6 +73,7 @@ export const actions: Actions = {
 					values: data
 				});
 			}
+
 		} catch (err) {
 			return fail(500, {
 				message: 'Could not contact backend service',

@@ -34,8 +34,6 @@ export const tournamentSchema = z.object({
     message: 'End date must be after start date',
     path: ['endDate']
 }).refine((data) => {
-    console.log('Validating tournament structure:', data);
-
     // Validate tournament structure rules (matching backend validation)
     if (!data.rounds || data.rounds.length === 0) {
         return false;

@@ -32,17 +32,18 @@
             isSubmitting = false;
             const result = payload?.result;
             const update = payload?.update;
+            
             if (result && result.type === 'failure') {
                 const data: any = result.data || {};
                 if (data.errors) tournamentFormErrors.set(data.errors);
                 tournamentFormValid.set(false);
                 submitError = data.message || data.backendError || 'An error occurred while creating the tournament';
-                if (typeof update === 'function') {
-                    await update();
-                }
             } else {
-                // On success/redirect, SvelteKit will navigate. Optionally reset store
                 resetTournamentForm();
+            }
+
+            if (typeof update === 'function') {
+                await update();
             }
         };
     };
@@ -51,8 +52,8 @@
 <div class="container mx-auto">
     <h1 class="mb-6 text-2xl">Create New Tournament</h1>
 
-    <form method="POST" use:enhance={handleEnhance} class="space-y-6">
-        <input type="hidden" name="payload" value={JSON.stringify($tournamentForm)} />
+    <form class="space-y-6" method="POST" use:enhance={handleEnhance}>
+        <input name="payload" type="hidden" value={JSON.stringify($tournamentForm)} />
         <!-- Display form-level error messages -->
         {#if submitError}
             <div class="alert alert-error">
@@ -81,18 +82,18 @@
         <!-- Form Actions -->
         <div class="mt-8 card-actions justify-end">
             <button
-                    type="button"
                     class="btn btn-ghost"
-                    on:click={handleCancel}
                     disabled={isSubmitting}
+                    on:click={handleCancel}
+                    type="button"
             >
                 Cancel
             </button>
             <button
-                    type="submit"
                     class="btn btn-primary"
-                    disabled={isSubmitting}
                     class:loading={isSubmitting}
+                    disabled={isSubmitting}
+                    type="submit"
             >
                 {isSubmitting ? 'Creating...' : 'Create Tournament'}
             </button>
