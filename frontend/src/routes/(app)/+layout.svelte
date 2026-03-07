@@ -1,7 +1,6 @@
 <script lang="ts">
     import '../../app.css';
     import favicon from '$lib/assets/favicon.svg';
-    import {page} from '$app/stores';
     import {
         CircleCheckBig,
         CircleQuestionMark,
@@ -18,6 +17,28 @@
 
     // Sidebar state - closed by default on mobile
     let sidebarOpen = $state(false);
+
+    // Get current path for active state
+    let currentPath = $state('');
+
+    $effect(() => {
+        if (typeof window !== 'undefined') {
+            currentPath = window.location.pathname;
+        }
+    });
+
+    // Helper to check if a path is active
+    function isActive(path: string): boolean {
+        return currentPath === path;
+    }
+
+    // Helper to get link classes
+    function getLinkClasses(path: string, isMobile: boolean = false): string {
+        const baseClasses = `flex items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors hover:bg-base-200`;
+        const paddingClasses = isMobile ? 'py-2.5' : 'py-2';
+        const activeClasses = isActive(path) ? 'bg-primary/10 text-primary' : 'text-base-content';
+        return `${baseClasses} ${paddingClasses} ${activeClasses}`;
+    }
 
     // Close sidebar when clicking a link on mobile
     function closeSidebarOnMobile() {
@@ -68,17 +89,11 @@
                     <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
                         Main
                     </div>
-                    <a
-                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
-                            href="/"
-                    >
+                    <a class={getLinkClasses('/')} href="/">
                         <House class="h-4 w-4"/>
                         Dashboard
                     </a>
-                    <a
-                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/tournaments/create' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
-                            href="/tournaments/create"
-                    >
+                    <a class={getLinkClasses('/tournaments/create')} href="/tournaments/create">
                         <Plus class="h-4 w-4"/>
                         Create Tournament
                     </a>
@@ -162,19 +177,12 @@
                         <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
                             Main
                         </div>
-                        <a
-                                href="/"
-                                onclick={closeSidebarOnMobile}
-                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
-                        >
+                        <a href="/" onclick={closeSidebarOnMobile} class={getLinkClasses('/', true)}>
                             <House class="h-5 w-5"/>
                             Dashboard
                         </a>
-                        <a
-                                href="/tournaments/create"
-                                onclick={closeSidebarOnMobile}
-                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/tournaments/create' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
-                        >
+                        <a href="/tournaments/create" onclick={closeSidebarOnMobile}
+                           class={getLinkClasses('/tournaments/create', true)}>
                             <Plus class="h-5 w-5"/>
                             Create Tournament
                         </a>
