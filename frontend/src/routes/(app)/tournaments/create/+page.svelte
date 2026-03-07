@@ -51,7 +51,7 @@
 </script>
 
 <div class="container mx-auto">
-	<h1 class="mb-6 text-2xl">Create New Tournament</h1>
+	<h1 class="mb-4 text-xl sm:mb-6 sm:text-2xl">Create New Tournament</h1>
 
 	<form class="space-y-6" method="POST" use:enhance={handleEnhance}>
 		<input name="payload" type="hidden" value={JSON.stringify($tournamentForm)} />
@@ -81,7 +81,7 @@
 		<TournamentStructure />
 
 		<!-- Form Actions -->
-		<div class="mt-8 card-actions justify-end">
+		<div class="mt-8 flex flex-col gap-2 sm:flex-row sm:justify-end">
 			<button class="btn btn-ghost" disabled={isSubmitting} on:click={handleCancel} type="button">
 				Cancel
 			</button>

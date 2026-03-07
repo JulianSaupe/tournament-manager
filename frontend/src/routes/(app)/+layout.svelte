@@ -1,197 +1,254 @@
 <script lang="ts">
-	import '../../app.css';
-	import favicon from '$lib/assets/favicon.svg';
-	import { goto } from '$app/navigation';
-	import {
-		CircleCheckBig,
-		Clipboard,
-		HelpCircle,
-		House,
-		Plus,
-		Settings,
-		SquarePen
-	} from 'lucide-svelte';
+    import '../../app.css';
+    import favicon from '$lib/assets/favicon.svg';
+    import {page} from '$app/stores';
+    import {
+        CircleCheckBig,
+        CircleQuestionMark,
+        Clipboard,
+        House,
+        Menu,
+        Plus,
+        Settings,
+        SquarePen,
+        X
+    } from 'lucide-svelte';
 
-	let { children } = $props();
+    let {children} = $props();
 
-	// Sidebar state
-	let sidebarOpen = true;
+    // Sidebar state - closed by default on mobile
+    let sidebarOpen = $state(false);
 
-	// Toggle sidebar on mobile
-	function toggleSidebar() {
-		sidebarOpen = !sidebarOpen;
-	}
+    // Close sidebar when clicking a link on mobile
+    function closeSidebarOnMobile() {
+        if (window.innerWidth < 1024) {
+            sidebarOpen = false;
+        }
+    }
 
-	function navigateToHome() {
-		goto('/');
-	}
-
-	function navigateToCreate() {
-		goto('/tournaments/create');
-	}
-
-	// Get current year for footer
-	const currentYear = new Date().getFullYear();
+    // Get current year for footer
+    const currentYear = new Date().getFullYear();
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<title>Tournament Manager</title>
-	<meta name="description" content="Professional tournament management system" />
+    <link href={favicon} rel="icon"/>
+    <title>Tournament Manager</title>
+    <meta content="Professional tournament management system" name="description"/>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col bg-base-100">
-	<header class="sticky top-0 z-30 w-full">
-		<div class="navbar border-b border-base-200 bg-base-100 shadow-lg">
-			<div class="navbar-start">
-				<div class="lg:hidden">
-					<button class="btn btn-ghost" onclick={toggleSidebar} aria-label="Open sidebar">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M4 6h16M4 12h8m-8 6h16"
-							/>
-						</svg>
-					</button>
-				</div>
-				<button class="text-xl font-bold text-primary normal-case" onclick={navigateToHome}>
-					Tournament Manager
-				</button>
-			</div>
-			<div class="navbar-end"></div>
-		</div>
-	</header>
+<div class="flex min-h-screen flex-col">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 border-b border-base-300 bg-base-100 shadow-sm">
+        <div class="flex h-16 items-center justify-between px-4 lg:px-6">
+            <!-- Mobile menu button -->
+            <button
+                    aria-label="Toggle menu"
+                    class="btn btn-ghost btn-sm lg:hidden"
+                    onclick={() => sidebarOpen = !sidebarOpen}
+            >
+                <Menu class="h-5 w-5"/>
+            </button>
 
-	<div class="relative flex flex-grow">
-		<!-- Sidebar -->
-		<aside
-			class={`fixed inset-y-0 z-20 w-64 shrink-0 border-r border-base-300 bg-base-200 pt-8 transition-all duration-300 ease-in-out ${sidebarOpen ? 'left-0' : '-left-64'} h-screen overflow-y-auto lg:static lg:left-0 lg:h-auto`}
-		>
-			<div class="p-4">
-				<!-- Sidebar Header with close button on mobile -->
-				<div class="mb-6 flex items-center justify-between lg:hidden">
-					<h2 class="text-lg font-semibold">Menu</h2>
-					<button class="btn btn-ghost btn-sm" onclick={toggleSidebar} aria-label="Open sidebar">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-5 w-5"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M6 18L18 6M6 6l12 12"
-							/>
-						</svg>
-					</button>
-				</div>
+            <!-- Logo/Title -->
+            <a class="text-lg font-bold text-primary sm:text-xl" href="/">
+                Tournament Manager
+            </a>
 
-				<div class="flex flex-col space-y-1">
-					<div
-						class="mb-2 px-2 text-xs font-semibold tracking-wider text-base-content/60 uppercase"
-					>
-						Main
-					</div>
-					<a
-						href="/"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300 active:bg-primary active:text-primary-content"
-					>
-						<House class="mr-3 h-5 w-5" />
-						Dashboard
-					</a>
-					<a
-						href="/tournaments/create"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<Plus class="mr-3 h-5 w-5" />
-						Create Tournament
-					</a>
-				</div>
+            <!-- Right side spacer for mobile balance -->
+            <div class="w-10 lg:hidden"></div>
+        </div>
+    </header>
 
-				<div class="mt-6 flex flex-col space-y-1">
-					<div
-						class="mb-2 px-2 text-xs font-semibold tracking-wider text-base-content/60 uppercase"
-					>
-						Tournaments
-					</div>
-					<a
-						href="/"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<Clipboard class="mr-3 h-5 w-5" />
-						All Tournaments
-					</a>
-					<a
-						href="/"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<CircleCheckBig class="mr-3 h-5 w-5" />
-						Active Tournaments
-					</a>
-					<a
-						href="/"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<SquarePen class="mr-3 h-5 w-5" />
-						Draft Tournaments
-					</a>
-				</div>
+    <div class="flex flex-1">
+        <!-- Sidebar for desktop -->
+        <aside class="hidden w-64 border-r border-base-300 bg-base-100 lg:block">
+            <nav class="flex flex-col gap-1 p-4">
+                <!-- Main section -->
+                <div class="mb-4">
+                    <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                        Main
+                    </div>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
+                            href="/"
+                    >
+                        <House class="h-4 w-4"/>
+                        Dashboard
+                    </a>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/tournaments/create' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
+                            href="/tournaments/create"
+                    >
+                        <Plus class="h-4 w-4"/>
+                        Create Tournament
+                    </a>
+                </div>
 
-				<div class="mt-6 flex flex-col space-y-1">
-					<div
-						class="mb-2 px-2 text-xs font-semibold tracking-wider text-base-content/60 uppercase"
-					>
-						Settings
-					</div>
-					<a
-						href="#"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<Settings class="mr-3 h-5 w-5" />
-						Settings
-					</a>
-					<a
-						href="#"
-						class="flex items-center rounded-lg px-2 py-2 text-base-content hover:bg-base-300"
-					>
-						<HelpCircle class="mr-3 h-5 w-5" />
-						Help
-					</a>
-				</div>
-			</div>
-		</aside>
+                <!-- Tournaments section -->
+                <div class="mb-4">
+                    <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                        Tournaments
+                    </div>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            href="/"
+                    >
+                        <Clipboard class="h-4 w-4"/>
+                        All Tournaments
+                    </a>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            href="/"
+                    >
+                        <CircleCheckBig class="h-4 w-4"/>
+                        Active
+                    </a>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            href="/"
+                    >
+                        <SquarePen class="h-4 w-4"/>
+                        Draft
+                    </a>
+                </div>
 
-		<!-- Overlay for mobile sidebar -->
-		{#if sidebarOpen}
-			<button
-				aria-label="Close sidebar"
-				class="bg-opacity-50 fixed inset-0 z-10 bg-black lg:hidden"
-				onclick={toggleSidebar}
-			></button>
-		{/if}
+                <!-- Settings section -->
+                <div class="mt-auto">
+                    <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                        Settings
+                    </div>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            href="#"
+                    >
+                        <Settings class="h-4 w-4"/>
+                        Settings
+                    </a>
+                    <a
+                            class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            href="#"
+                    >
+                        <CircleQuestionMark class="h-4 w-4"/>
+                        Help
+                    </a>
+                </div>
+            </nav>
+        </aside>
 
-		<!-- Main content -->
-		<main class="w-full flex-grow overflow-x-hidden p-4 md:p-8 lg:pl-8">
-			{@render children?.()}
-		</main>
-	</div>
+        <!-- Mobile sidebar drawer -->
+        {#if sidebarOpen}
+            <!-- Backdrop -->
+            <div
+                    class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    onclick={() => sidebarOpen = false}
+            ></div>
 
-	<footer class="footer-center footer border-t border-base-300 bg-base-200 p-6 text-base-content">
-		<div class="grid grid-flow-col gap-4">
-			<a href="/" class="link link-hover">Impressum</a>
-			<a href="/" class="link link-hover">Datenschutz</a>
-		</div>
-		<div>
-			<p>© {currentYear} Tournament Manager - All rights reserved</p>
-		</div>
-	</footer>
+            <!-- Drawer -->
+            <div class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl lg:hidden">
+                <div class="flex h-16 items-center justify-between border-b border-base-300 px-4">
+                    <span class="text-lg font-bold text-primary">Menu</span>
+                    <button
+                            class="btn btn-ghost btn-sm"
+                            onclick={() => sidebarOpen = false}
+                            aria-label="Close menu"
+                    >
+                        <X class="h-5 w-5"/>
+                    </button>
+                </div>
+
+                <nav class="flex flex-col gap-1 overflow-y-auto p-4" style="height: calc(100vh - 4rem);">
+                    <!-- Main section -->
+                    <div class="mb-4">
+                        <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                            Main
+                        </div>
+                        <a
+                                href="/"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
+                        >
+                            <House class="h-5 w-5"/>
+                            Dashboard
+                        </a>
+                        <a
+                                href="/tournaments/create"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 {$page.url.pathname === '/tournaments/create' ? 'bg-primary/10 text-primary' : 'text-base-content'}"
+                        >
+                            <Plus class="h-5 w-5"/>
+                            Create Tournament
+                        </a>
+                    </div>
+
+                    <!-- Tournaments section -->
+                    <div class="mb-4">
+                        <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                            Tournaments
+                        </div>
+                        <a
+                                href="/"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                        >
+                            <Clipboard class="h-5 w-5"/>
+                            All Tournaments
+                        </a>
+                        <a
+                                href="/"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                        >
+                            <CircleCheckBig class="h-5 w-5"/>
+                            Active
+                        </a>
+                        <a
+                                href="/"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                        >
+                            <SquarePen class="h-5 w-5"/>
+                            Draft
+                        </a>
+                    </div>
+
+                    <!-- Settings section -->
+                    <div>
+                        <div class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-base-content/60">
+                            Settings
+                        </div>
+                        <a
+                                href="#"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                        >
+                            <Settings class="h-5 w-5"/>
+                            Settings
+                        </a>
+                        <a
+                                href="#"
+                                onclick={closeSidebarOnMobile}
+                                class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                        >
+                            <CircleQuestionMark class="h-5 w-5"/>
+                            Help
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        {/if}
+
+        <!-- Main content -->
+        <main class="flex-1 overflow-x-hidden p-4 md:p-6 lg:p-8">
+            {@render children?.()}
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-base-300 bg-base-100 px-4 py-6 text-center text-sm text-base-content/70">
+        <div class="mb-3 flex justify-center gap-4">
+            <a class="link link-hover" href="/">Impressum</a>
+            <a class="link link-hover" href="/">Datenschutz</a>
+        </div>
+        <p>© {currentYear} Tournament Manager - All rights reserved</p>
+    </footer>
 </div>
