@@ -1,6 +1,7 @@
 package application
 
 import (
+	"Tournament/internal/adapters/driven/event"
 	"Tournament/internal/adapters/driven/postgres"
 	"Tournament/internal/adapters/driving/handler"
 	"Tournament/internal/adapters/driving/response"
@@ -40,6 +41,10 @@ type App struct {
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler
+	eventHandler      *handler.EventHandler
+
+	// Broker
+	broker *event.Broker
 }
 
 // NewApp creates a new application instance
@@ -92,6 +97,10 @@ func (a *App) Shutdown(ctx context.Context) error {
 func (a *App) initializeDependencies() error {
 	var err error
 
+	// Initialize and start broker
+	a.broker = event.NewBroker()
+	a.broker.Start()
+
 	// Initialize database
 	a.db, err = a.config.Database.NewDB()
 	if err != nil {
@@ -127,6 +136,7 @@ func (a *App) initializeDependencies() error {
 
 	// Initialize handlers
 	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService, a.qualifyingService)
+	a.eventHandler = handler.NewEventHandler(a.broker)
 
 	return nil
 }
@@ -153,4 +163,5 @@ func (a *App) registerRoutes() {
 
 	// Register protected routes
 	a.tournamentHandler.RegisterRoutes(apiRouter)
+	a.eventHandler.RegisterRoutes(apiRouter)
 }
