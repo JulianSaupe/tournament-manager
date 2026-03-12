@@ -22,6 +22,7 @@ type ServerConfig struct {
 
 // GRPCConfig holds the configuration for gRPC clients
 type GRPCConfig struct {
+	IdentityServiceAddr      string
 	AuthorizationServiceAddr string
 }
 
@@ -51,6 +52,7 @@ func loadServerConfig() ServerConfig {
 // loadGRPCConfig loads the gRPC client configuration from environment variables
 func loadGRPCConfig() GRPCConfig {
 	return GRPCConfig{
-		AuthorizationServiceAddr: getEnv("AUTHORIZATION_SERVICE_ADDR", "localhost:50051"),
+		IdentityServiceAddr:      getEnv("IDENTITY_SERVICE_ADDR", "localhost:50051"),
+		AuthorizationServiceAddr: getEnv("AUTHORIZATION_SERVICE_ADDR", "localhost:50052"),
 	}
 }

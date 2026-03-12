@@ -34,11 +34,12 @@ type App struct {
 	qualifyingRepository output.QualifyingRepositoryInterface
 
 	// Services
-	tournamentService    input.TournamentServiceInterface
-	userService          input.UserServiceInterface
-	playerService        input.PlayerServiceInterface
-	qualifyingService    input.QualifyingServiceInterface
-	authorizationService *service.AuthorizationService
+	tournamentService     input.TournamentServiceInterface
+	userService           input.UserServiceInterface
+	playerService         input.PlayerServiceInterface
+	qualifyingService     input.QualifyingServiceInterface
+	authenticationService *service.AuthenticationService
+	authorizationService  *service.AuthorizationService
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler
@@ -84,7 +85,12 @@ func (a *App) Start() error {
 func (a *App) Shutdown(ctx context.Context) error {
 	log.Println("Shutting down server...")
 
-	// Close authorization service gRPC connection
+	// Close gRPC connections
+	if a.authenticationService != nil {
+		log.Println("Closing authentication service connection...")
+		a.authenticationService.Close()
+	}
+
 	if a.authorizationService != nil {
 		log.Println("Closing authorization service connection...")
 		a.authorizationService.Close()
@@ -141,7 +147,12 @@ func (a *App) initializeDependencies() error {
 	a.playerService = service.NewPlayerService(a.playerRepository)
 	a.qualifyingService = service.NewQualifyingService(a.qualifyingRepository)
 
-	// Initialize authorization service client
+	// Initialize gRPC client services
+	a.authenticationService, err = service.NewAuthenticationService(a.config.GRPC.IdentityServiceAddr)
+	if err != nil {
+		return fmt.Errorf("failed to initialize authentication service: %w", err)
+	}
+
 	a.authorizationService, err = service.NewAuthorizationService(a.config.GRPC.AuthorizationServiceAddr)
 	if err != nil {
 		return fmt.Errorf("failed to initialize authorization service: %w", err)
@@ -160,7 +171,6 @@ func (a *App) registerRoutes() {
 	a.router.Use(chiMiddleware.RequestID)
 	a.router.Use(chiMiddleware.RealIP)
 	a.router.Use(chiMiddleware.Logger)
-	// a.router.Use(middleware.AuthMiddleware(a.userService))
 	a.router.Use(middleware.CustomRecoverer)
 	a.router.Use(response.RequestStartTimeMiddleware)
 
@@ -170,8 +180,9 @@ func (a *App) registerRoutes() {
 		w.Write([]byte("OK"))
 	})
 
-	// API routes
+	// API routes with authentication
 	apiRouter := chi.NewRouter()
+	apiRouter.Use(middleware.AuthenticationMiddleware(a.authenticationService))
 	a.router.Mount("/api", apiRouter)
 
 	// Register protected routes

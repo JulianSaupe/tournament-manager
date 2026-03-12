@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package authentication;
 
+option go_package = "engine/internal/proto/authentication";
+
 import "google/protobuf/timestamp.proto";
 
 service AuthenticationService {
