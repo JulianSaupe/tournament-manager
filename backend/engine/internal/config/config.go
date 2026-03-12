@@ -20,9 +20,9 @@ type ServerConfig struct {
 	ShutdownTimeout time.Duration
 }
 
-// GRPCConfig holds the configuration for the gRPC server
+// GRPCConfig holds the configuration for gRPC clients
 type GRPCConfig struct {
-	Port string
+	AuthorizationServiceAddr string
 }
 
 // Load loads the configuration from environment variables
@@ -48,9 +48,9 @@ func loadServerConfig() ServerConfig {
 	}
 }
 
-// loadGRPCConfig loads the gRPC server configuration from environment variables
+// loadGRPCConfig loads the gRPC client configuration from environment variables
 func loadGRPCConfig() GRPCConfig {
 	return GRPCConfig{
-		Port: getEnv("GRPC_PORT", "50051"),
+		AuthorizationServiceAddr: getEnv("AUTHORIZATION_SERVICE_ADDR", "localhost:50051"),
 	}
 }

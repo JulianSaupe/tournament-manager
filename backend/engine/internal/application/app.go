@@ -3,7 +3,6 @@ package application
 import (
 	"context"
 	"database/sql"
-	"engine/backend/shared/proto/authorization"
 	"engine/internal/adapters/driven/event"
 	"engine/internal/adapters/driven/postgres"
 	"engine/internal/adapters/driving/handler"
@@ -15,21 +14,18 @@ import (
 	"engine/internal/ports/output"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
-	"google.golang.org/grpc"
 )
 
 // App represents the application with all its dependencies
 type App struct {
-	config     *config.Config
-	server     *http.Server
-	grpcServer *grpc.Server
-	router     *chi.Mux
-	db         *sql.DB
+	config *config.Config
+	server *http.Server
+	router *chi.Mux
+	db     *sql.DB
 
 	// Repositories
 	tournamentRepository output.TournamentRepositoryInterface
@@ -38,11 +34,11 @@ type App struct {
 	qualifyingRepository output.QualifyingRepositoryInterface
 
 	// Services
-	tournamentService        input.TournamentServiceInterface
-	userService              input.UserServiceInterface
-	playerService            input.PlayerServiceInterface
-	qualifyingService        input.QualifyingServiceInterface
-	authorizationGRPCService *service.AuthorizationGRPCService
+	tournamentService    input.TournamentServiceInterface
+	userService          input.UserServiceInterface
+	playerService        input.PlayerServiceInterface
+	qualifyingService    input.QualifyingServiceInterface
+	authorizationService *service.AuthorizationService
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler
@@ -80,37 +76,18 @@ func NewApp(cfg *config.Config) (*App, error) {
 
 // Start starts the application
 func (a *App) Start() error {
-	// Start gRPC server in a goroutine
-	go func() {
-		if err := a.startGRPCServer(); err != nil {
-			log.Fatalf("Failed to start gRPC server: %v", err)
-		}
-	}()
-
-	// Start HTTP server
-	log.Printf("Starting HTTP server on :%s", a.config.Server.Port)
+	log.Printf("Starting server on :%s", a.config.Server.Port)
 	return a.server.ListenAndServe()
-}
-
-// startGRPCServer starts the gRPC server
-func (a *App) startGRPCServer() error {
-	lis, err := net.Listen("tcp", ":"+a.config.GRPC.Port)
-	if err != nil {
-		return fmt.Errorf("failed to listen on gRPC port: %w", err)
-	}
-
-	log.Printf("Starting gRPC server on :%s", a.config.GRPC.Port)
-	return a.grpcServer.Serve(lis)
 }
 
 // Shutdown gracefully shuts down the application
 func (a *App) Shutdown(ctx context.Context) error {
-	log.Println("Shutting down servers...")
+	log.Println("Shutting down server...")
 
-	// Shutdown gRPC server
-	if a.grpcServer != nil {
-		log.Println("Shutting down gRPC server...")
-		a.grpcServer.GracefulStop()
+	// Close authorization service gRPC connection
+	if a.authorizationService != nil {
+		log.Println("Closing authorization service connection...")
+		a.authorizationService.Close()
 	}
 
 	// Close database connection
@@ -163,15 +140,16 @@ func (a *App) initializeDependencies() error {
 	a.userService = service.NewUserService(a.userRepository)
 	a.playerService = service.NewPlayerService(a.playerRepository)
 	a.qualifyingService = service.NewQualifyingService(a.qualifyingRepository)
-	a.authorizationGRPCService = service.NewAuthorizationGRPCService()
+
+	// Initialize authorization service client
+	a.authorizationService, err = service.NewAuthorizationService(a.config.GRPC.AuthorizationServiceAddr)
+	if err != nil {
+		return fmt.Errorf("failed to initialize authorization service: %w", err)
+	}
 
 	// Initialize handlers
 	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService, a.qualifyingService)
 	a.eventHandler = handler.NewEventHandler(a.broker)
-
-	// Initialize gRPC server
-	a.grpcServer = grpc.NewServer()
-	authorization.RegisterAuthorizationServiceServer(a.grpcServer, a.authorizationGRPCService)
 
 	return nil
 }
