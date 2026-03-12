@@ -221,7 +221,7 @@
 <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
         <div class="mb-6 flex items-center justify-between">
-            <h2 class="text-xl font-semibold">TournamentProvider Structure</h2>
+            <h2 class="text-xl font-semibold">Tournament Structure</h2>
             <span class="badge badge-primary">{totalRounds} Rounds</span>
         </div>
 
@@ -237,7 +237,7 @@
             </div>
         </div>
 
-        <!-- TournamentProvider Overview Stats -->
+        <!-- Tournament Overview Stats -->
         <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             <div class="stat rounded-lg bg-base-200 p-3">
                 <div class="stat-title text-xs">Total Matches</div>

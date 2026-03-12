@@ -7,7 +7,7 @@
 
 <svelte:head>
     <link href={favicon} rel="icon"/>
-    <title>TournamentProvider Manager</title>
+    <title>Tournament Manager</title>
     <meta content="Professional tournament management system" name="description"/>
 </svelte:head>
 

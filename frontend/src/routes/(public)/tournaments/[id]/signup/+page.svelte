@@ -41,7 +41,7 @@
     >
         <div class="w-full">
             <div class="mb-6 text-center">
-                <h1 class="text-3xl font-semibold">TournamentProvider Signup</h1>
+                <h1 class="text-3xl font-semibold">Tournament Signup</h1>
             </div>
 
             {#if submitted}

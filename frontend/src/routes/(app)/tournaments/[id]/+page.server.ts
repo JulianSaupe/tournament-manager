@@ -7,19 +7,19 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	try {
 		const tournamentId = params.id;
 
-		const [tournament, qualifying] = await Promise.all([
+		const [tournamentResult, qualifyingResult] = await Promise.all([
 			locals.tournamentProvider.loadTournament(tournamentId),
 			locals.tournamentProvider.loadQualifying(tournamentId)
 		]);
 
-		if (tournament.success && qualifying.success) {
+		if (tournamentResult.success && qualifyingResult.success) {
 			return {
-				tournament: tournament.data,
-				qualifying: qualifying.data
+				tournament: tournamentResult.data,
+				qualifying: qualifyingResult.data
 			};
 		}
 
-		const err = tournament.error || qualifying.error;
+		const err = tournamentResult.error || qualifyingResult.error;
 
 		return {
 			error: err instanceof Error ? err.message : 'Unknown error'

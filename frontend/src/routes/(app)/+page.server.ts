@@ -3,18 +3,18 @@ import { type Tournament, TournamentStatus } from '$lib/types/tournament/tournam
 
 export const load: PageServerLoad = async ({ locals }) => {
 	try {
-		const tournaments = await locals.tournamentProvider.listTournaments();
+		const result = await locals.tournamentProvider.listTournaments();
 
-		if (tournaments.success) {
+		if (result.success) {
 			return {
-				tournaments: tournaments,
+				tournaments: result.data,
 				error: null as string | null
 			};
 		}
 
 		return {
 			tournaments: [] as Tournament[],
-			error: tournaments.error.message
+			error: result.error.message
 		};
 	} catch (err) {
 		return {

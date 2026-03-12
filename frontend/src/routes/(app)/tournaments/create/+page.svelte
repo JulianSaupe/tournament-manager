@@ -51,7 +51,7 @@
 </script>
 
 <div class="container mx-auto">
-    <h1 class="mb-4 text-xl sm:mb-6 sm:text-2xl">Create New TournamentProvider</h1>
+    <h1 class="mb-4 text-xl sm:mb-6 sm:text-2xl">Create New Tournament</h1>
 
     <form class="space-y-6" method="POST" use:enhance={handleEnhance}>
         <input name="payload" type="hidden" value={JSON.stringify($tournamentForm)}/>
@@ -74,10 +74,10 @@
             </div>
         {/if}
 
-        <!-- TournamentProvider Details Component -->
+        <!-- Tournament Details Component -->
         <TournamentDetails/>
 
-        <!-- TournamentProvider Structure Component -->
+        <!-- Tournament Structure Component -->
         <TournamentStructure/>
 
         <!-- Form Actions -->

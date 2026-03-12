@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-    <title>TournamentProvider Manager</title>
+    <title>Tournament Manager</title>
     <meta content="Professional tournament management system" name="description"/>
 </svelte:head>
 
