@@ -12,7 +12,6 @@ type userIDKey struct{}
 func AuthenticationMiddleware(authService input.AuthenticationServiceInterface) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Get session_id from cookie
 			cookie, err := r.Cookie("session_id")
 			if err != nil || cookie.Value == "" {
 				w.WriteHeader(http.StatusUnauthorized)
@@ -20,7 +19,6 @@ func AuthenticationMiddleware(authService input.AuthenticationServiceInterface) 
 				return
 			}
 
-			// Validate session via gRPC
 			ctx := r.Context()
 			userID, err := authService.ValidateSession(ctx, cookie.Value)
 			if err != nil {
@@ -29,7 +27,6 @@ func AuthenticationMiddleware(authService input.AuthenticationServiceInterface) 
 				return
 			}
 
-			// Store user_id in context
 			ctx = context.WithValue(ctx, userIDKey{}, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
