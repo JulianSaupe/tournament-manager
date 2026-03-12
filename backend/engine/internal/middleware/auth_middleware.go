@@ -3,8 +3,9 @@ package middleware
 import (
 	"Tournament/internal/ports/input"
 	"context"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userKey struct{}
