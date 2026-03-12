@@ -1,9 +1,9 @@
 package input
 
 import (
-	"Tournament/internal/adapters/driving/requests"
-	"Tournament/internal/domain"
 	"context"
+	"engine/internal/adapters/driving/requests"
+	"engine/internal/domain"
 )
 
 // TournamentServiceInterface defines the interface for tournament business operations

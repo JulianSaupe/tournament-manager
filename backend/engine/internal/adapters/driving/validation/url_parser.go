@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"Tournament/internal/domain"
+	"engine/internal/domain"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"

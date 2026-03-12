@@ -1,10 +1,10 @@
 package service
 
 import (
-	"Tournament/internal/domain"
-	"Tournament/internal/ports/input"
-	"Tournament/internal/ports/output"
 	"context"
+	"engine/internal/domain"
+	"engine/internal/ports/input"
+	"engine/internal/ports/output"
 )
 
 type QualifyingService struct {

@@ -1,8 +1,8 @@
 package input
 
 import (
-	"Tournament/internal/domain"
 	"context"
+	"engine/internal/domain"
 )
 
 // UserServiceInterface defines the interface for user business operations

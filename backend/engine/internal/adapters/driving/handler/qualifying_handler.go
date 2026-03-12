@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"Tournament/internal/adapters/driving/response"
-	"Tournament/internal/ports/input"
+	"engine/internal/adapters/driving/response"
+	"engine/internal/ports/input"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

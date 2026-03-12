@@ -1,31 +1,35 @@
 package application
 
 import (
-	"Tournament/internal/adapters/driven/event"
-	"Tournament/internal/adapters/driven/postgres"
-	"Tournament/internal/adapters/driving/handler"
-	"Tournament/internal/adapters/driving/response"
-	"Tournament/internal/application/service"
-	"Tournament/internal/config"
-	"Tournament/internal/middleware"
-	"Tournament/internal/ports/input"
-	"Tournament/internal/ports/output"
 	"context"
 	"database/sql"
+	"engine/backend/shared/proto/authorization"
+	"engine/internal/adapters/driven/event"
+	"engine/internal/adapters/driven/postgres"
+	"engine/internal/adapters/driving/handler"
+	"engine/internal/adapters/driving/response"
+	"engine/internal/application/service"
+	"engine/internal/config"
+	"engine/internal/middleware"
+	"engine/internal/ports/input"
+	"engine/internal/ports/output"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
+	"google.golang.org/grpc"
 )
 
 // App represents the application with all its dependencies
 type App struct {
-	config *config.Config
-	server *http.Server
-	router *chi.Mux
-	db     *sql.DB
+	config     *config.Config
+	server     *http.Server
+	grpcServer *grpc.Server
+	router     *chi.Mux
+	db         *sql.DB
 
 	// Repositories
 	tournamentRepository output.TournamentRepositoryInterface
@@ -34,10 +38,11 @@ type App struct {
 	qualifyingRepository output.QualifyingRepositoryInterface
 
 	// Services
-	tournamentService input.TournamentServiceInterface
-	userService       input.UserServiceInterface
-	playerService     input.PlayerServiceInterface
-	qualifyingService input.QualifyingServiceInterface
+	tournamentService        input.TournamentServiceInterface
+	userService              input.UserServiceInterface
+	playerService            input.PlayerServiceInterface
+	qualifyingService        input.QualifyingServiceInterface
+	authorizationGRPCService *service.AuthorizationGRPCService
 
 	// Handlers
 	tournamentHandler *handler.TournamentHandler
@@ -75,13 +80,38 @@ func NewApp(cfg *config.Config) (*App, error) {
 
 // Start starts the application
 func (a *App) Start() error {
-	log.Printf("Starting server on :%s", a.config.Server.Port)
+	// Start gRPC server in a goroutine
+	go func() {
+		if err := a.startGRPCServer(); err != nil {
+			log.Fatalf("Failed to start gRPC server: %v", err)
+		}
+	}()
+
+	// Start HTTP server
+	log.Printf("Starting HTTP server on :%s", a.config.Server.Port)
 	return a.server.ListenAndServe()
+}
+
+// startGRPCServer starts the gRPC server
+func (a *App) startGRPCServer() error {
+	lis, err := net.Listen("tcp", ":"+a.config.GRPC.Port)
+	if err != nil {
+		return fmt.Errorf("failed to listen on gRPC port: %w", err)
+	}
+
+	log.Printf("Starting gRPC server on :%s", a.config.GRPC.Port)
+	return a.grpcServer.Serve(lis)
 }
 
 // Shutdown gracefully shuts down the application
 func (a *App) Shutdown(ctx context.Context) error {
-	log.Println("Shutting down server...")
+	log.Println("Shutting down servers...")
+
+	// Shutdown gRPC server
+	if a.grpcServer != nil {
+		log.Println("Shutting down gRPC server...")
+		a.grpcServer.GracefulStop()
+	}
 
 	// Close database connection
 	if a.db != nil {
@@ -133,10 +163,15 @@ func (a *App) initializeDependencies() error {
 	a.userService = service.NewUserService(a.userRepository)
 	a.playerService = service.NewPlayerService(a.playerRepository)
 	a.qualifyingService = service.NewQualifyingService(a.qualifyingRepository)
+	a.authorizationGRPCService = service.NewAuthorizationGRPCService()
 
 	// Initialize handlers
 	a.tournamentHandler = handler.NewTournamentHandler(a.tournamentService, a.playerService, a.qualifyingService)
 	a.eventHandler = handler.NewEventHandler(a.broker)
+
+	// Initialize gRPC server
+	a.grpcServer = grpc.NewServer()
+	authorization.RegisterAuthorizationServiceServer(a.grpcServer, a.authorizationGRPCService)
 
 	return nil
 }

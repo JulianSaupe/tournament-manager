@@ -8,6 +8,7 @@ import (
 // Config holds all configuration for the application
 type Config struct {
 	Server   ServerConfig
+	GRPC     GRPCConfig
 	Database *DatabaseConfig
 }
 
@@ -19,10 +20,16 @@ type ServerConfig struct {
 	ShutdownTimeout time.Duration
 }
 
+// GRPCConfig holds the configuration for the gRPC server
+type GRPCConfig struct {
+	Port string
+}
+
 // Load loads the configuration from environment variables
 func Load() *Config {
 	return &Config{
 		Server:   loadServerConfig(),
+		GRPC:     loadGRPCConfig(),
 		Database: NewDatabaseConfig(), // Reuse existing function from database.go
 	}
 }
@@ -38,5 +45,12 @@ func loadServerConfig() ServerConfig {
 		ReadTimeout:     time.Duration(readTimeoutSecs) * time.Second,
 		WriteTimeout:    time.Duration(writeTimeoutSecs) * time.Second,
 		ShutdownTimeout: time.Duration(shutdownTimeoutSecs) * time.Second,
+	}
+}
+
+// loadGRPCConfig loads the gRPC server configuration from environment variables
+func loadGRPCConfig() GRPCConfig {
+	return GRPCConfig{
+		Port: getEnv("GRPC_PORT", "50051"),
 	}
 }

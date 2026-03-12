@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"Tournament/internal/adapters/driving/requests"
-	"Tournament/internal/adapters/driving/response"
-	"Tournament/internal/adapters/driving/validation"
-	"Tournament/internal/domain"
-	"Tournament/internal/middleware"
-	"Tournament/internal/ports/input"
 	"encoding/json"
+	"engine/internal/adapters/driving/requests"
+	"engine/internal/adapters/driving/response"
+	"engine/internal/adapters/driving/validation"
+	"engine/internal/domain"
+	"engine/internal/middleware"
+	"engine/internal/ports/input"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

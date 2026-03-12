@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"Tournament/internal/domain"
-	"Tournament/internal/ports/input"
 	"context"
+	"engine/internal/domain"
+	"engine/internal/ports/input"
 	"github.com/go-chi/chi/v5"
 	"net/http"
 )

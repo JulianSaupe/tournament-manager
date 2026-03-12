@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Tournament/internal/config"
 	"context"
 	"embed"
+	"engine/internal/config"
 	"flag"
 	"fmt"
 	"io/fs"

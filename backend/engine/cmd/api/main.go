@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Tournament/internal/application"
-	"Tournament/internal/config"
 	"context"
+	"engine/internal/application"
+	"engine/internal/config"
 	"log"
 	"os"
 	"os/signal"

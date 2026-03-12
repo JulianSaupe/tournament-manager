@@ -1,8 +1,8 @@
 package output
 
 import (
-	"Tournament/internal/domain"
 	"context"
+	"engine/internal/domain"
 )
 
 // TournamentRepositoryInterface defines the interface for tournament data access

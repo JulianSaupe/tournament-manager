@@ -1,8 +1,8 @@
 package service
 
 import (
-	"Tournament/internal/domain"
 	"context"
+	"engine/internal/domain"
 	"errors"
 	"testing"
 )

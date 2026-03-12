@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"Tournament/internal/adapters/driven/event"
+	"engine/internal/adapters/driven/event"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"

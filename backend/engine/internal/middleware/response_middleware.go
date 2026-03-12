@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"Tournament/internal/adapters/driving/response"
-	"Tournament/internal/domain"
+	"engine/internal/adapters/driving/response"
+	"engine/internal/domain"
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5/middleware"

@@ -1,12 +1,12 @@
 package service
 
 import (
-	"Tournament/internal/adapters/driven/event"
-	"Tournament/internal/adapters/driving/requests"
-	"Tournament/internal/domain"
-	"Tournament/internal/ports/input"
-	"Tournament/internal/ports/output"
 	"context"
+	"engine/internal/adapters/driven/event"
+	"engine/internal/adapters/driving/requests"
+	"engine/internal/domain"
+	"engine/internal/ports/input"
+	"engine/internal/ports/output"
 	"log"
 )
 

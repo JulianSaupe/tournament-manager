@@ -1,10 +1,10 @@
 package postgres
 
 import (
-	"Tournament/internal/domain"
-	"Tournament/internal/ports/output"
 	"context"
 	"database/sql"
+	"engine/internal/domain"
+	"engine/internal/ports/output"
 	"errors"
 	"fmt"
 	"time"

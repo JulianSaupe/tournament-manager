@@ -1,9 +1,9 @@
 package validation
 
 import (
-	"Tournament/internal/adapters/driving/requests"
-	"Tournament/internal/domain"
 	"encoding/json"
+	"engine/internal/adapters/driving/requests"
+	"engine/internal/domain"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"

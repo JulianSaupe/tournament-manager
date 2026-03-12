@@ -1,8 +1,8 @@
 package output
 
 import (
-	"Tournament/internal/domain"
 	"context"
+	"engine/internal/domain"
 )
 
 // UserRepositoryInterface defines the interface for user data access
