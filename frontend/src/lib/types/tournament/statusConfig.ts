@@ -1,4 +1,4 @@
-import { TournamentStatus } from '$lib/models/tournament/tournament';
+import { TournamentStatus } from '$lib/types/tournament/tournament';
 
 type StatusConfig = {
 	name: string;

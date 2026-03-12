@@ -3,9 +3,9 @@
     import {onMount, onDestroy} from 'svelte';
     import {Check, CircleCheckBig, Clipboard, Funnel, Info, SquarePen} from 'lucide-svelte';
     import moment from 'moment';
-    import type {Tournament} from '$lib/models/tournament/tournament';
-    import {TournamentStatus} from '$lib/models/tournament/tournament';
-    import {statusConfig} from '$lib/models/tournament/statusConfig';
+    import type {Tournament} from '$lib/types/tournament/tournament';
+    import {TournamentStatus} from '$lib/types/tournament/tournament';
+    import {statusConfig} from '$lib/types/tournament/statusConfig';
     import {tournaments as tournamentStore, setTournaments, addTournament} from '$lib/stores/tournaments';
     import {getWebSocketService} from '$lib/services/websocket';
 
@@ -13,12 +13,9 @@
 
     const formatDate = (dateString: string): string => moment(dateString).format('MMM D, YYYY');
 
-    // Initialize store with server data
     onMount(() => {
-        const initialTournaments = Array.isArray(data.tournaments) ? data.tournaments : [];
-        setTournaments(initialTournaments);
+        setTournaments(data.tournaments);
 
-        // Connect to WebSocket and subscribe to tournament.created
         const ws = getWebSocketService();
         ws.connect().then(() => {
             unsubscribe = ws.subscribe('tournament.created', (payload: any) => {

@@ -1,4 +1,4 @@
-import type { Round } from '$lib/models/tournament/tournament';
+import type { Round } from '$lib/types/tournament/tournament';
 
 /**
  * Form data for tournament creation

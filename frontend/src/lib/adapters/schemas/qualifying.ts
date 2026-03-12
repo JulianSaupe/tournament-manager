@@ -1,5 +1,5 @@
 import { z, type ZodType } from 'zod';
-import type { Qualifying, QualifyingPlayer } from '$lib/models/tournament/qualifying';
+import type { Qualifying, QualifyingPlayer } from '$lib/types/tournament/qualifying';
 import { BaseApiSchema } from '$lib/adapters/schemas/base';
 
 const PlayerSchema: ZodType<QualifyingPlayer> = z

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Tournament } from '$lib/models/tournament/tournament';
+import type { Tournament } from '$lib/types/tournament/tournament';
 
 export const tournaments = writable<Tournament[]>([]);
 

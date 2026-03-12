@@ -1,5 +1,5 @@
-import type { TournamentFormData, TournamentFormErrors } from '$lib/models/tournament/form';
-import type { Round } from '$lib/models/tournament/tournament';
+import type { TournamentFormData, TournamentFormErrors } from '$lib/types/tournament/form';
+import type { Round } from '$lib/types/tournament/tournament';
 
 /**
  * Calculate default number of matches for a group

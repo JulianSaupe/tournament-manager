@@ -1,9 +1,9 @@
 <script lang="ts">
     import {Calendar, Check, Funnel, Info, User} from 'lucide-svelte';
-    import {type Tournament} from '$lib/models/tournament/tournament';
-    import {statusConfig} from '$lib/models/tournament/statusConfig';
+    import {type Tournament} from '$lib/types/tournament/tournament';
+    import {statusConfig} from '$lib/types/tournament/statusConfig';
     import moment from 'moment/moment';
-    import {type Qualifying, QualifyingFilter} from '$lib/models/tournament/qualifying';
+    import {type Qualifying, QualifyingFilter} from '$lib/types/tournament/qualifying';
 
     let {data} = $props();
 

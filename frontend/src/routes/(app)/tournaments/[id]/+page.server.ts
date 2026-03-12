@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import type { Tournament } from '$lib/models/tournament/tournament';
-import { TournamentStatus } from '$lib/models/tournament/tournament';
-import { type Qualifying, type QualifyingPlayer } from '$lib/models/tournament/qualifying';
+import type { Tournament } from '$lib/types/tournament/tournament';
+import { TournamentStatus } from '$lib/types/tournament/tournament';
+import { type Qualifying, type QualifyingPlayer } from '$lib/types/tournament/qualifying';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	try {
@@ -12,9 +12,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			locals.tournamentProvider.loadQualifying(tournamentId)
 		]);
 
+		if (tournament.success && qualifying.success) {
+			return {
+				tournament: tournament.data,
+				qualifying: qualifying.data
+			};
+		}
+
+		const err = tournament.error || qualifying.error;
+
 		return {
-			tournament: tournament,
-			qualifying: qualifying
+			error: err instanceof Error ? err.message : 'Unknown error'
 		};
 	} catch (err) {
 		return {

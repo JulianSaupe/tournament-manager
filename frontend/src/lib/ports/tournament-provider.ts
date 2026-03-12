@@ -1,10 +1,11 @@
-import type { Tournament } from '$lib/models/tournament/tournament';
-import type { Qualifying } from '$lib/models/tournament/qualifying';
+import type { Tournament } from '$lib/types/tournament/tournament';
+import type { Qualifying } from '$lib/types/tournament/qualifying';
+import type { ApiResult } from '$lib/types/api-result';
 
 export interface TournamentProvider {
-	loadTournament(id: string): Promise<Tournament>;
+	loadTournament(id: string): Promise<ApiResult<Tournament>>;
 
-	loadQualifying(tournamentId: string): Promise<Qualifying>;
+	loadQualifying(tournamentId: string): Promise<ApiResult<Qualifying>>;
 
-	listTournaments(): Promise<Tournament[]>;
+	listTournaments(): Promise<ApiResult<Tournament[]>>;
 }
