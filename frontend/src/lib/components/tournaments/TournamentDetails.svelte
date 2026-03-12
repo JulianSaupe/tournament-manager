@@ -25,13 +25,13 @@
 <div class="card bg-base-100 shadow-sm">
     <div class="card-body">
         <div class="card-title">
-            <h2 class="card-title">Tournament Details</h2>
+            <h2 class="card-title">TournamentProvider Details</h2>
         </div>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <!-- Tournament Name -->
+            <!-- TournamentProvider Name -->
             <div class="form-control w-full">
                 <label class="label" for="name">
-                    <span class="label-text">Tournament Name</span>
+                    <span class="label-text">TournamentProvider Name</span>
                 </label>
                 <input
                         class="input-bordered input w-full {$tournamentFormErrors.name ? 'input-error' : ''}"
@@ -71,7 +71,7 @@
                 {/if}
             </div>
 
-            <!-- Tournament Description -->
+            <!-- TournamentProvider Description -->
             <div class="form-control w-full sm:col-span-2">
                 <label class="label" for="description">
                     <span class="label-text">Description</span>

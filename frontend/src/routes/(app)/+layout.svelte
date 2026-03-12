@@ -53,7 +53,7 @@
 
 <svelte:head>
     <link href={favicon} rel="icon"/>
-    <title>Tournament Manager</title>
+    <title>TournamentProvider Manager</title>
     <meta content="Professional tournament management system" name="description"/>
 </svelte:head>
 
@@ -72,7 +72,7 @@
 
             <!-- Logo/Title -->
             <a class="text-lg font-bold text-primary sm:text-xl" href="/">
-                Tournament Manager
+                TournamentProvider Manager
             </a>
 
             <!-- Right side spacer for mobile balance -->
@@ -95,7 +95,7 @@
                     </a>
                     <a class={getLinkClasses('/tournaments/create')} href="/tournaments/create">
                         <Plus class="h-4 w-4"/>
-                        Create Tournament
+                        Create TournamentProvider
                     </a>
                 </div>
 
@@ -184,7 +184,7 @@
                         <a href="/tournaments/create" onclick={closeSidebarOnMobile}
                            class={getLinkClasses('/tournaments/create', true)}>
                             <Plus class="h-5 w-5"/>
-                            Create Tournament
+                            Create TournamentProvider
                         </a>
                     </div>
 
@@ -257,6 +257,6 @@
             <a class="link link-hover" href="/">Impressum</a>
             <a class="link link-hover" href="/">Datenschutz</a>
         </div>
-        <p>© {currentYear} Tournament Manager - All rights reserved</p>
+        <p>© {currentYear} TournamentProvider Manager - All rights reserved</p>
     </footer>
 </div>

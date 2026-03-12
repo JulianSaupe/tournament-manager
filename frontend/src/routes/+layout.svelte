@@ -1,14 +1,14 @@
 <script lang="ts">
-	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
+    import '../app.css';
+    import favicon from '$lib/assets/favicon.svg';
 
-	let { children } = $props();
+    let {children} = $props();
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<title>Tournament Manager</title>
-	<meta name="description" content="Professional tournament management system" />
+    <link href={favicon} rel="icon"/>
+    <title>TournamentProvider Manager</title>
+    <meta content="Professional tournament management system" name="description"/>
 </svelte:head>
 
 {@render children?.()}
