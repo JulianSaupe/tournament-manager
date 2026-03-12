@@ -3,9 +3,9 @@
     import {onMount, onDestroy} from 'svelte';
     import {Check, CircleCheckBig, Clipboard, Funnel, Info, SquarePen} from 'lucide-svelte';
     import moment from 'moment';
-    import type {Tournament} from '$lib/types/tournament/tournament';
-    import {TournamentStatus} from '$lib/types/tournament/tournament';
-    import {statusConfig} from '$lib/types/tournament/statusConfig';
+    import type {Tournament} from '$lib/models/tournament/tournament';
+    import {TournamentStatus} from '$lib/models/tournament/tournament';
+    import {statusConfig} from '$lib/models/tournament/statusConfig';
     import {tournaments as tournamentStore, setTournaments, addTournament} from '$lib/stores/tournaments';
     import {getWebSocketService} from '$lib/services/websocket';
 
