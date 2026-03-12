@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package authorization;
 
+option go_package = "engine/internal/proto/authorization";
+
 service AuthorizationService {
   rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
   rpc GetUserPermissions(GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
