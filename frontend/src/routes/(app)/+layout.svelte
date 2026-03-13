@@ -12,42 +12,30 @@
         SquarePen,
         X
     } from 'lucide-svelte';
+    import {page} from '$app/state'
 
     let {children} = $props();
-
-    // Sidebar state - closed by default on mobile
     let sidebarOpen = $state(false);
+    let currentPath = $derived(page.url.pathname);
 
-    // Get current path for active state
-    let currentPath = $state('');
-
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            currentPath = window.location.pathname;
-        }
-    });
-
-    // Helper to check if a path is active
     function isActive(path: string): boolean {
         return currentPath === path;
     }
 
-    // Helper to get link classes
     function getLinkClasses(path: string, isMobile: boolean = false): string {
-        const baseClasses = `flex items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors hover:bg-base-200`;
+        const baseClasses = `flex items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors`;
         const paddingClasses = isMobile ? 'py-2.5' : 'py-2';
         const activeClasses = isActive(path) ? 'bg-primary/10 text-primary' : 'text-base-content';
-        return `${baseClasses} ${paddingClasses} ${activeClasses}`;
+        const hoverClasses = isActive(path) ? '' : 'hover:bg-base-200';
+        return `${baseClasses} ${paddingClasses} ${activeClasses} ${hoverClasses}`;
     }
 
-    // Close sidebar when clicking a link on mobile
     function closeSidebarOnMobile() {
         if (window.innerWidth < 1024) {
             sidebarOpen = false;
         }
     }
 
-    // Get current year for footer
     const currentYear = new Date().getFullYear();
 </script>
 
@@ -134,14 +122,14 @@
                     </div>
                     <a
                             class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
-                            href="#"
+                            href="/"
                     >
                         <Settings class="h-4 w-4"/>
                         Settings
                     </a>
                     <a
                             class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
-                            href="#"
+                            href="/"
                     >
                         <CircleQuestionMark class="h-4 w-4"/>
                         Help
@@ -153,10 +141,12 @@
         <!-- Mobile sidebar drawer -->
         {#if sidebarOpen}
             <!-- Backdrop -->
-            <div
+            <button
                     class="fixed inset-0 z-40 bg-black/50 lg:hidden"
                     onclick={() => sidebarOpen = false}
-            ></div>
+                    type="button"
+                    aria-label="Close sidebar"
+            ></button>
 
             <!-- Drawer -->
             <div class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl lg:hidden">
@@ -225,7 +215,7 @@
                             Settings
                         </div>
                         <a
-                                href="#"
+                                href="/"
                                 onclick={closeSidebarOnMobile}
                                 class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
                         >
@@ -233,7 +223,7 @@
                             Settings
                         </a>
                         <a
-                                href="#"
+                                href="/"
                                 onclick={closeSidebarOnMobile}
                                 class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
                         >
