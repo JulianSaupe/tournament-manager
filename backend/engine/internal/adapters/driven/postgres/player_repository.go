@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const timeout = time.Second * 2
+
 type PlayerRepository struct {
 	db *sql.DB
 }
@@ -25,6 +27,9 @@ func NewPlayerRepository(db *sql.DB) (output.PlayerRepositoryInterface, error) {
 }
 
 func (r *PlayerRepository) InsertNewPlayer(ctx context.Context, player *domain.Player) (*domain.Player, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	var playerID string
 	query := `
 		INSERT INTO players (name, tournament_id)
@@ -48,6 +53,9 @@ func (r *PlayerRepository) InsertNewPlayer(ctx context.Context, player *domain.P
 }
 
 func (r *PlayerRepository) Delete(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	query := `DELETE FROM players WHERE id = $1`
 	result, err := r.db.ExecContext(ctx, query, id)
 
@@ -68,6 +76,9 @@ func (r *PlayerRepository) Delete(ctx context.Context, id string) error {
 }
 
 func (r *PlayerRepository) FindAll(ctx context.Context, tournamentId string) ([]*domain.Player, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	query := `
 		SELECT id, name, tournament_id
 		FROM players
@@ -101,7 +112,7 @@ func (r *PlayerRepository) FindAll(ctx context.Context, tournamentId string) ([]
 }
 
 func (r *PlayerRepository) FindByID(ctx context.Context, id string) (*domain.Player, error) {
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	query := `
@@ -131,7 +142,10 @@ func (r *PlayerRepository) FindByID(ctx context.Context, id string) (*domain.Pla
 	return player, nil
 }
 
-func (r *PlayerRepository) UpdateName(ctx context.Context, player *domain.Player) (*domain.Player, error) {
+func (r *PlayerRepository) UpdateName(ctx context.Context, player *domain.Player) (_ *domain.Player, err error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error starting transaction: %w", err)
@@ -148,6 +162,7 @@ func (r *PlayerRepository) UpdateName(ctx context.Context, player *domain.Player
 		SET name = $1
 		WHERE id = $2
 	`
+
 	result, err := tx.ExecContext(ctx, query, player.Name, player.Id)
 	if err != nil {
 		return nil, fmt.Errorf("error updating player: %w", err)
