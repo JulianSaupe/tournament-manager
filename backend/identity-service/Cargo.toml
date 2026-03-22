@@ -18,6 +18,7 @@ prost-types = "0.14.1"
 tonic-async-interceptor = "0.14.1"
 dotenvy = "0.15"
 tokio-util = "0.7.16"
+tracing = "0.1.41"
 
 [build-dependencies]
 tonic-prost-build = "*"
