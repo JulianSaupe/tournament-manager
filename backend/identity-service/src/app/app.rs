@@ -18,6 +18,8 @@ use crate::service::user_service::UserService;
 use std::sync::Arc;
 use tonic::transport::Server;
 use tonic_async_interceptor::async_interceptor;
+use tokio_util::sync::CancellationToken;
+use tokio::signal;
 
 pub struct App {
     config: Config,
@@ -59,10 +61,11 @@ impl App {
         let role_service =
             RoleService::new(authorization_repository.clone(), role_repository.clone());
 
+        let interceptor = AuthInterceptor::new(self.config.auth.token.clone());
+        let shutdown_token = CancellationToken::new();
+
         let addr = format!("[::1]:{}", self.config.server_port).parse()?;
         println!("Server listening on {}", addr);
-
-        let interceptor = AuthInterceptor::new(self.config.auth.token.clone());
 
         Server::builder()
             .layer(async_interceptor(interceptor))
@@ -73,6 +76,8 @@ impl App {
             .add_service(RoleServiceServer::new(role_service))
             .serve(addr)
             .await?;
+
+        shutdown_token.cancel();
 
         Ok(())
     }
