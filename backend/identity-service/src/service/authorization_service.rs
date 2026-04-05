@@ -2,7 +2,7 @@ use crate::db::AuthorizationRepositoryTrait;
 use crate::proto::authorization::authorization_service_server::AuthorizationService as AuthorizationServiceTrait;
 use crate::proto::authorization::{
     CheckPermissionRequest, CheckPermissionResponse, GetUserPermissionsRequest,
-    GetUserPermissionsResponse, ValidateAccessRequest, ValidateAccessResponse,
+    GetUserPermissionsResponse,
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
@@ -48,12 +48,5 @@ impl AuthorizationServiceTrait for AuthorizationService {
             success: true,
             permission_names: permissions,
         }))
-    }
-
-    async fn validate_access(
-        &self,
-        request: Request<ValidateAccessRequest>,
-    ) -> Result<Response<ValidateAccessResponse>, Status> {
-        todo!()
     }
 }

@@ -1,6 +1,7 @@
 use crate::db::Database;
 use crate::models::role::Role;
 use uuid::Uuid;
+use crate::models::permission::Permission;
 
 pub struct RoleRepository {
     database: Database,
@@ -24,6 +25,8 @@ pub trait RoleRepositoryTrait: Send + Sync {
         role_id: Uuid,
         permission_id: Uuid,
     ) -> Result<(), String>;
+
+    async fn get_role_permissions(&self, role_id: Uuid) -> Result<Vec<Permission>, String>;
 }
 
 #[tonic::async_trait]
@@ -98,5 +101,20 @@ impl RoleRepositoryTrait for RoleRepository {
             .map_err(|e| format!("Failed to remove permission from role: {}", e))?;
 
         Ok(())
+    }
+
+    async fn get_role_permissions(&self, role_id: Uuid) -> Result<Vec<Permission>, String> {
+        let permissions: Vec<Permission> = sqlx::query_as(
+            r#"SELECT permissions.id, permissions.name, permissions.description, permissions.created_at, permissions.updated_at
+                    FROM role_permissions
+                    INNER JOIN permissions ON role_permissions.permission_id = permissions.id
+                    WHERE role_permissions.role_id = $1"#,
+        )
+        .bind(role_id)
+        .fetch_all(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to get role permissions: {}", e))?;
+        
+        Ok(permissions)
     }
 }

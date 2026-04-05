@@ -155,6 +155,20 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<GetRolePermissionsRequest>,
     ) -> Result<Response<GetRolePermissionsResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let role_id = Uuid::parse_str(&permission_req.role_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
+        })?;
+
+        let permissions = self.role_repository.get_role_permissions(role_id).await.map_err(|e| {
+            Status::internal(format!("Failed to retrieve role permissions: {}", e))
+        })?;
+
+        Ok(Response::new(GetRolePermissionsResponse {
+            permission_ids: permissions.iter().map(|p| p.id.to_string()).collect(),
+            success: true,
+            message: format!("Retrieved {} permissions", permissions.len()),
+        }))
     }
 }

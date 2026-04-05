@@ -7,7 +7,6 @@ option go_package = "engine/internal/proto/authorization";
 service AuthorizationService {
   rpc CheckPermission(CheckPermissionRequest) returns (CheckPermissionResponse);
   rpc GetUserPermissions(GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
-  rpc ValidateAccess(ValidateAccessRequest) returns (ValidateAccessResponse);
 }
 
 // Check Permission
@@ -30,16 +29,4 @@ message GetUserPermissionsRequest {
 message GetUserPermissionsResponse {
   repeated string permission_names = 1;
   bool success = 2;
-}
-
-// Validate Access
-message ValidateAccessRequest {
-  string user_id = 1;
-  repeated string required_permissions = 2;
-}
-
-message ValidateAccessResponse {
-  bool authorized = 1;
-  repeated string missing_permissions = 2;
-  string message = 3;
 }
