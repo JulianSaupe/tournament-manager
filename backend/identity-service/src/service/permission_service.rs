@@ -33,7 +33,7 @@ impl PermissionServiceTrait for PermissionService {
             .permission_repository
             .create_permission(&permission_req.name)
             .await
-            .map_err(|e| Status::internal("Failed to create permission:"))?;
+            .map_err(|_| Status::internal("Failed to create permission:"))?;
 
         Ok(Response::new(CreatePermissionResponse {
             permission_id: permission_id.to_string(),
@@ -51,7 +51,7 @@ impl PermissionServiceTrait for PermissionService {
             .permission_repository
             .get_permission_by_name(&permission_req.permission_name)
             .await
-            .map_err(|e| Status::internal("Failed to get permission by name:"))?;
+            .map_err(|_| Status::internal("Failed to get permission by name:"))?;
 
         Ok(Response::new(GetPermissionResponse {
             permission: Some(permission.into()),

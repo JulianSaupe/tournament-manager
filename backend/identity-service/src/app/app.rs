@@ -18,7 +18,6 @@ use crate::service::session_cache_service::{SessionCacheService, SessionCacheSer
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 use std::time::Duration;
-use tokio::signal;
 use tokio_util::sync::CancellationToken;
 use tonic::transport::Server;
 use tonic_async_interceptor::async_interceptor;

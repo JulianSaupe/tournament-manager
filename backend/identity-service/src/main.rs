@@ -1,14 +1,5 @@
-mod app;
-mod config;
-mod db;
-mod interceptor;
-mod models;
-mod proto;
-mod service;
-mod utils;
-
-use crate::app::App;
-use crate::config::Config;
+use identity_service::app::App;
+use identity_service::config::Config;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
