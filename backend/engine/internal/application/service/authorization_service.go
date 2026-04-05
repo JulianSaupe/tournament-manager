@@ -32,11 +32,10 @@ func NewAuthorizationService(authServerAddr string) (*AuthorizationService, erro
 }
 
 // CheckPermission checks if a user has permission for a specific resource and action
-func (s *AuthorizationService) CheckPermission(ctx context.Context, userID, resource, action string) (bool, string, error) {
+func (s *AuthorizationService) CheckPermission(ctx context.Context, userID, name string) (bool, string, error) {
 	req := &authorization.CheckPermissionRequest{
 		UserId:   userID,
-		Resource: resource,
-		Action:   action,
+		PermissionName: name,
 	}
 
 	resp, err := s.client.CheckPermission(ctx, req)

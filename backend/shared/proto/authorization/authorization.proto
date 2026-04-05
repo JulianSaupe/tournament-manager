@@ -10,7 +10,6 @@ service AuthorizationService {
   rpc AssignRoleToUser(AssignRoleToUserRequest) returns (AssignRoleToUserResponse);
   rpc RemoveRoleFromUser(RemoveRoleFromUserRequest) returns (RemoveRoleFromUserResponse);
   rpc GetUserRoles(GetUserRolesRequest) returns (GetUserRolesResponse);
-  rpc GetRoleUsers(GetRoleUsersRequest) returns (GetRoleUsersResponse);
 }
 
 // Check Permission
@@ -63,17 +62,6 @@ message GetUserRolesRequest {
 
 message GetUserRolesResponse {
   repeated string role_ids = 1;
-  bool success = 2;
-  string message = 3;
-}
-
-// Get Role Users
-message GetRoleUsersRequest {
-  string role_id = 1;
-}
-
-message GetRoleUsersResponse {
-  repeated string user_ids = 1;
   bool success = 2;
   string message = 3;
 }

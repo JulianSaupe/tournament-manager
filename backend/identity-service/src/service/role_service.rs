@@ -52,7 +52,22 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<GetRoleRequest>,
     ) -> Result<Response<GetRoleResponse>, Status> {
-        todo!()
+        let role_req = request.into_inner();
+        let role_id = Uuid::parse_str(&role_req.role_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
+        })?;
+
+        let role = self
+            .role_repository
+            .get_role_by_id(role_id)
+            .await
+            .map_err(|_| Status::not_found(format!("Role with ID {} not found", role_id)))?;
+
+        Ok(Response::new(GetRoleResponse {
+            success: true,
+            role: Some(role.into()),
+            message: "Role found successfully".to_string(),
+        }))
     }
 
     async fn list_roles(
@@ -78,7 +93,24 @@ impl RoleServiceTrait for RoleService {
         &self,
         request: Request<UpdateRoleRequest>,
     ) -> Result<Response<UpdateRoleResponse>, Status> {
-        todo!()
+        let role_req = request.into_inner();
+
+        let role_id = Uuid::parse_str(&role_req.role_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
+        })?;
+
+        let new_name = role_req.name.clone();
+        let new_description = role_req.description.clone();
+
+        self.role_repository
+            .update_role(role_id, &new_name, &new_description)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to update role: {}", e)))?;
+
+        Ok(Response::new(UpdateRoleResponse {
+            success: true,
+            message: "Role updated successfully".to_string(),
+        }))
     }
 
     async fn delete_role(
@@ -161,9 +193,11 @@ impl RoleServiceTrait for RoleService {
             Status::invalid_argument("Failed to parse role ID: must be a valid UUID.")
         })?;
 
-        let permissions = self.role_repository.get_role_permissions(role_id).await.map_err(|e| {
-            Status::internal(format!("Failed to retrieve role permissions: {}", e))
-        })?;
+        let permissions = self
+            .role_repository
+            .get_role_permissions(role_id)
+            .await
+            .map_err(|e| Status::internal(format!("Failed to retrieve role permissions: {}", e)))?;
 
         Ok(Response::new(GetRolePermissionsResponse {
             permission_ids: permissions.iter().map(|p| p.id.to_string()).collect(),

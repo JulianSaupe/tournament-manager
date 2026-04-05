@@ -7,7 +7,7 @@ import (
 )
 
 // AuthorizationMiddleware checks if the user has permission to access a resource
-func AuthorizationMiddleware(authorizationService *service.AuthorizationService, resource string, action string) func(http.Handler) http.Handler {
+func AuthorizationMiddleware(authorizationService *service.AuthorizationService, name string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID, ok := GetUserIDFromContext(r.Context())
@@ -16,7 +16,7 @@ func AuthorizationMiddleware(authorizationService *service.AuthorizationService,
 			}
 
 			ctx := r.Context()
-			allowed, message, err := authorizationService.CheckPermission(ctx, userID, resource, action)
+			allowed, message, err := authorizationService.CheckPermission(ctx, userID, name)
 			if err != nil {
 				panic(domain.NewForbiddenError("Failed to check permission: " + err.Error()))
 			}

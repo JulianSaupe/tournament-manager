@@ -1,7 +1,7 @@
 use crate::db::Database;
+use crate::models::permission::Permission;
 use crate::models::role::Role;
 use uuid::Uuid;
-use crate::models::permission::Permission;
 
 pub struct RoleRepository {
     database: Database,
@@ -17,7 +17,12 @@ impl RoleRepository {
 pub trait RoleRepositoryTrait: Send + Sync {
     async fn list_roles(&self) -> Result<Vec<Role>, String>;
     async fn create_role(&self, name: &str, description: &str) -> Result<Role, String>;
-    async fn update_role(&self, id: Uuid, new_name: &str) -> Result<(), String>;
+    async fn update_role(
+        &self,
+        id: Uuid,
+        new_name: &str,
+        new_description: &str,
+    ) -> Result<(), String>;
     async fn delete_role(&self, id: Uuid) -> Result<(), String>;
     async fn get_role_by_name(&self, name: &str) -> Result<Role, String>;
     async fn remove_permission_from_role(
@@ -27,6 +32,7 @@ pub trait RoleRepositoryTrait: Send + Sync {
     ) -> Result<(), String>;
 
     async fn get_role_permissions(&self, role_id: Uuid) -> Result<Vec<Permission>, String>;
+    async fn get_role_by_id(&self, id: Uuid) -> Result<Role, String>;
 }
 
 #[tonic::async_trait]
@@ -55,9 +61,15 @@ impl RoleRepositoryTrait for RoleRepository {
         Ok(role)
     }
 
-    async fn update_role(&self, id: Uuid, new_name: &str) -> Result<(), String> {
-        sqlx::query(r#"UPDATE roles SET name = $1 WHERE id = $2"#)
+    async fn update_role(
+        &self,
+        id: Uuid,
+        new_name: &str,
+        new_description: &str,
+    ) -> Result<(), String> {
+        sqlx::query(r#"UPDATE roles SET name = $1, description = $2 WHERE id = $3"#)
             .bind(new_name)
+            .bind(new_description)
             .bind(id)
             .execute(self.database.pool())
             .await
@@ -114,7 +126,19 @@ impl RoleRepositoryTrait for RoleRepository {
         .fetch_all(self.database.pool())
         .await
         .map_err(|e| format!("Failed to get role permissions: {}", e))?;
-        
+
         Ok(permissions)
+    }
+
+    async fn get_role_by_id(&self, id: Uuid) -> Result<Role, String> {
+        let role: Role = sqlx::query_as(
+            r#"SELECT id, name, description, created_at, updated_at FROM roles WHERE id = $1"#,
+        )
+        .bind(id)
+        .fetch_one(self.database.pool())
+        .await
+        .map_err(|e| format!("Failed to get role by ID: {}", e))?;
+
+        Ok(role)
     }
 }
