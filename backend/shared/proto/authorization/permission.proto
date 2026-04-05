@@ -45,8 +45,8 @@ message GetPermissionResponse {
 
 // List Permissions
 message ListPermissionsRequest {
-  int32 page = 1;
-  int32 page_size = 2;
+  optional int32 page = 1;
+  optional int32 page_size = 2;
 }
 
 message ListPermissionsResponse {

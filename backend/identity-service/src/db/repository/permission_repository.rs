@@ -15,7 +15,11 @@ impl PermissionRepository {
 #[tonic::async_trait]
 pub trait PermissionRepositoryTrait: Send + Sync {
     async fn create_permission(&self, name: &str) -> Result<Uuid, String>;
-    async fn list_permissions(&self) -> Result<Vec<Permission>, String>;
+    async fn list_permissions(
+        &self,
+        page: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<Vec<Permission>, String>;
     async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), String>;
     async fn delete_permission(&self, id: Uuid) -> Result<(), String>;
     async fn get_permission_by_name(&self, name: &str) -> Result<Permission, String>;
@@ -34,7 +38,28 @@ impl PermissionRepositoryTrait for PermissionRepository {
         Ok(permission_id)
     }
 
-    async fn list_permissions(&self) -> Result<Vec<Permission>, String> {
+    async fn list_permissions(
+        &self,
+        page: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<Vec<Permission>, String> {
+        if let Some(page) = page
+            && let Some(page_size) = page_size
+        {
+            let offset = (page - 1) * page_size;
+
+            let permissions: Vec<Permission> = sqlx::query_as(
+                r#"SELECT id, name, description, created_at, updated_at FROM permissions LIMIT $1 OFFSET $2"#,
+            )
+                .bind(page_size)
+                .bind(offset)
+                .fetch_all(self.database.pool())
+                .await
+                .map_err(|e| format!("Failed to list permissions: {}", e))?;
+
+            return Ok(permissions);
+        }
+
         let permissions: Vec<Permission> = sqlx::query_as(
             r#"SELECT id, name, description, created_at, updated_at FROM permissions"#,
         )

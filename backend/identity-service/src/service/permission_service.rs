@@ -6,6 +6,7 @@ use crate::proto::authorization::{
     ListPermissionsRequest, ListPermissionsResponse, UpdatePermissionRequest,
     UpdatePermissionResponse,
 };
+use std::arch::aarch64::veorq_s8;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
@@ -63,9 +64,31 @@ impl PermissionServiceTrait for PermissionService {
         &self,
         request: Request<ListPermissionsRequest>,
     ) -> Result<Response<ListPermissionsResponse>, Status> {
+        let request_params = request.into_inner();
+        let page = request_params.page;
+        let page_size = request_params.page_size;
+
+        if !page.is_some() && page_size.is_some() || page.is_some() && !page_size.is_some() {
+            return Err(Status::invalid_argument(
+                "Page and page_size are required.".to_string(),
+            ));
+        }
+
+        if page.is_some() && page.unwrap() < 1 {
+            return Err(Status::invalid_argument(
+                "Page must be greater than 0.".to_string(),
+            ));
+        }
+
+        if page_size.is_some() && page_size.unwrap() < 1 {
+            return Err(Status::invalid_argument(
+                "Page size must be greater than 0.".to_string(),
+            ));
+        }
+
         let permissions = self
             .permission_repository
-            .list_permissions()
+            .list_permissions(page, page_size)
             .await
             .map_err(|e| Status::internal(format!("Failed to list permissions: {}", e)))?;
 
