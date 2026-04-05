@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v7.34.0
-// source: role.proto
+// source: authorization/role.proto
 
 package authorization
 
@@ -383,5 +383,5 @@ var RoleService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "role.proto",
+	Metadata: "authorization/role.proto",
 }

@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.34.0
-// source: shared/proto/authorization/authorization.proto
+// source: authorization/authorization.proto
 
 package authorization
 
@@ -32,7 +32,7 @@ type CheckPermissionRequest struct {
 
 func (x *CheckPermissionRequest) Reset() {
 	*x = CheckPermissionRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[0]
+	mi := &file_authorization_authorization_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *CheckPermissionRequest) String() string {
 func (*CheckPermissionRequest) ProtoMessage() {}
 
 func (x *CheckPermissionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[0]
+	mi := &file_authorization_authorization_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *CheckPermissionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckPermissionRequest.ProtoReflect.Descriptor instead.
 func (*CheckPermissionRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{0}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CheckPermissionRequest) GetUserId() string {
@@ -84,7 +84,7 @@ type CheckPermissionResponse struct {
 
 func (x *CheckPermissionResponse) Reset() {
 	*x = CheckPermissionResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[1]
+	mi := &file_authorization_authorization_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -96,7 +96,7 @@ func (x *CheckPermissionResponse) String() string {
 func (*CheckPermissionResponse) ProtoMessage() {}
 
 func (x *CheckPermissionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[1]
+	mi := &file_authorization_authorization_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -109,7 +109,7 @@ func (x *CheckPermissionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckPermissionResponse.ProtoReflect.Descriptor instead.
 func (*CheckPermissionResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{1}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CheckPermissionResponse) GetAllowed() bool {
@@ -136,7 +136,7 @@ type GetUserPermissionsRequest struct {
 
 func (x *GetUserPermissionsRequest) Reset() {
 	*x = GetUserPermissionsRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[2]
+	mi := &file_authorization_authorization_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -148,7 +148,7 @@ func (x *GetUserPermissionsRequest) String() string {
 func (*GetUserPermissionsRequest) ProtoMessage() {}
 
 func (x *GetUserPermissionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[2]
+	mi := &file_authorization_authorization_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -161,7 +161,7 @@ func (x *GetUserPermissionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserPermissionsRequest.ProtoReflect.Descriptor instead.
 func (*GetUserPermissionsRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{2}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *GetUserPermissionsRequest) GetUserId() string {
@@ -181,7 +181,7 @@ type GetUserPermissionsResponse struct {
 
 func (x *GetUserPermissionsResponse) Reset() {
 	*x = GetUserPermissionsResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[3]
+	mi := &file_authorization_authorization_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -193,7 +193,7 @@ func (x *GetUserPermissionsResponse) String() string {
 func (*GetUserPermissionsResponse) ProtoMessage() {}
 
 func (x *GetUserPermissionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[3]
+	mi := &file_authorization_authorization_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -206,7 +206,7 @@ func (x *GetUserPermissionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserPermissionsResponse.ProtoReflect.Descriptor instead.
 func (*GetUserPermissionsResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{3}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *GetUserPermissionsResponse) GetPermissionNames() []string {
@@ -234,7 +234,7 @@ type AssignRoleToUserRequest struct {
 
 func (x *AssignRoleToUserRequest) Reset() {
 	*x = AssignRoleToUserRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[4]
+	mi := &file_authorization_authorization_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -246,7 +246,7 @@ func (x *AssignRoleToUserRequest) String() string {
 func (*AssignRoleToUserRequest) ProtoMessage() {}
 
 func (x *AssignRoleToUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[4]
+	mi := &file_authorization_authorization_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -259,7 +259,7 @@ func (x *AssignRoleToUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignRoleToUserRequest.ProtoReflect.Descriptor instead.
 func (*AssignRoleToUserRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{4}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *AssignRoleToUserRequest) GetUserId() string {
@@ -286,7 +286,7 @@ type AssignRoleToUserResponse struct {
 
 func (x *AssignRoleToUserResponse) Reset() {
 	*x = AssignRoleToUserResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[5]
+	mi := &file_authorization_authorization_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -298,7 +298,7 @@ func (x *AssignRoleToUserResponse) String() string {
 func (*AssignRoleToUserResponse) ProtoMessage() {}
 
 func (x *AssignRoleToUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[5]
+	mi := &file_authorization_authorization_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -311,7 +311,7 @@ func (x *AssignRoleToUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssignRoleToUserResponse.ProtoReflect.Descriptor instead.
 func (*AssignRoleToUserResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{5}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *AssignRoleToUserResponse) GetSuccess() bool {
@@ -339,7 +339,7 @@ type RemoveRoleFromUserRequest struct {
 
 func (x *RemoveRoleFromUserRequest) Reset() {
 	*x = RemoveRoleFromUserRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[6]
+	mi := &file_authorization_authorization_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +351,7 @@ func (x *RemoveRoleFromUserRequest) String() string {
 func (*RemoveRoleFromUserRequest) ProtoMessage() {}
 
 func (x *RemoveRoleFromUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[6]
+	mi := &file_authorization_authorization_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,7 +364,7 @@ func (x *RemoveRoleFromUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveRoleFromUserRequest.ProtoReflect.Descriptor instead.
 func (*RemoveRoleFromUserRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{6}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RemoveRoleFromUserRequest) GetUserId() string {
@@ -391,7 +391,7 @@ type RemoveRoleFromUserResponse struct {
 
 func (x *RemoveRoleFromUserResponse) Reset() {
 	*x = RemoveRoleFromUserResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[7]
+	mi := &file_authorization_authorization_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -403,7 +403,7 @@ func (x *RemoveRoleFromUserResponse) String() string {
 func (*RemoveRoleFromUserResponse) ProtoMessage() {}
 
 func (x *RemoveRoleFromUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[7]
+	mi := &file_authorization_authorization_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -416,7 +416,7 @@ func (x *RemoveRoleFromUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveRoleFromUserResponse.ProtoReflect.Descriptor instead.
 func (*RemoveRoleFromUserResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{7}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RemoveRoleFromUserResponse) GetSuccess() bool {
@@ -443,7 +443,7 @@ type GetUserRolesRequest struct {
 
 func (x *GetUserRolesRequest) Reset() {
 	*x = GetUserRolesRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[8]
+	mi := &file_authorization_authorization_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -455,7 +455,7 @@ func (x *GetUserRolesRequest) String() string {
 func (*GetUserRolesRequest) ProtoMessage() {}
 
 func (x *GetUserRolesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[8]
+	mi := &file_authorization_authorization_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -468,7 +468,7 @@ func (x *GetUserRolesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRolesRequest.ProtoReflect.Descriptor instead.
 func (*GetUserRolesRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{8}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetUserRolesRequest) GetUserId() string {
@@ -489,7 +489,7 @@ type GetUserRolesResponse struct {
 
 func (x *GetUserRolesResponse) Reset() {
 	*x = GetUserRolesResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[9]
+	mi := &file_authorization_authorization_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -501,7 +501,7 @@ func (x *GetUserRolesResponse) String() string {
 func (*GetUserRolesResponse) ProtoMessage() {}
 
 func (x *GetUserRolesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[9]
+	mi := &file_authorization_authorization_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -514,7 +514,7 @@ func (x *GetUserRolesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRolesResponse.ProtoReflect.Descriptor instead.
 func (*GetUserRolesResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{9}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetUserRolesResponse) GetRoleIds() []string {
@@ -548,7 +548,7 @@ type GetRoleUsersRequest struct {
 
 func (x *GetRoleUsersRequest) Reset() {
 	*x = GetRoleUsersRequest{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[10]
+	mi := &file_authorization_authorization_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -560,7 +560,7 @@ func (x *GetRoleUsersRequest) String() string {
 func (*GetRoleUsersRequest) ProtoMessage() {}
 
 func (x *GetRoleUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[10]
+	mi := &file_authorization_authorization_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -573,7 +573,7 @@ func (x *GetRoleUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoleUsersRequest.ProtoReflect.Descriptor instead.
 func (*GetRoleUsersRequest) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{10}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetRoleUsersRequest) GetRoleId() string {
@@ -594,7 +594,7 @@ type GetRoleUsersResponse struct {
 
 func (x *GetRoleUsersResponse) Reset() {
 	*x = GetRoleUsersResponse{}
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[11]
+	mi := &file_authorization_authorization_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -606,7 +606,7 @@ func (x *GetRoleUsersResponse) String() string {
 func (*GetRoleUsersResponse) ProtoMessage() {}
 
 func (x *GetRoleUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[11]
+	mi := &file_authorization_authorization_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +619,7 @@ func (x *GetRoleUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoleUsersResponse.ProtoReflect.Descriptor instead.
 func (*GetRoleUsersResponse) Descriptor() ([]byte, []int) {
-	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{11}
+	return file_authorization_authorization_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetRoleUsersResponse) GetUserIds() []string {
@@ -643,11 +643,11 @@ func (x *GetRoleUsersResponse) GetMessage() string {
 	return ""
 }
 
-var File_shared_proto_authorization_authorization_proto protoreflect.FileDescriptor
+var File_authorization_authorization_proto protoreflect.FileDescriptor
 
-const file_shared_proto_authorization_authorization_proto_rawDesc = "" +
+const file_authorization_authorization_proto_rawDesc = "" +
 	"\n" +
-	".shared/proto/authorization/authorization.proto\x12\rauthorization\"Z\n" +
+	"!authorization/authorization.proto\x12\rauthorization\"Z\n" +
 	"\x16CheckPermissionRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
 	"\x0fpermission_name\x18\x02 \x01(\tR\x0epermissionName\"M\n" +
@@ -692,19 +692,19 @@ const file_shared_proto_authorization_authorization_proto_rawDesc = "" +
 	"\fGetRoleUsers\x12\".authorization.GetRoleUsersRequest\x1a#.authorization.GetRoleUsersResponseB%Z#engine/internal/proto/authorizationb\x06proto3"
 
 var (
-	file_shared_proto_authorization_authorization_proto_rawDescOnce sync.Once
-	file_shared_proto_authorization_authorization_proto_rawDescData []byte
+	file_authorization_authorization_proto_rawDescOnce sync.Once
+	file_authorization_authorization_proto_rawDescData []byte
 )
 
-func file_shared_proto_authorization_authorization_proto_rawDescGZIP() []byte {
-	file_shared_proto_authorization_authorization_proto_rawDescOnce.Do(func() {
-		file_shared_proto_authorization_authorization_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_shared_proto_authorization_authorization_proto_rawDesc), len(file_shared_proto_authorization_authorization_proto_rawDesc)))
+func file_authorization_authorization_proto_rawDescGZIP() []byte {
+	file_authorization_authorization_proto_rawDescOnce.Do(func() {
+		file_authorization_authorization_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_authorization_authorization_proto_rawDesc), len(file_authorization_authorization_proto_rawDesc)))
 	})
-	return file_shared_proto_authorization_authorization_proto_rawDescData
+	return file_authorization_authorization_proto_rawDescData
 }
 
-var file_shared_proto_authorization_authorization_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
-var file_shared_proto_authorization_authorization_proto_goTypes = []any{
+var file_authorization_authorization_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_authorization_authorization_proto_goTypes = []any{
 	(*CheckPermissionRequest)(nil),     // 0: authorization.CheckPermissionRequest
 	(*CheckPermissionResponse)(nil),    // 1: authorization.CheckPermissionResponse
 	(*GetUserPermissionsRequest)(nil),  // 2: authorization.GetUserPermissionsRequest
@@ -718,7 +718,7 @@ var file_shared_proto_authorization_authorization_proto_goTypes = []any{
 	(*GetRoleUsersRequest)(nil),        // 10: authorization.GetRoleUsersRequest
 	(*GetRoleUsersResponse)(nil),       // 11: authorization.GetRoleUsersResponse
 }
-var file_shared_proto_authorization_authorization_proto_depIdxs = []int32{
+var file_authorization_authorization_proto_depIdxs = []int32{
 	0,  // 0: authorization.AuthorizationService.CheckPermission:input_type -> authorization.CheckPermissionRequest
 	2,  // 1: authorization.AuthorizationService.GetUserPermissions:input_type -> authorization.GetUserPermissionsRequest
 	4,  // 2: authorization.AuthorizationService.AssignRoleToUser:input_type -> authorization.AssignRoleToUserRequest
@@ -738,26 +738,26 @@ var file_shared_proto_authorization_authorization_proto_depIdxs = []int32{
 	0,  // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_shared_proto_authorization_authorization_proto_init() }
-func file_shared_proto_authorization_authorization_proto_init() {
-	if File_shared_proto_authorization_authorization_proto != nil {
+func init() { file_authorization_authorization_proto_init() }
+func file_authorization_authorization_proto_init() {
+	if File_authorization_authorization_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_authorization_authorization_proto_rawDesc), len(file_shared_proto_authorization_authorization_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_authorization_authorization_proto_rawDesc), len(file_authorization_authorization_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_shared_proto_authorization_authorization_proto_goTypes,
-		DependencyIndexes: file_shared_proto_authorization_authorization_proto_depIdxs,
-		MessageInfos:      file_shared_proto_authorization_authorization_proto_msgTypes,
+		GoTypes:           file_authorization_authorization_proto_goTypes,
+		DependencyIndexes: file_authorization_authorization_proto_depIdxs,
+		MessageInfos:      file_authorization_authorization_proto_msgTypes,
 	}.Build()
-	File_shared_proto_authorization_authorization_proto = out.File
-	file_shared_proto_authorization_authorization_proto_goTypes = nil
-	file_shared_proto_authorization_authorization_proto_depIdxs = nil
+	File_authorization_authorization_proto = out.File
+	file_authorization_authorization_proto_goTypes = nil
+	file_authorization_authorization_proto_depIdxs = nil
 }

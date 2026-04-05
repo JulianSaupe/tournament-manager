@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v7.34.0
-// source: shared/proto/authorization/authorization.proto
+// source: authorization/authorization.proto
 
 package authorization
 
@@ -307,5 +307,5 @@ var AuthorizationService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "shared/proto/authorization/authorization.proto",
+	Metadata: "authorization/authorization.proto",
 }
