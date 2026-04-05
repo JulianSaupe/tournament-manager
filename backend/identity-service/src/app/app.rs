@@ -8,6 +8,7 @@ use crate::adapter::driving::grpc::authorization_service::AuthorizationService;
 use crate::adapter::driving::grpc::permission_service::PermissionService;
 use crate::adapter::driving::grpc::role_service::RoleService;
 use crate::adapter::driving::grpc::user_service::UserService;
+use crate::adapter::driving::http::authentication_handler::AuthenticationHandler;
 use crate::config::Config;
 use crate::interceptor::auth_interceptor::AuthInterceptor;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
@@ -82,9 +83,9 @@ impl App {
         let interceptor = AuthInterceptor::new(self.config.auth.token.clone());
 
         let addr = format!("[::1]:{}", self.config.server_port).parse()?;
-        println!("Server listening on {}", addr);
+        println!("GRPC server listening on {}", addr);
 
-        Server::builder()
+        let grpc_server = Server::builder()
             .layer(async_interceptor(interceptor))
             .add_service(AuthenticationServiceServer::new(
                 grpc_authentication_service,
@@ -93,8 +94,21 @@ impl App {
             .add_service(AuthorizationServiceServer::new(authorization_service))
             .add_service(PermissionServiceServer::new(permission_service))
             .add_service(RoleServiceServer::new(role_service))
-            .serve(addr)
-            .await?;
+            .serve(addr);
+
+        let http_handler = AuthenticationHandler::new(authentication_service.clone());
+        let http_addr_str = format!("[::1]:{}", self.config.server_port + 1);
+        let http_addr: std::net::SocketAddr = http_addr_str.parse()?;
+        println!("HTTP Server listening on {}", http_addr);
+
+        let listener = tokio::net::TcpListener::bind(http_addr).await?;
+        let http_server = axum::serve(listener, http_handler.router());
+
+        tokio::select! {
+            res = grpc_server => res?,
+            res = http_server => res?,
+            _ = shutdown_token.cancelled() => {},
+        }
 
         shutdown_token.cancel();
 
