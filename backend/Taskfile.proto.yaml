@@ -15,6 +15,6 @@ tasks:
     desc: "Generate Rust gRPC code from proto files"
     dir: '{{.TASKFILE_DIR}}'
     cmds:
-      - cd identity-service && cargo run --bin build-proto
+      - cd identity-service && cargo build
       - cmd: echo "✅ Rust gRPC code generated successfully!"
         silent: true

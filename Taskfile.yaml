@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+includes:
+  proto:
+    taskfile: ./backend/Taskfile.proto.yaml
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
