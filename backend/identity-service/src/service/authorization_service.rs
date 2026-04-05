@@ -1,9 +1,6 @@
 use crate::db::AuthorizationRepositoryTrait;
 use crate::proto::authorization::authorization_service_server::AuthorizationService as AuthorizationServiceTrait;
-use crate::proto::authorization::{
-    CheckPermissionRequest, CheckPermissionResponse, GetUserPermissionsRequest,
-    GetUserPermissionsResponse,
-};
+use crate::proto::authorization::{AssignRoleToUserRequest, AssignRoleToUserResponse, CheckPermissionRequest, CheckPermissionResponse, GetRoleUsersRequest, GetRoleUsersResponse, GetUserPermissionsRequest, GetUserPermissionsResponse, GetUserRolesRequest, GetUserRolesResponse, RemoveRoleFromUserRequest, RemoveRoleFromUserResponse};
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
@@ -70,5 +67,21 @@ impl AuthorizationServiceTrait for AuthorizationService {
             success: true,
             permission_names: permissions,
         }))
+    }
+
+    async fn assign_role_to_user(&self, request: Request<AssignRoleToUserRequest>) -> Result<Response<AssignRoleToUserResponse>, Status> {
+        todo!()
+    }
+
+    async fn remove_role_from_user(&self, request: Request<RemoveRoleFromUserRequest>) -> Result<Response<RemoveRoleFromUserResponse>, Status> {
+        todo!()
+    }
+
+    async fn get_user_roles(&self, request: Request<GetUserRolesRequest>) -> Result<Response<GetUserRolesResponse>, Status> {
+        todo!()
+    }
+
+    async fn get_role_users(&self, request: Request<GetRoleUsersRequest>) -> Result<Response<GetRoleUsersResponse>, Status> {
+        todo!()
     }
 }

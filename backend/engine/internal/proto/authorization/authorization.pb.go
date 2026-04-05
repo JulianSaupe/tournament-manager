@@ -23,12 +23,11 @@ const (
 
 // Check Permission
 type CheckPermissionRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Resource      string                 `protobuf:"bytes,2,opt,name=resource,proto3" json:"resource,omitempty"`
-	Action        string                 `protobuf:"bytes,3,opt,name=action,proto3" json:"action,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UserId         string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	PermissionName string                 `protobuf:"bytes,2,opt,name=permission_name,json=permissionName,proto3" json:"permission_name,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *CheckPermissionRequest) Reset() {
@@ -68,16 +67,9 @@ func (x *CheckPermissionRequest) GetUserId() string {
 	return ""
 }
 
-func (x *CheckPermissionRequest) GetResource() string {
+func (x *CheckPermissionRequest) GetPermissionName() string {
 	if x != nil {
-		return x.Resource
-	}
-	return ""
-}
-
-func (x *CheckPermissionRequest) GetAction() string {
-	if x != nil {
-		return x.Action
+		return x.PermissionName
 	}
 	return ""
 }
@@ -231,29 +223,29 @@ func (x *GetUserPermissionsResponse) GetSuccess() bool {
 	return false
 }
 
-// Validate Access
-type ValidateAccessRequest struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	UserId              string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	RequiredPermissions []string               `protobuf:"bytes,2,rep,name=required_permissions,json=requiredPermissions,proto3" json:"required_permissions,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+// Assign Role to User
+type AssignRoleToUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RoleId        string                 `protobuf:"bytes,2,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ValidateAccessRequest) Reset() {
-	*x = ValidateAccessRequest{}
+func (x *AssignRoleToUserRequest) Reset() {
+	*x = AssignRoleToUserRequest{}
 	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ValidateAccessRequest) String() string {
+func (x *AssignRoleToUserRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ValidateAccessRequest) ProtoMessage() {}
+func (*AssignRoleToUserRequest) ProtoMessage() {}
 
-func (x *ValidateAccessRequest) ProtoReflect() protoreflect.Message {
+func (x *AssignRoleToUserRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -265,48 +257,47 @@ func (x *ValidateAccessRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ValidateAccessRequest.ProtoReflect.Descriptor instead.
-func (*ValidateAccessRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use AssignRoleToUserRequest.ProtoReflect.Descriptor instead.
+func (*AssignRoleToUserRequest) Descriptor() ([]byte, []int) {
 	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *ValidateAccessRequest) GetUserId() string {
+func (x *AssignRoleToUserRequest) GetUserId() string {
 	if x != nil {
 		return x.UserId
 	}
 	return ""
 }
 
-func (x *ValidateAccessRequest) GetRequiredPermissions() []string {
+func (x *AssignRoleToUserRequest) GetRoleId() string {
 	if x != nil {
-		return x.RequiredPermissions
+		return x.RoleId
 	}
-	return nil
+	return ""
 }
 
-type ValidateAccessResponse struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	Authorized         bool                   `protobuf:"varint,1,opt,name=authorized,proto3" json:"authorized,omitempty"`
-	MissingPermissions []string               `protobuf:"bytes,2,rep,name=missing_permissions,json=missingPermissions,proto3" json:"missing_permissions,omitempty"`
-	Message            string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+type AssignRoleToUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ValidateAccessResponse) Reset() {
-	*x = ValidateAccessResponse{}
+func (x *AssignRoleToUserResponse) Reset() {
+	*x = AssignRoleToUserResponse{}
 	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ValidateAccessResponse) String() string {
+func (x *AssignRoleToUserResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ValidateAccessResponse) ProtoMessage() {}
+func (*AssignRoleToUserResponse) ProtoMessage() {}
 
-func (x *ValidateAccessResponse) ProtoReflect() protoreflect.Message {
+func (x *AssignRoleToUserResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -318,26 +309,334 @@ func (x *ValidateAccessResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ValidateAccessResponse.ProtoReflect.Descriptor instead.
-func (*ValidateAccessResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use AssignRoleToUserResponse.ProtoReflect.Descriptor instead.
+func (*AssignRoleToUserResponse) Descriptor() ([]byte, []int) {
 	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ValidateAccessResponse) GetAuthorized() bool {
+func (x *AssignRoleToUserResponse) GetSuccess() bool {
 	if x != nil {
-		return x.Authorized
+		return x.Success
 	}
 	return false
 }
 
-func (x *ValidateAccessResponse) GetMissingPermissions() []string {
+func (x *AssignRoleToUserResponse) GetMessage() string {
 	if x != nil {
-		return x.MissingPermissions
+		return x.Message
+	}
+	return ""
+}
+
+// Remove Role from User
+type RemoveRoleFromUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	RoleId        string                 `protobuf:"bytes,2,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveRoleFromUserRequest) Reset() {
+	*x = RemoveRoleFromUserRequest{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveRoleFromUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveRoleFromUserRequest) ProtoMessage() {}
+
+func (x *RemoveRoleFromUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveRoleFromUserRequest.ProtoReflect.Descriptor instead.
+func (*RemoveRoleFromUserRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RemoveRoleFromUserRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *RemoveRoleFromUserRequest) GetRoleId() string {
+	if x != nil {
+		return x.RoleId
+	}
+	return ""
+}
+
+type RemoveRoleFromUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveRoleFromUserResponse) Reset() {
+	*x = RemoveRoleFromUserResponse{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveRoleFromUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveRoleFromUserResponse) ProtoMessage() {}
+
+func (x *RemoveRoleFromUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveRoleFromUserResponse.ProtoReflect.Descriptor instead.
+func (*RemoveRoleFromUserResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *RemoveRoleFromUserResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *RemoveRoleFromUserResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Get User Roles
+type GetUserRolesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserRolesRequest) Reset() {
+	*x = GetUserRolesRequest{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserRolesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserRolesRequest) ProtoMessage() {}
+
+func (x *GetUserRolesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserRolesRequest.ProtoReflect.Descriptor instead.
+func (*GetUserRolesRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetUserRolesRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetUserRolesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoleIds       []string               `protobuf:"bytes,1,rep,name=role_ids,json=roleIds,proto3" json:"role_ids,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetUserRolesResponse) Reset() {
+	*x = GetUserRolesResponse{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetUserRolesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserRolesResponse) ProtoMessage() {}
+
+func (x *GetUserRolesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserRolesResponse.ProtoReflect.Descriptor instead.
+func (*GetUserRolesResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetUserRolesResponse) GetRoleIds() []string {
+	if x != nil {
+		return x.RoleIds
 	}
 	return nil
 }
 
-func (x *ValidateAccessResponse) GetMessage() string {
+func (x *GetUserRolesResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetUserRolesResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+// Get Role Users
+type GetRoleUsersRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoleId        string                 `protobuf:"bytes,1,opt,name=role_id,json=roleId,proto3" json:"role_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRoleUsersRequest) Reset() {
+	*x = GetRoleUsersRequest{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRoleUsersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRoleUsersRequest) ProtoMessage() {}
+
+func (x *GetRoleUsersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRoleUsersRequest.ProtoReflect.Descriptor instead.
+func (*GetRoleUsersRequest) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetRoleUsersRequest) GetRoleId() string {
+	if x != nil {
+		return x.RoleId
+	}
+	return ""
+}
+
+type GetRoleUsersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserIds       []string               `protobuf:"bytes,1,rep,name=user_ids,json=userIds,proto3" json:"user_ids,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,3,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRoleUsersResponse) Reset() {
+	*x = GetRoleUsersResponse{}
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRoleUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRoleUsersResponse) ProtoMessage() {}
+
+func (x *GetRoleUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shared_proto_authorization_authorization_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRoleUsersResponse.ProtoReflect.Descriptor instead.
+func (*GetRoleUsersResponse) Descriptor() ([]byte, []int) {
+	return file_shared_proto_authorization_authorization_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetRoleUsersResponse) GetUserIds() []string {
+	if x != nil {
+		return x.UserIds
+	}
+	return nil
+}
+
+func (x *GetRoleUsersResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *GetRoleUsersResponse) GetMessage() string {
 	if x != nil {
 		return x.Message
 	}
@@ -348,11 +647,10 @@ var File_shared_proto_authorization_authorization_proto protoreflect.FileDescrip
 
 const file_shared_proto_authorization_authorization_proto_rawDesc = "" +
 	"\n" +
-	".shared/proto/authorization/authorization.proto\x12\rauthorization\"e\n" +
+	".shared/proto/authorization/authorization.proto\x12\rauthorization\"Z\n" +
 	"\x16CheckPermissionRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1a\n" +
-	"\bresource\x18\x02 \x01(\tR\bresource\x12\x16\n" +
-	"\x06action\x18\x03 \x01(\tR\x06action\"M\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12'\n" +
+	"\x0fpermission_name\x18\x02 \x01(\tR\x0epermissionName\"M\n" +
 	"\x17CheckPermissionResponse\x12\x18\n" +
 	"\aallowed\x18\x01 \x01(\bR\aallowed\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"4\n" +
@@ -360,20 +658,38 @@ const file_shared_proto_authorization_authorization_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"a\n" +
 	"\x1aGetUserPermissionsResponse\x12)\n" +
 	"\x10permission_names\x18\x01 \x03(\tR\x0fpermissionNames\x12\x18\n" +
-	"\asuccess\x18\x02 \x01(\bR\asuccess\"c\n" +
-	"\x15ValidateAccessRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x121\n" +
-	"\x14required_permissions\x18\x02 \x03(\tR\x13requiredPermissions\"\x83\x01\n" +
-	"\x16ValidateAccessResponse\x12\x1e\n" +
-	"\n" +
-	"authorized\x18\x01 \x01(\bR\n" +
-	"authorized\x12/\n" +
-	"\x13missing_permissions\x18\x02 \x03(\tR\x12missingPermissions\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage2\xc2\x02\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\"K\n" +
+	"\x17AssignRoleToUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
+	"\arole_id\x18\x02 \x01(\tR\x06roleId\"N\n" +
+	"\x18AssignRoleToUserResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"M\n" +
+	"\x19RemoveRoleFromUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
+	"\arole_id\x18\x02 \x01(\tR\x06roleId\"P\n" +
+	"\x1aRemoveRoleFromUserResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\".\n" +
+	"\x13GetUserRolesRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"e\n" +
+	"\x14GetUserRolesResponse\x12\x19\n" +
+	"\brole_ids\x18\x01 \x03(\tR\aroleIds\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\".\n" +
+	"\x13GetRoleUsersRequest\x12\x17\n" +
+	"\arole_id\x18\x01 \x01(\tR\x06roleId\"e\n" +
+	"\x14GetRoleUsersResponse\x12\x19\n" +
+	"\buser_ids\x18\x01 \x03(\tR\auserIds\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage2\xe5\x04\n" +
 	"\x14AuthorizationService\x12`\n" +
 	"\x0fCheckPermission\x12%.authorization.CheckPermissionRequest\x1a&.authorization.CheckPermissionResponse\x12i\n" +
-	"\x12GetUserPermissions\x12(.authorization.GetUserPermissionsRequest\x1a).authorization.GetUserPermissionsResponse\x12]\n" +
-	"\x0eValidateAccess\x12$.authorization.ValidateAccessRequest\x1a%.authorization.ValidateAccessResponseB%Z#engine/internal/proto/authorizationb\x06proto3"
+	"\x12GetUserPermissions\x12(.authorization.GetUserPermissionsRequest\x1a).authorization.GetUserPermissionsResponse\x12c\n" +
+	"\x10AssignRoleToUser\x12&.authorization.AssignRoleToUserRequest\x1a'.authorization.AssignRoleToUserResponse\x12i\n" +
+	"\x12RemoveRoleFromUser\x12(.authorization.RemoveRoleFromUserRequest\x1a).authorization.RemoveRoleFromUserResponse\x12W\n" +
+	"\fGetUserRoles\x12\".authorization.GetUserRolesRequest\x1a#.authorization.GetUserRolesResponse\x12W\n" +
+	"\fGetRoleUsers\x12\".authorization.GetRoleUsersRequest\x1a#.authorization.GetRoleUsersResponseB%Z#engine/internal/proto/authorizationb\x06proto3"
 
 var (
 	file_shared_proto_authorization_authorization_proto_rawDescOnce sync.Once
@@ -387,27 +703,39 @@ func file_shared_proto_authorization_authorization_proto_rawDescGZIP() []byte {
 	return file_shared_proto_authorization_authorization_proto_rawDescData
 }
 
-var file_shared_proto_authorization_authorization_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_shared_proto_authorization_authorization_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_shared_proto_authorization_authorization_proto_goTypes = []any{
 	(*CheckPermissionRequest)(nil),     // 0: authorization.CheckPermissionRequest
 	(*CheckPermissionResponse)(nil),    // 1: authorization.CheckPermissionResponse
 	(*GetUserPermissionsRequest)(nil),  // 2: authorization.GetUserPermissionsRequest
 	(*GetUserPermissionsResponse)(nil), // 3: authorization.GetUserPermissionsResponse
-	(*ValidateAccessRequest)(nil),      // 4: authorization.ValidateAccessRequest
-	(*ValidateAccessResponse)(nil),     // 5: authorization.ValidateAccessResponse
+	(*AssignRoleToUserRequest)(nil),    // 4: authorization.AssignRoleToUserRequest
+	(*AssignRoleToUserResponse)(nil),   // 5: authorization.AssignRoleToUserResponse
+	(*RemoveRoleFromUserRequest)(nil),  // 6: authorization.RemoveRoleFromUserRequest
+	(*RemoveRoleFromUserResponse)(nil), // 7: authorization.RemoveRoleFromUserResponse
+	(*GetUserRolesRequest)(nil),        // 8: authorization.GetUserRolesRequest
+	(*GetUserRolesResponse)(nil),       // 9: authorization.GetUserRolesResponse
+	(*GetRoleUsersRequest)(nil),        // 10: authorization.GetRoleUsersRequest
+	(*GetRoleUsersResponse)(nil),       // 11: authorization.GetRoleUsersResponse
 }
 var file_shared_proto_authorization_authorization_proto_depIdxs = []int32{
-	0, // 0: authorization.AuthorizationService.CheckPermission:input_type -> authorization.CheckPermissionRequest
-	2, // 1: authorization.AuthorizationService.GetUserPermissions:input_type -> authorization.GetUserPermissionsRequest
-	4, // 2: authorization.AuthorizationService.ValidateAccess:input_type -> authorization.ValidateAccessRequest
-	1, // 3: authorization.AuthorizationService.CheckPermission:output_type -> authorization.CheckPermissionResponse
-	3, // 4: authorization.AuthorizationService.GetUserPermissions:output_type -> authorization.GetUserPermissionsResponse
-	5, // 5: authorization.AuthorizationService.ValidateAccess:output_type -> authorization.ValidateAccessResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: authorization.AuthorizationService.CheckPermission:input_type -> authorization.CheckPermissionRequest
+	2,  // 1: authorization.AuthorizationService.GetUserPermissions:input_type -> authorization.GetUserPermissionsRequest
+	4,  // 2: authorization.AuthorizationService.AssignRoleToUser:input_type -> authorization.AssignRoleToUserRequest
+	6,  // 3: authorization.AuthorizationService.RemoveRoleFromUser:input_type -> authorization.RemoveRoleFromUserRequest
+	8,  // 4: authorization.AuthorizationService.GetUserRoles:input_type -> authorization.GetUserRolesRequest
+	10, // 5: authorization.AuthorizationService.GetRoleUsers:input_type -> authorization.GetRoleUsersRequest
+	1,  // 6: authorization.AuthorizationService.CheckPermission:output_type -> authorization.CheckPermissionResponse
+	3,  // 7: authorization.AuthorizationService.GetUserPermissions:output_type -> authorization.GetUserPermissionsResponse
+	5,  // 8: authorization.AuthorizationService.AssignRoleToUser:output_type -> authorization.AssignRoleToUserResponse
+	7,  // 9: authorization.AuthorizationService.RemoveRoleFromUser:output_type -> authorization.RemoveRoleFromUserResponse
+	9,  // 10: authorization.AuthorizationService.GetUserRoles:output_type -> authorization.GetUserRolesResponse
+	11, // 11: authorization.AuthorizationService.GetRoleUsers:output_type -> authorization.GetRoleUsersResponse
+	6,  // [6:12] is the sub-list for method output_type
+	0,  // [0:6] is the sub-list for method input_type
+	0,  // [0:0] is the sub-list for extension type_name
+	0,  // [0:0] is the sub-list for extension extendee
+	0,  // [0:0] is the sub-list for field type_name
 }
 
 func init() { file_shared_proto_authorization_authorization_proto_init() }
@@ -421,7 +749,7 @@ func file_shared_proto_authorization_authorization_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shared_proto_authorization_authorization_proto_rawDesc), len(file_shared_proto_authorization_authorization_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

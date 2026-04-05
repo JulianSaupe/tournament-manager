@@ -6,7 +6,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "../shared/proto/authorization/authorization.proto",
             "../shared/proto/authorization/permission.proto",
             "../shared/proto/authorization/role.proto",
-            "../shared/proto/authorization/user_role.proto",
         ],
         &["../shared/proto"],
     )?;

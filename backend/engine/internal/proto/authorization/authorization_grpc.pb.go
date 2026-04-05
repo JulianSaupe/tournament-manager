@@ -21,7 +21,10 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthorizationService_CheckPermission_FullMethodName    = "/authorization.AuthorizationService/CheckPermission"
 	AuthorizationService_GetUserPermissions_FullMethodName = "/authorization.AuthorizationService/GetUserPermissions"
-	AuthorizationService_ValidateAccess_FullMethodName     = "/authorization.AuthorizationService/ValidateAccess"
+	AuthorizationService_AssignRoleToUser_FullMethodName   = "/authorization.AuthorizationService/AssignRoleToUser"
+	AuthorizationService_RemoveRoleFromUser_FullMethodName = "/authorization.AuthorizationService/RemoveRoleFromUser"
+	AuthorizationService_GetUserRoles_FullMethodName       = "/authorization.AuthorizationService/GetUserRoles"
+	AuthorizationService_GetRoleUsers_FullMethodName       = "/authorization.AuthorizationService/GetRoleUsers"
 )
 
 // AuthorizationServiceClient is the client API for AuthorizationService service.
@@ -30,7 +33,10 @@ const (
 type AuthorizationServiceClient interface {
 	CheckPermission(ctx context.Context, in *CheckPermissionRequest, opts ...grpc.CallOption) (*CheckPermissionResponse, error)
 	GetUserPermissions(ctx context.Context, in *GetUserPermissionsRequest, opts ...grpc.CallOption) (*GetUserPermissionsResponse, error)
-	ValidateAccess(ctx context.Context, in *ValidateAccessRequest, opts ...grpc.CallOption) (*ValidateAccessResponse, error)
+	AssignRoleToUser(ctx context.Context, in *AssignRoleToUserRequest, opts ...grpc.CallOption) (*AssignRoleToUserResponse, error)
+	RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*RemoveRoleFromUserResponse, error)
+	GetUserRoles(ctx context.Context, in *GetUserRolesRequest, opts ...grpc.CallOption) (*GetUserRolesResponse, error)
+	GetRoleUsers(ctx context.Context, in *GetRoleUsersRequest, opts ...grpc.CallOption) (*GetRoleUsersResponse, error)
 }
 
 type authorizationServiceClient struct {
@@ -61,10 +67,40 @@ func (c *authorizationServiceClient) GetUserPermissions(ctx context.Context, in 
 	return out, nil
 }
 
-func (c *authorizationServiceClient) ValidateAccess(ctx context.Context, in *ValidateAccessRequest, opts ...grpc.CallOption) (*ValidateAccessResponse, error) {
+func (c *authorizationServiceClient) AssignRoleToUser(ctx context.Context, in *AssignRoleToUserRequest, opts ...grpc.CallOption) (*AssignRoleToUserResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ValidateAccessResponse)
-	err := c.cc.Invoke(ctx, AuthorizationService_ValidateAccess_FullMethodName, in, out, cOpts...)
+	out := new(AssignRoleToUserResponse)
+	err := c.cc.Invoke(ctx, AuthorizationService_AssignRoleToUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authorizationServiceClient) RemoveRoleFromUser(ctx context.Context, in *RemoveRoleFromUserRequest, opts ...grpc.CallOption) (*RemoveRoleFromUserResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveRoleFromUserResponse)
+	err := c.cc.Invoke(ctx, AuthorizationService_RemoveRoleFromUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authorizationServiceClient) GetUserRoles(ctx context.Context, in *GetUserRolesRequest, opts ...grpc.CallOption) (*GetUserRolesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserRolesResponse)
+	err := c.cc.Invoke(ctx, AuthorizationService_GetUserRoles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authorizationServiceClient) GetRoleUsers(ctx context.Context, in *GetRoleUsersRequest, opts ...grpc.CallOption) (*GetRoleUsersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRoleUsersResponse)
+	err := c.cc.Invoke(ctx, AuthorizationService_GetRoleUsers_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +113,10 @@ func (c *authorizationServiceClient) ValidateAccess(ctx context.Context, in *Val
 type AuthorizationServiceServer interface {
 	CheckPermission(context.Context, *CheckPermissionRequest) (*CheckPermissionResponse, error)
 	GetUserPermissions(context.Context, *GetUserPermissionsRequest) (*GetUserPermissionsResponse, error)
-	ValidateAccess(context.Context, *ValidateAccessRequest) (*ValidateAccessResponse, error)
+	AssignRoleToUser(context.Context, *AssignRoleToUserRequest) (*AssignRoleToUserResponse, error)
+	RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*RemoveRoleFromUserResponse, error)
+	GetUserRoles(context.Context, *GetUserRolesRequest) (*GetUserRolesResponse, error)
+	GetRoleUsers(context.Context, *GetRoleUsersRequest) (*GetRoleUsersResponse, error)
 	mustEmbedUnimplementedAuthorizationServiceServer()
 }
 
@@ -94,8 +133,17 @@ func (UnimplementedAuthorizationServiceServer) CheckPermission(context.Context, 
 func (UnimplementedAuthorizationServiceServer) GetUserPermissions(context.Context, *GetUserPermissionsRequest) (*GetUserPermissionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserPermissions not implemented")
 }
-func (UnimplementedAuthorizationServiceServer) ValidateAccess(context.Context, *ValidateAccessRequest) (*ValidateAccessResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method ValidateAccess not implemented")
+func (UnimplementedAuthorizationServiceServer) AssignRoleToUser(context.Context, *AssignRoleToUserRequest) (*AssignRoleToUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AssignRoleToUser not implemented")
+}
+func (UnimplementedAuthorizationServiceServer) RemoveRoleFromUser(context.Context, *RemoveRoleFromUserRequest) (*RemoveRoleFromUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method RemoveRoleFromUser not implemented")
+}
+func (UnimplementedAuthorizationServiceServer) GetUserRoles(context.Context, *GetUserRolesRequest) (*GetUserRolesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserRoles not implemented")
+}
+func (UnimplementedAuthorizationServiceServer) GetRoleUsers(context.Context, *GetRoleUsersRequest) (*GetRoleUsersResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRoleUsers not implemented")
 }
 func (UnimplementedAuthorizationServiceServer) mustEmbedUnimplementedAuthorizationServiceServer() {}
 func (UnimplementedAuthorizationServiceServer) testEmbeddedByValue()                              {}
@@ -154,20 +202,74 @@ func _AuthorizationService_GetUserPermissions_Handler(srv interface{}, ctx conte
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuthorizationService_ValidateAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ValidateAccessRequest)
+func _AuthorizationService_AssignRoleToUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AssignRoleToUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuthorizationServiceServer).ValidateAccess(ctx, in)
+		return srv.(AuthorizationServiceServer).AssignRoleToUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuthorizationService_ValidateAccess_FullMethodName,
+		FullMethod: AuthorizationService_AssignRoleToUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthorizationServiceServer).ValidateAccess(ctx, req.(*ValidateAccessRequest))
+		return srv.(AuthorizationServiceServer).AssignRoleToUser(ctx, req.(*AssignRoleToUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthorizationService_RemoveRoleFromUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveRoleFromUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServiceServer).RemoveRoleFromUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthorizationService_RemoveRoleFromUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServiceServer).RemoveRoleFromUser(ctx, req.(*RemoveRoleFromUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthorizationService_GetUserRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServiceServer).GetUserRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthorizationService_GetUserRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServiceServer).GetUserRoles(ctx, req.(*GetUserRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthorizationService_GetRoleUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoleUsersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthorizationServiceServer).GetRoleUsers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthorizationService_GetRoleUsers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthorizationServiceServer).GetRoleUsers(ctx, req.(*GetRoleUsersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -188,8 +290,20 @@ var AuthorizationService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthorizationService_GetUserPermissions_Handler,
 		},
 		{
-			MethodName: "ValidateAccess",
-			Handler:    _AuthorizationService_ValidateAccess_Handler,
+			MethodName: "AssignRoleToUser",
+			Handler:    _AuthorizationService_AssignRoleToUser_Handler,
+		},
+		{
+			MethodName: "RemoveRoleFromUser",
+			Handler:    _AuthorizationService_RemoveRoleFromUser_Handler,
+		},
+		{
+			MethodName: "GetUserRoles",
+			Handler:    _AuthorizationService_GetUserRoles_Handler,
+		},
+		{
+			MethodName: "GetRoleUsers",
+			Handler:    _AuthorizationService_GetRoleUsers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
