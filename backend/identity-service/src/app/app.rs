@@ -10,12 +10,12 @@ use crate::proto::authorization::authorization_service_server::AuthorizationServ
 use crate::proto::authorization::permission_service_server::PermissionServiceServer;
 use crate::proto::authorization::role_service_server::RoleServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
-use crate::service::authentication_service::AuthenticationService;
-use crate::service::authorization_service::AuthorizationService;
-use crate::service::permission_service::PermissionService;
-use crate::service::role_service::RoleService;
+use crate::service::grpc::authentication_service::AuthenticationService;
+use crate::service::grpc::authorization_service::AuthorizationService;
+use crate::service::grpc::permission_service::PermissionService;
+use crate::service::grpc::role_service::RoleService;
+use crate::service::grpc::user_service::UserService;
 use crate::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
-use crate::service::user_service::UserService;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
@@ -38,8 +38,9 @@ impl App {
         let user_repository: Arc<dyn UserRepositoryTrait> =
             Arc::new(UserRepository::new(database.clone()));
 
-        let session_cache_service: Arc<dyn SessionCacheServiceTrait> =
-            Arc::new(SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000));
+        let session_cache_service: Arc<dyn SessionCacheServiceTrait> = Arc::new(
+            SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000),
+        );
 
         let session_repository: Arc<dyn SessionRepositoryTrait> =
             Arc::new(CachedSessionRepository::new(
