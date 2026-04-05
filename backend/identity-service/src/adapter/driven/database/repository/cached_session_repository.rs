@@ -1,6 +1,6 @@
 use crate::adapter::driven::database::SessionRepositoryTrait;
 use crate::adapter::driven::database::repository_error::RepositoryError;
-use crate::models::session::Session;
+use crate::domain::models::session::Session;
 use crate::service::session_cache_service::SessionCacheServiceTrait;
 use std::sync::Arc;
 use uuid::Uuid;

@@ -1,6 +1,6 @@
 use crate::adapter::driven::database::Database;
 use crate::adapter::driven::database::repository::repository_error::RepositoryError;
-use crate::models::permission::Permission;
+use crate::domain::models::permission::Permission;
 use uuid::Uuid;
 
 pub struct PermissionRepository {

@@ -1,4 +1,4 @@
-use crate::models::session::Session;
+use crate::domain::models::session::Session;
 use chrono::Utc;
 use std::collections::HashMap;
 use std::sync::Arc;

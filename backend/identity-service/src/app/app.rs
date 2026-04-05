@@ -3,7 +3,7 @@ use crate::adapter::driven::database::{
     PermissionRepository, PermissionRepositoryTrait, RoleRepository, RoleRepositoryTrait,
     SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
-use crate::adapter::driving::grpc::authentication_service::AuthenticationService;
+use crate::adapter::driving::grpc::authentication_service::GrpcAuthenticationService;
 use crate::adapter::driving::grpc::authorization_service::AuthorizationService;
 use crate::adapter::driving::grpc::permission_service::PermissionService;
 use crate::adapter::driving::grpc::role_service::RoleService;
@@ -16,6 +16,7 @@ use crate::proto::authorization::permission_service_server::PermissionServiceSer
 use crate::proto::authorization::role_service_server::RoleServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
 use crate::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
+use crate::service::{AuthenticationService, AuthenticationServiceTrait};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
@@ -35,12 +36,14 @@ impl App {
         let shutdown_token = CancellationToken::new();
         let database = Database::new(&self.config.db.url).await?;
 
-        let user_repository: Arc<dyn UserRepositoryTrait> =
-            Arc::new(UserRepository::new(database.clone()));
-
+        // Cache Services
         let session_cache_service: Arc<dyn SessionCacheServiceTrait> = Arc::new(
             SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000),
         );
+
+        // Repositories
+        let user_repository: Arc<dyn UserRepositoryTrait> =
+            Arc::new(UserRepository::new(database.clone()));
 
         let session_repository: Arc<dyn SessionRepositoryTrait> =
             Arc::new(CachedSessionRepository::new(
@@ -56,8 +59,14 @@ impl App {
 
         let role_repository: Arc<dyn RoleRepositoryTrait> = Arc::new(RoleRepository::new(database));
 
-        let authentication_service =
-            AuthenticationService::new(user_repository.clone(), session_repository.clone());
+        // Services
+        let authentication_service: Arc<dyn AuthenticationServiceTrait> = Arc::new(
+            AuthenticationService::new(user_repository.clone(), session_repository.clone()),
+        );
+
+        // Grpc Services
+        let grpc_authentication_service =
+            GrpcAuthenticationService::new(authentication_service.clone());
 
         let user_service = UserService::new(
             user_repository.clone(),
@@ -77,7 +86,9 @@ impl App {
 
         Server::builder()
             .layer(async_interceptor(interceptor))
-            .add_service(AuthenticationServiceServer::new(authentication_service))
+            .add_service(AuthenticationServiceServer::new(
+                grpc_authentication_service,
+            ))
             .add_service(UserServiceServer::new(user_service))
             .add_service(AuthorizationServiceServer::new(authorization_service))
             .add_service(PermissionServiceServer::new(permission_service))

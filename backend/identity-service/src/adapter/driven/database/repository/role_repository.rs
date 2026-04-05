@@ -1,7 +1,7 @@
 use crate::adapter::driven::database::Database;
 use crate::adapter::driven::database::repository_error::RepositoryError;
-use crate::models::permission::Permission;
-use crate::models::role::Role;
+use crate::domain::models::permission::Permission;
+use crate::domain::models::role::Role;
 use uuid::Uuid;
 
 pub struct RoleRepository {

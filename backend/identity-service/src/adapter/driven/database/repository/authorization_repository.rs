@@ -1,6 +1,6 @@
 use crate::adapter::driven::database::Database;
 use crate::adapter::driven::database::repository_error::RepositoryError;
-use crate::models::role::Role;
+use crate::domain::models::role::Role;
 use uuid::Uuid;
 
 pub struct AuthorizationRepository {
