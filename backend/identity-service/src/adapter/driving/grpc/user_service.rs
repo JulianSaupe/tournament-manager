@@ -86,7 +86,7 @@ impl UserServiceTrait for UserService {
 
     async fn reset_password(
         &self,
-        request: Request<ResetPasswordRequest>,
+        _request: Request<ResetPasswordRequest>,
     ) -> Result<Response<ResetPasswordResponse>, Status> {
         todo!()
     }

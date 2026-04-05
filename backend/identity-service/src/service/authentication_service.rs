@@ -1,12 +1,8 @@
-use crate::adapter::driven::repository_error::RepositoryError;
 use crate::adapter::driven::{SessionRepositoryTrait, UserRepositoryTrait};
 use crate::domain::errors::service_error::ServiceError;
 use crate::domain::models::session::Session;
-use crate::proto::authentication::LoginResponse;
 use crate::utils::verify_hash;
-use prost_types::Timestamp;
 use std::sync::Arc;
-use tonic::{Response, Status};
 use uuid::Uuid;
 
 const SESSION_DURATION_HOURS: i64 = 24;

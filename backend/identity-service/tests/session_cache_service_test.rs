@@ -1,5 +1,5 @@
 use chrono::{Duration as ChronoDuration, Utc};
-use identity_service::models::session::Session;
+use identity_service::domain::models::session::Session;
 use identity_service::service::session_cache_service::{
     SessionCacheService, SessionCacheServiceTrait,
 };
