@@ -1,3 +1,4 @@
+use crate::db::repository_error::RepositoryError;
 use crate::db::{AuthorizationRepositoryTrait, RoleRepositoryTrait, UserRepositoryTrait};
 use crate::proto::user::user_service_server::UserService as UserServiceTrait;
 use crate::proto::user::{
@@ -6,6 +7,7 @@ use crate::proto::user::{
 };
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
+use uuid::Uuid;
 
 pub struct UserService {
     user_repository: Arc<dyn UserRepositoryTrait>,
@@ -53,12 +55,10 @@ impl UserServiceTrait for UserService {
             .await
             .unwrap();
 
-        let response = CreateResponse {
+        Ok(Response::new(CreateResponse {
             success: true,
             user_id: user_id.to_string(),
-        };
-
-        Ok(Response::new(response))
+        }))
     }
 
     async fn delete(
@@ -67,14 +67,19 @@ impl UserServiceTrait for UserService {
     ) -> Result<Response<DeleteResponse>, Status> {
         let delete_req = request.into_inner();
 
+        let user_id = Uuid::parse_str(&delete_req.user_id).map_err(|_| {
+            Status::invalid_argument("Failed to parse user ID: must be a valid UUID.")
+        })?;
+
         self.user_repository
-            .delete(&delete_req.user_id)
+            .delete(user_id)
             .await
-            .map_err(|_| Status::internal("Failed to delete user"))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("User not found"),
+                _ => Status::internal(format!("Failed to delete user: {}", e)),
+            })?;
 
-        let response = DeleteResponse { success: true };
-
-        Ok(Response::new(response))
+        Ok(Response::new(DeleteResponse { success: true }))
     }
 
     async fn reset_password(

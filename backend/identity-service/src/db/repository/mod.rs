@@ -1,6 +1,7 @@
 mod authorization_repository;
 mod cached_session_repository;
 mod permission_repository;
+pub mod repository_error;
 mod role_repository;
 pub mod session_repository;
 pub mod user_repository;

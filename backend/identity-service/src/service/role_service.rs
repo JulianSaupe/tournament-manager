@@ -1,3 +1,4 @@
+use crate::db::repository_error::RepositoryError;
 use crate::db::{AuthorizationRepositoryTrait, RoleRepositoryTrait};
 use crate::proto::authorization::role_service_server::RoleService as RoleServiceTrait;
 use crate::proto::authorization::{
@@ -61,7 +62,10 @@ impl RoleServiceTrait for RoleService {
             .role_repository
             .get_role_by_id(role_id)
             .await
-            .map_err(|_| Status::not_found(format!("Role with ID {} not found", role_id)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role not found"),
+                _ => Status::internal(format!("Failed to get role: {}", e)),
+            })?;
 
         Ok(Response::new(GetRoleResponse {
             success: true,
@@ -123,7 +127,10 @@ impl RoleServiceTrait for RoleService {
         self.role_repository
             .update_role(role_id, &new_name, &new_description)
             .await
-            .map_err(|e| Status::internal(format!("Failed to update role: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role not found"),
+                _ => Status::internal(format!("Failed to update role: {}", e)),
+            })?;
 
         Ok(Response::new(UpdateRoleResponse {
             success: true,
@@ -142,7 +149,10 @@ impl RoleServiceTrait for RoleService {
         self.role_repository
             .delete_role(role_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to delete role: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role not found"),
+                _ => Status::internal(format!("Failed to delete role: {}", e)),
+            })?;
 
         Ok(Response::new(DeleteRoleResponse {
             success: true,
@@ -167,7 +177,10 @@ impl RoleServiceTrait for RoleService {
         self.authorization_repository
             .assign_permission_to_role(role_id, permission_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to assign permission to role: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role or permission not found"),
+                _ => Status::internal(format!("Failed to assign permission to role: {}", e)),
+            })?;
 
         Ok(Response::new(AssignPermissionToRoleResponse {
             success: true,
@@ -192,8 +205,9 @@ impl RoleServiceTrait for RoleService {
         self.role_repository
             .remove_permission_from_role(role_id, permission_id)
             .await
-            .map_err(|e| {
-                Status::internal(format!("Failed to remove permission from role: {}", e))
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role or permission not found"),
+                _ => Status::internal(format!("Failed to remove permission from role: {}", e)),
             })?;
 
         Ok(Response::new(RemovePermissionFromRoleResponse {
@@ -215,7 +229,17 @@ impl RoleServiceTrait for RoleService {
             .role_repository
             .get_role_permissions(role_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to retrieve role permissions: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role not found"),
+                _ => Status::internal(format!("Failed to get role permissions: {}", e)),
+            })?;
+
+        if permissions.is_empty() {
+            return Err(Status::not_found(format!(
+                "Role with ID {} has no permissions",
+                role_id
+            )));
+        }
 
         Ok(Response::new(GetRolePermissionsResponse {
             permission_ids: permissions.iter().map(|p| p.id.to_string()).collect(),

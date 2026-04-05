@@ -1,3 +1,4 @@
+use crate::db::repository_error::RepositoryError;
 use crate::db::{SessionRepositoryTrait, UserRepositoryTrait};
 use crate::proto::authentication::authentication_service_server::AuthenticationService as AuthenticationServiceTrait;
 use crate::proto::authentication::{
@@ -109,34 +110,27 @@ impl AuthenticationServiceTrait for AuthenticationService {
             .session_repository
             .validate_session(session_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to validate session: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::unauthenticated("Session not found"),
+                _ => Status::internal(format!("Failed to validate session: {}", e)),
+            })?;
 
-        match session {
-            Some(session_data) => {
-                let _ = self
-                    .session_repository
-                    .update_last_accessed(session_id)
-                    .await;
+        let _ = self
+            .session_repository
+            .update_last_accessed(session_id)
+            .await;
 
-                let expires_at = Timestamp {
-                    seconds: session_data.expires_at.timestamp(),
-                    nanos: session_data.expires_at.timestamp_subsec_nanos() as i32,
-                };
+        let expires_at = Timestamp {
+            seconds: session.expires_at.timestamp(),
+            nanos: session.expires_at.timestamp_subsec_nanos() as i32,
+        };
 
-                Ok(Response::new(ValidateSessionResponse {
-                    valid: true,
-                    user_id: session_data.user_id.to_string(),
-                    expires_at: Some(expires_at),
-                    message: "Session is valid".to_string(),
-                }))
-            }
-            None => Ok(Response::new(ValidateSessionResponse {
-                valid: false,
-                user_id: String::new(),
-                expires_at: None,
-                message: "Session is invalid or expired".to_string(),
-            })),
-        }
+        Ok(Response::new(ValidateSessionResponse {
+            valid: true,
+            user_id: session.user_id.to_string(),
+            expires_at: Some(expires_at),
+            message: "Session is valid".to_string(),
+        }))
     }
 
     async fn logout(
@@ -242,7 +236,7 @@ mod tests {
             .times(1)
             .returning(move |s_id| {
                 Box::pin(async move {
-                    Ok(Some(Session {
+                    Ok(Session {
                         session_id: s_id,
                         user_id,
                         ip_address: None,
@@ -250,7 +244,7 @@ mod tests {
                         created_at: now,
                         expires_at: now + chrono::Duration::hours(1),
                         last_accessed_at: now,
-                    }))
+                    })
                 })
             });
 

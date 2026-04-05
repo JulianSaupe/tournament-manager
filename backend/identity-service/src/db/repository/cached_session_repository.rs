@@ -1,8 +1,9 @@
-use std::sync::Arc;
-use uuid::Uuid;
 use crate::db::SessionRepositoryTrait;
+use crate::db::repository_error::RepositoryError;
 use crate::models::session::Session;
 use crate::service::session_cache_service::SessionCacheServiceTrait;
+use std::sync::Arc;
+use uuid::Uuid;
 
 pub struct CachedSessionRepository {
     repository: Arc<dyn SessionRepositoryTrait>,
@@ -14,7 +15,10 @@ impl CachedSessionRepository {
         repository: Arc<dyn SessionRepositoryTrait>,
         cache_service: Arc<dyn SessionCacheServiceTrait>,
     ) -> Self {
-        Self { repository, cache_service }
+        Self {
+            repository,
+            cache_service,
+        }
     }
 }
 
@@ -26,40 +30,49 @@ impl SessionRepositoryTrait for CachedSessionRepository {
         ip_address: Option<String>,
         user_agent: Option<String>,
         duration_hours: i64,
-    ) -> Result<Session, String> {
-        let session = self.repository.create_session(user_id, ip_address, user_agent, duration_hours).await?;
-        self.cache_service.set(session.session_id.to_string(), session.clone()).await;
+    ) -> Result<Session, RepositoryError> {
+        let session = self
+            .repository
+            .create_session(user_id, ip_address, user_agent, duration_hours)
+            .await?;
+        self.cache_service
+            .set(session.session_id.to_string(), session.clone())
+            .await;
         Ok(session)
     }
 
-    async fn validate_session(&self, session_id: Uuid) -> Result<Option<Session>, String> {
+    async fn validate_session(&self, session_id: Uuid) -> Result<Session, RepositoryError> {
         if let Some(session) = self.cache_service.get(session_id.to_string()).await {
-            return Ok(Some(session));
+            return Ok(session);
         }
 
-        let result = self.repository.validate_session(session_id).await?;
-        if let Some(ref session) = result {
-            self.cache_service.set(session_id.to_string(), session.clone()).await;
-        }
-        Ok(result)
+        let session = self.repository.validate_session(session_id).await?;
+
+        self.cache_service
+            .set(session_id.to_string(), session.clone())
+            .await;
+
+        Ok(session)
     }
 
-    async fn delete_session(&self, session_id: Uuid) -> Result<(), String> {
+    async fn delete_session(&self, session_id: Uuid) -> Result<(), RepositoryError> {
         self.cache_service.remove(session_id.to_string()).await;
         self.repository.delete_session(session_id).await
     }
 
-    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<i64, String> {
+    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<(), RepositoryError> {
         self.cache_service.remove_user_sessions(user_id).await;
         self.repository.delete_user_sessions(user_id).await
     }
 
-    async fn cleanup_expired_sessions(&self) -> Result<i64, String> {
+    async fn cleanup_expired_sessions(&self) -> Result<i64, RepositoryError> {
         self.repository.cleanup_expired_sessions().await
     }
 
-    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), String> {
-        self.cache_service.update_last_accessed(session_id.to_string()).await;
+    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), RepositoryError> {
+        self.cache_service
+            .update_last_accessed(session_id.to_string())
+            .await;
         self.repository.update_last_accessed(session_id).await
     }
 }

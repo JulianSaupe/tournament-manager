@@ -1,4 +1,5 @@
 use crate::db::Database;
+use crate::db::repository_error::RepositoryError;
 use crate::utils::hash_string;
 use uuid::Uuid;
 
@@ -22,7 +23,7 @@ pub trait UserRepositoryTrait: Send + Sync {
         password: String,
     ) -> Result<Uuid, String>;
 
-    async fn delete(&self, id: &String) -> Result<(), String>;
+    async fn delete(&self, id: Uuid) -> Result<(), RepositoryError>;
 
     async fn find_by_email(&self, email: &str) -> Option<(Uuid, String)>;
 }
@@ -50,12 +51,16 @@ impl UserRepositoryTrait for UserRepository {
         Ok(id)
     }
 
-    async fn delete(&self, id: &String) -> Result<(), String> {
-        sqlx::query(r#"DELETE FROM users WHERE id = $1"#)
-            .bind(Uuid::parse_str(id).unwrap())
+    async fn delete(&self, id: Uuid) -> Result<(), RepositoryError> {
+        let result = sqlx::query(r#"DELETE FROM users WHERE id = $1"#)
+            .bind(id)
             .execute(self.database.pool())
             .await
-            .map_err(|_| "Failed to delete user")?;
+            .map_err(RepositoryError::from)?;
+
+        if result.rows_affected() == 0 {
+            return Err(RepositoryError::NotFound);
+        }
 
         Ok(())
     }

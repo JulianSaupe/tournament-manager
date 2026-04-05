@@ -1,4 +1,5 @@
 use crate::db::AuthorizationRepositoryTrait;
+use crate::db::repository_error::RepositoryError;
 use crate::proto::authorization::authorization_service_server::AuthorizationService as AuthorizationServiceTrait;
 use crate::proto::authorization::{
     AssignRoleToUserRequest, AssignRoleToUserResponse, CheckPermissionRequest,
@@ -66,7 +67,10 @@ impl AuthorizationServiceTrait for AuthorizationService {
             .authorization_repository
             .get_user_permissions(user_id)
             .await
-            .map_err(|_| Status::internal("Failed to get user permissions"))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("User not found"),
+                _ => Status::internal(format!("Failed to get user permissions: {}", e)),
+            })?;
 
         Ok(Response::new(GetUserPermissionsResponse {
             success: true,
@@ -112,7 +116,10 @@ impl AuthorizationServiceTrait for AuthorizationService {
         self.authorization_repository
             .revoke_role(user_id, role_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to remove role from user: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Role not found for user"),
+                _ => Status::internal(format!("Failed to remove role from user: {}", e)),
+            })?;
 
         Ok(Response::new(RemoveRoleFromUserResponse {
             success: true,

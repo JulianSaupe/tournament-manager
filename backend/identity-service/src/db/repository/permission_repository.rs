@@ -1,4 +1,5 @@
 use crate::db::Database;
+use crate::db::repository::repository_error::RepositoryError;
 use crate::models::permission::Permission;
 use uuid::Uuid;
 
@@ -14,26 +15,26 @@ impl PermissionRepository {
 
 #[tonic::async_trait]
 pub trait PermissionRepositoryTrait: Send + Sync {
-    async fn create_permission(&self, name: &str) -> Result<Uuid, String>;
+    async fn create_permission(&self, name: &str) -> Result<Uuid, RepositoryError>;
     async fn list_permissions(
         &self,
         page: Option<i32>,
         page_size: Option<i32>,
-    ) -> Result<Vec<Permission>, String>;
-    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), String>;
-    async fn delete_permission(&self, id: Uuid) -> Result<(), String>;
-    async fn get_permission_by_name(&self, name: &str) -> Result<Permission, String>;
+    ) -> Result<Vec<Permission>, RepositoryError>;
+    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), RepositoryError>;
+    async fn delete_permission(&self, id: Uuid) -> Result<(), RepositoryError>;
+    async fn get_permission_by_name(&self, name: &str) -> Result<Permission, RepositoryError>;
 }
 
 #[tonic::async_trait]
 impl PermissionRepositoryTrait for PermissionRepository {
-    async fn create_permission(&self, name: &str) -> Result<Uuid, String> {
+    async fn create_permission(&self, name: &str) -> Result<Uuid, RepositoryError> {
         let permission_id =
             sqlx::query_scalar(r#"INSERT INTO permissions (name) VALUES ($1) RETURNING id"#)
                 .bind(name)
                 .fetch_one(self.database.pool())
                 .await
-                .map_err(|e| format!("Failed to create permission: {}", e))?;
+                .map_err(RepositoryError::from)?;
 
         Ok(permission_id)
     }
@@ -42,7 +43,7 @@ impl PermissionRepositoryTrait for PermissionRepository {
         &self,
         page: Option<i32>,
         page_size: Option<i32>,
-    ) -> Result<Vec<Permission>, String> {
+    ) -> Result<Vec<Permission>, RepositoryError> {
         if let (Some(page), Some(page_size)) = (page, page_size) {
             let offset = (page - 1) * page_size;
 
@@ -53,7 +54,7 @@ impl PermissionRepositoryTrait for PermissionRepository {
                 .bind(offset)
                 .fetch_all(self.database.pool())
                 .await
-                .map_err(|e| format!("Failed to list permissions: {}", e))?;
+                .map_err(RepositoryError::from)?;
 
             return Ok(permissions);
         }
@@ -63,12 +64,12 @@ impl PermissionRepositoryTrait for PermissionRepository {
         )
         .fetch_all(self.database.pool())
         .await
-        .map_err(|e| format!("Failed to list permissions: {}", e))?;
+        .map_err(RepositoryError::from)?;
 
         Ok(permissions)
     }
 
-    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), String> {
+    async fn update_permission(&self, id: Uuid, new_name: &str) -> Result<(), RepositoryError> {
         sqlx::query(
             r#"UPDATE permissions
                     SET name = $2, updated_at = now()
@@ -78,29 +79,29 @@ impl PermissionRepositoryTrait for PermissionRepository {
         .bind(new_name)
         .execute(self.database.pool())
         .await
-        .map_err(|e| format!("Failed to update permission: {}", e))?;
+        .map_err(RepositoryError::from)?;
 
         Ok(())
     }
 
-    async fn delete_permission(&self, id: Uuid) -> Result<(), String> {
+    async fn delete_permission(&self, id: Uuid) -> Result<(), RepositoryError> {
         sqlx::query(r#"DELETE FROM permissions WHERE id = $1"#)
             .bind(id)
             .execute(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to delete permission: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
         Ok(())
     }
 
-    async fn get_permission_by_name(&self, name: &str) -> Result<Permission, String> {
+    async fn get_permission_by_name(&self, name: &str) -> Result<Permission, RepositoryError> {
         let permission = sqlx::query_as(
             r#"SELECT id, name, description, created_at, updated_at FROM permissions WHERE name = $1"#,
         )
         .bind(name)
         .fetch_one(self.database.pool())
         .await
-        .map_err(|e| format!("Failed to get permission by name: {}", e))?;
+        .map_err(RepositoryError::from)?;
 
         Ok(permission)
     }

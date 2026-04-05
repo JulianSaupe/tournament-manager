@@ -1,4 +1,5 @@
 use crate::db::PermissionRepositoryTrait;
+use crate::db::repository_error::RepositoryError;
 use crate::proto::authorization::permission_service_server::PermissionService as PermissionServiceTrait;
 use crate::proto::authorization::{
     CreatePermissionRequest, CreatePermissionResponse, DeletePermissionRequest,
@@ -51,7 +52,10 @@ impl PermissionServiceTrait for PermissionService {
             .permission_repository
             .get_permission_by_name(&permission_req.permission_name)
             .await
-            .map_err(|_| Status::internal("Failed to get permission by name:"))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Permission not found"),
+                _ => Status::internal("Failed to get permission by name:"),
+            })?;
 
         Ok(Response::new(GetPermissionResponse {
             permission: Some(permission.into()),
@@ -110,7 +114,10 @@ impl PermissionServiceTrait for PermissionService {
         self.permission_repository
             .update_permission(permission_id, &permission_req.name)
             .await
-            .map_err(|e| Status::internal(format!("Failed to update permission: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Permission not found"),
+                _ => Status::internal("Failed to update permission:"),
+            })?;
 
         Ok(Response::new(UpdatePermissionResponse {
             success: true,
@@ -130,7 +137,10 @@ impl PermissionServiceTrait for PermissionService {
         self.permission_repository
             .delete_permission(permission_id)
             .await
-            .map_err(|e| Status::internal(format!("Failed to delete permission: {}", e)))?;
+            .map_err(|e| match e {
+                RepositoryError::NotFound => Status::not_found("Permission not found"),
+                _ => Status::internal("Failed to delete permission:"),
+            })?;
 
         Ok(Response::new(DeletePermissionResponse {
             success: true,

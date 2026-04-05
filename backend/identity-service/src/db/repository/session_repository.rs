@@ -1,4 +1,5 @@
 use crate::db::Database;
+use crate::db::repository_error::RepositoryError;
 use crate::models::session::Session;
 use chrono::{Duration, Utc};
 use uuid::Uuid;
@@ -22,17 +23,17 @@ pub trait SessionRepositoryTrait: Send + Sync {
         ip_address: Option<String>,
         user_agent: Option<String>,
         duration_hours: i64,
-    ) -> Result<Session, String>;
+    ) -> Result<Session, RepositoryError>;
 
-    async fn validate_session(&self, session_id: Uuid) -> Result<Option<Session>, String>;
+    async fn validate_session(&self, session_id: Uuid) -> Result<Session, RepositoryError>;
 
-    async fn delete_session(&self, session_id: Uuid) -> Result<(), String>;
+    async fn delete_session(&self, session_id: Uuid) -> Result<(), RepositoryError>;
 
-    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<i64, String>;
+    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<(), RepositoryError>;
 
-    async fn cleanup_expired_sessions(&self) -> Result<i64, String>;
+    async fn cleanup_expired_sessions(&self) -> Result<i64, RepositoryError>;
 
-    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), String>;
+    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), RepositoryError>;
 }
 
 #[tonic::async_trait]
@@ -43,7 +44,7 @@ impl SessionRepositoryTrait for SessionRepository {
         ip_address: Option<String>,
         user_agent: Option<String>,
         duration_hours: i64,
-    ) -> Result<Session, String> {
+    ) -> Result<Session, RepositoryError> {
         let expires_at = Utc::now() + Duration::hours(duration_hours);
 
         let session: Session = sqlx::query_as(
@@ -59,12 +60,12 @@ impl SessionRepositoryTrait for SessionRepository {
             .bind(expires_at)
             .fetch_one(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to create session: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
         Ok(session)
     }
 
-    async fn validate_session(&self, session_id: Uuid) -> Result<Option<Session>, String> {
+    async fn validate_session(&self, session_id: Uuid) -> Result<Session, RepositoryError> {
         let session = sqlx::query_as(
             r#"
                 SELECT session_id, user_id, ip_address, user_agent, created_at, expires_at, last_accessed_at
@@ -73,48 +74,56 @@ impl SessionRepositoryTrait for SessionRepository {
             "#
         )
             .bind(session_id)
-            .fetch_optional(self.database.pool())
+            .fetch_one(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to validate session: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
         Ok(session)
     }
 
-    async fn delete_session(&self, session_id: Uuid) -> Result<(), String> {
-        sqlx::query(r#"DELETE FROM sessions WHERE session_id = $1"#)
+    async fn delete_session(&self, session_id: Uuid) -> Result<(), RepositoryError> {
+        let result = sqlx::query(r#"DELETE FROM sessions WHERE session_id = $1"#)
             .bind(session_id)
             .execute(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to delete session: {}", e))?;
+            .map_err(RepositoryError::from)?;
+
+        if result.rows_affected() == 0 {
+            return Err(RepositoryError::NotFound);
+        }
 
         Ok(())
     }
 
-    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<i64, String> {
+    async fn delete_user_sessions(&self, user_id: Uuid) -> Result<(), RepositoryError> {
         let result = sqlx::query(r#"DELETE FROM sessions WHERE user_id = $1"#)
             .bind(user_id)
             .execute(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to delete user sessions: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
-        Ok(result.rows_affected() as i64)
+        if result.rows_affected() == 0 {
+            return Err(RepositoryError::NotFound);
+        }
+
+        Ok(())
     }
 
-    async fn cleanup_expired_sessions(&self) -> Result<i64, String> {
+    async fn cleanup_expired_sessions(&self) -> Result<i64, RepositoryError> {
         let result = sqlx::query(r#"DELETE FROM sessions WHERE expires_at < NOW()"#)
             .execute(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to cleanup expired sessions: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
         Ok(result.rows_affected() as i64)
     }
 
-    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), String> {
+    async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), RepositoryError> {
         sqlx::query(r#"UPDATE sessions SET last_accessed_at = NOW() WHERE session_id = $1"#)
             .bind(session_id)
             .execute(self.database.pool())
             .await
-            .map_err(|e| format!("Failed to update last accessed time: {}", e))?;
+            .map_err(RepositoryError::from)?;
 
         Ok(())
     }
