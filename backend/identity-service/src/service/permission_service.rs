@@ -6,7 +6,6 @@ use crate::proto::authorization::{
     ListPermissionsRequest, ListPermissionsResponse, UpdatePermissionRequest,
     UpdatePermissionResponse,
 };
-use std::arch::aarch64::veorq_s8;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 

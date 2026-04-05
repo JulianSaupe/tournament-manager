@@ -14,6 +14,7 @@ impl SessionRepository {
 }
 
 #[tonic::async_trait]
+#[mockall::automock]
 pub trait SessionRepositoryTrait: Send + Sync {
     async fn create_session(
         &self,

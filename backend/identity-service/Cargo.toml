@@ -19,9 +19,9 @@ tonic-async-interceptor = "0.14.1"
 dotenvy = "0.15"
 tokio-util = "0.7.16"
 tracing = "0.1.41"
+mockall = "0.14.0"
 
 [build-dependencies]
 tonic-prost-build = "*"
 
 [dev-dependencies]
-mockall = "0.14.0"

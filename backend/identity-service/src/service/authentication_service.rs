@@ -159,3 +159,146 @@ impl AuthenticationServiceTrait for AuthenticationService {
         }))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::repository::session_repository::MockSessionRepositoryTrait;
+    use crate::db::repository::user_repository::MockUserRepositoryTrait;
+    use crate::models::session::Session;
+    use chrono::Utc;
+    use mockall::predicate::*;
+
+    #[tokio::test]
+    async fn test_login_success() {
+        let mut mock_user_repo = MockUserRepositoryTrait::new();
+        let mut mock_session_repo = MockSessionRepositoryTrait::new();
+
+        let user_id = Uuid::now_v7();
+        let email = "test@example.com".to_string();
+        let password = "password123".to_string();
+        let password_hash = crate::utils::hash_string(&password).unwrap();
+
+        let email_clone = email.clone();
+        mock_user_repo
+            .expect_find_by_email()
+            .with(eq(email_clone))
+            .times(1)
+            .returning(move |_| {
+                let password_hash = password_hash.clone();
+                Box::pin(async move { Some((user_id, password_hash)) })
+            });
+
+        let session_id = Uuid::now_v7();
+        let now = Utc::now();
+        mock_session_repo
+            .expect_create_session()
+            .with(eq(user_id), eq(None), eq(None), eq(SESSION_DURATION_HOURS))
+            .times(1)
+            .returning(move |u_id, _, _, _| {
+                Box::pin(async move {
+                    Ok(Session {
+                        session_id,
+                        user_id: u_id,
+                        ip_address: None,
+                        user_agent: None,
+                        created_at: now,
+                        expires_at: now + chrono::Duration::hours(SESSION_DURATION_HOURS),
+                        last_accessed_at: now,
+                    })
+                })
+            });
+
+        let service =
+            AuthenticationService::new(Arc::new(mock_user_repo), Arc::new(mock_session_repo));
+
+        let request = Request::new(LoginRequest {
+            email,
+            password,
+            ip_address: "".to_string(),
+            user_agent: "".to_string(),
+        });
+
+        let response = service.login(request).await.unwrap();
+        let inner = response.into_inner();
+
+        assert!(inner.success);
+        assert_eq!(inner.session_id, session_id.to_string());
+        assert_eq!(inner.message, "Login successful");
+    }
+
+    #[tokio::test]
+    async fn test_validate_session_success() {
+        let mock_user_repo = MockUserRepositoryTrait::new();
+        let mut mock_session_repo = MockSessionRepositoryTrait::new();
+
+        let session_id = Uuid::now_v7();
+        let user_id = Uuid::now_v7();
+        let now = Utc::now();
+
+        mock_session_repo
+            .expect_validate_session()
+            .with(eq(session_id))
+            .times(1)
+            .returning(move |s_id| {
+                Box::pin(async move {
+                    Ok(Some(Session {
+                        session_id: s_id,
+                        user_id,
+                        ip_address: None,
+                        user_agent: None,
+                        created_at: now,
+                        expires_at: now + chrono::Duration::hours(1),
+                        last_accessed_at: now,
+                    }))
+                })
+            });
+
+        mock_session_repo
+            .expect_update_last_accessed()
+            .with(eq(session_id))
+            .times(1)
+            .returning(|_| Box::pin(async move { Ok(()) }));
+
+        let service =
+            AuthenticationService::new(Arc::new(mock_user_repo), Arc::new(mock_session_repo));
+
+        let request = Request::new(ValidateSessionRequest {
+            session_id: session_id.to_string(),
+        });
+
+        let response = service.validate_session(request).await.unwrap();
+        let inner = response.into_inner();
+
+        assert!(inner.valid);
+        assert_eq!(inner.user_id, user_id.to_string());
+        assert_eq!(inner.message, "Session is valid");
+    }
+
+    #[tokio::test]
+    async fn test_logout_success() {
+        let mock_user_repo = MockUserRepositoryTrait::new();
+        let mut mock_session_repo = MockSessionRepositoryTrait::new();
+
+        let session_id = Uuid::now_v7();
+
+        mock_session_repo
+            .expect_delete_session()
+            .with(eq(session_id))
+            .times(1)
+            .returning(|_| Box::pin(async move { Ok(()) }));
+
+        let service =
+            AuthenticationService::new(Arc::new(mock_user_repo), Arc::new(mock_session_repo));
+
+        let request = Request::new(LogoutRequest {
+            session_id: session_id.to_string(),
+        });
+
+        let response = service.logout(request).await.unwrap();
+        let inner = response.into_inner();
+
+        assert!(inner.success);
+        assert_eq!(inner.message, "Logout successful");
+    }
+}

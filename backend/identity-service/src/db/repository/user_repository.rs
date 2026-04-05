@@ -13,6 +13,7 @@ impl UserRepository {
 }
 
 #[tonic::async_trait]
+#[mockall::automock]
 pub trait UserRepositoryTrait: Send + Sync {
     async fn create_user(
         &self,

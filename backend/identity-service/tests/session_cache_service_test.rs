@@ -1,6 +1,8 @@
 use chrono::{Duration as ChronoDuration, Utc};
 use identity_service::models::session::Session;
-use identity_service::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
+use identity_service::service::session_cache_service::{
+    SessionCacheService, SessionCacheServiceTrait,
+};
 use std::time::Duration;
 use tokio_util::sync::CancellationToken;
 use uuid::Uuid;
@@ -21,11 +23,7 @@ fn create_session(session_id: Uuid, user_id: Uuid, expires_in: ChronoDuration) -
 #[tokio::test]
 async fn test_session_cache_basic_ops() {
     let shutdown_token = CancellationToken::new();
-    let cache = SessionCacheService::new(
-        Duration::from_secs(60),
-        shutdown_token.clone(),
-        100,
-    );
+    let cache = SessionCacheService::new(Duration::from_secs(60), shutdown_token.clone(), 100);
 
     let session_id = Uuid::now_v7();
     let user_id = Uuid::now_v7();
@@ -39,7 +37,7 @@ async fn test_session_cache_basic_ops() {
 
     // Update last accessed
     cache.update_last_accessed(session_id.to_string()).await;
-    
+
     // Remove
     cache.remove(session_id.to_string()).await;
     let cached = cache.get(session_id.to_string()).await;
@@ -52,11 +50,7 @@ async fn test_session_cache_basic_ops() {
 async fn test_session_cache_expiration() {
     let shutdown_token = CancellationToken::new();
     // Short cleanup interval for test
-    let cache = SessionCacheService::new(
-        Duration::from_millis(100),
-        shutdown_token.clone(),
-        100,
-    );
+    let cache = SessionCacheService::new(Duration::from_millis(100), shutdown_token.clone(), 100);
 
     let session_id = Uuid::now_v7();
     let user_id = Uuid::now_v7();
@@ -64,7 +58,7 @@ async fn test_session_cache_expiration() {
     let session = create_session(session_id, user_id, ChronoDuration::milliseconds(50));
 
     cache.set(session_id.to_string(), session).await;
-    
+
     // Should be there initially
     assert!(cache.get(session_id.to_string()).await.is_some());
 
@@ -88,11 +82,11 @@ async fn test_session_cache_capacity_eviction() {
     );
 
     let user_id = Uuid::now_v7();
-    
+
     let id1 = Uuid::now_v7().to_string();
     let mut s1 = create_session(Uuid::now_v7(), user_id, ChronoDuration::hours(1));
     s1.last_accessed_at = Utc::now() - ChronoDuration::minutes(10);
-    
+
     let id2 = Uuid::now_v7().to_string();
     let mut s2 = create_session(Uuid::now_v7(), user_id, ChronoDuration::hours(1));
     s2.last_accessed_at = Utc::now() - ChronoDuration::minutes(5);
@@ -103,7 +97,7 @@ async fn test_session_cache_capacity_eviction() {
     // Capacity reached
     let id3 = Uuid::now_v7().to_string();
     let s3 = create_session(Uuid::now_v7(), user_id, ChronoDuration::hours(1));
-    
+
     cache.set(id3.clone(), s3).await;
 
     // id1 (oldest last_accessed) should be evicted
@@ -117,11 +111,7 @@ async fn test_session_cache_capacity_eviction() {
 #[tokio::test]
 async fn test_remove_user_sessions() {
     let shutdown_token = CancellationToken::new();
-    let cache = SessionCacheService::new(
-        Duration::from_secs(60),
-        shutdown_token.clone(),
-        100,
-    );
+    let cache = SessionCacheService::new(Duration::from_secs(60), shutdown_token.clone(), 100);
 
     let user1 = Uuid::now_v7();
     let user2 = Uuid::now_v7();

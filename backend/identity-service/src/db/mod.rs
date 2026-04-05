@@ -1,5 +1,5 @@
 mod database;
-mod repository;
+pub mod repository;
 
 pub use database::Database;
 pub use repository::*;
