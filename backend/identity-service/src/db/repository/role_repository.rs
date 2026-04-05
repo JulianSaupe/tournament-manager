@@ -15,7 +15,11 @@ impl RoleRepository {
 
 #[tonic::async_trait]
 pub trait RoleRepositoryTrait: Send + Sync {
-    async fn list_roles(&self) -> Result<Vec<Role>, String>;
+    async fn list_roles(
+        &self,
+        page: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<Vec<Role>, String>;
     async fn create_role(&self, name: &str, description: &str) -> Result<Role, String>;
     async fn update_role(
         &self,
@@ -37,7 +41,25 @@ pub trait RoleRepositoryTrait: Send + Sync {
 
 #[tonic::async_trait]
 impl RoleRepositoryTrait for RoleRepository {
-    async fn list_roles(&self) -> Result<Vec<Role>, String> {
+    async fn list_roles(
+        &self,
+        page: Option<i32>,
+        page_size: Option<i32>,
+    ) -> Result<Vec<Role>, String> {
+        if let (Some(page), Some(page_size)) = (page, page_size) {
+            let offset = (page - 1) * page_size;
+
+            let roles: Vec<Role> =
+                sqlx::query_as(r#"SELECT id, name, description, created_at, updated_at FROM roles LIMIT $1 OFFSET $2"#)
+                    .bind(page_size)
+                    .bind(offset)
+                    .fetch_all(self.database.pool())
+                    .await
+                    .map_err(|e| format!("Failed to list roles: {}", e))?;
+
+            return Ok(roles);
+        }
+
         let roles: Vec<Role> =
             sqlx::query_as(r#"SELECT id, name, description, created_at, updated_at FROM roles"#)
                 .fetch_all(self.database.pool())

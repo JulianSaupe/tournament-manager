@@ -49,9 +49,8 @@ message GetRoleResponse {
 
 // List Roles
 message ListRolesRequest {
-  int32 page = 1;
-  int32 page_size = 2;
-  string filter = 3;
+  optional int32 page = 1;
+  optional int32 page_size = 2;
 }
 
 message ListRolesResponse {

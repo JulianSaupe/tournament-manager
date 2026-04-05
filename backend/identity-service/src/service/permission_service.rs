@@ -69,7 +69,7 @@ impl PermissionServiceTrait for PermissionService {
 
         if !page.is_some() && page_size.is_some() || page.is_some() && !page_size.is_some() {
             return Err(Status::invalid_argument(
-                "Page and page_size are required.".to_string(),
+                "Both page and page_size must be provided or neither.".to_string(),
             ));
         }
 

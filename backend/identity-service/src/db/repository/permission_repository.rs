@@ -43,9 +43,7 @@ impl PermissionRepositoryTrait for PermissionRepository {
         page: Option<i32>,
         page_size: Option<i32>,
     ) -> Result<Vec<Permission>, String> {
-        if let Some(page) = page
-            && let Some(page_size) = page_size
-        {
+        if let (Some(page), Some(page_size)) = (page, page_size) {
             let offset = (page - 1) * page_size;
 
             let permissions: Vec<Permission> = sqlx::query_as(

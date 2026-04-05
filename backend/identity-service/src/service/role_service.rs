@@ -75,10 +75,28 @@ impl RoleServiceTrait for RoleService {
         request: Request<ListRolesRequest>,
     ) -> Result<Response<ListRolesResponse>, Status> {
         let list_req = request.into_inner();
+        let page = list_req.page;
+        let page_size = list_req.page_size;
+
+        if !page.is_some() && page_size.is_some() || page.is_some() && !page_size.is_some() {
+            return Err(Status::invalid_argument(
+                "Both page and page_size must be provided or neither.",
+            ));
+        }
+
+        if page.is_some() && page.unwrap() < 1 {
+            return Err(Status::invalid_argument("Page must be greater than 0."));
+        }
+
+        if page_size.is_some() && page_size.unwrap() < 1 {
+            return Err(Status::invalid_argument(
+                "Page size must be greater than 0.",
+            ));
+        }
 
         let roles = self
             .role_repository
-            .list_roles()
+            .list_roles(page, page_size)
             .await
             .map_err(|e| Status::internal(format!("Failed to list roles: {}", e)))?;
 
