@@ -12,8 +12,7 @@ service AuthorizationService {
 // Check Permission
 message CheckPermissionRequest {
   string user_id = 1;
-  string resource = 2;
-  string action = 3;
+  string permission_name = 2;
 }
 
 message CheckPermissionResponse {

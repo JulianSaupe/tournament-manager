@@ -9,13 +9,13 @@ use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 pub struct AuthorizationService {
-    authorization_service: Arc<dyn AuthorizationRepositoryTrait>,
+    authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
 }
 
 impl AuthorizationService {
-    pub fn new(authorization_service: Arc<dyn AuthorizationRepositoryTrait>) -> Self {
+    pub fn new(authorization_repository: Arc<dyn AuthorizationRepositoryTrait>) -> Self {
         Self {
-            authorization_service,
+            authorization_repository,
         }
     }
 }
@@ -26,7 +26,29 @@ impl AuthorizationServiceTrait for AuthorizationService {
         &self,
         request: Request<CheckPermissionRequest>,
     ) -> Result<Response<CheckPermissionResponse>, Status> {
-        todo!()
+        let permission_req = request.into_inner();
+
+        let user_id = Uuid::parse_str(&permission_req.user_id)
+            .map_err(|_| Status::invalid_argument("Invalid user ID format"))?;
+
+        let user_permissions = self
+            .authorization_repository
+            .get_user_permissions(user_id)
+            .await
+            .map_err(|_| Status::internal("Failed to get user permissions"))?;
+
+        let has_permission = user_permissions.contains(&permission_req.permission_name);
+
+        let message = if has_permission {
+            "Permission granted".to_string()
+        } else {
+            "Permission denied".to_string()
+        };
+
+        Ok(Response::new(CheckPermissionResponse {
+            allowed: has_permission,
+            message,
+        }))
     }
 
     async fn get_user_permissions(
@@ -39,7 +61,7 @@ impl AuthorizationServiceTrait for AuthorizationService {
             .map_err(|_| Status::invalid_argument("Invalid user ID format"))?;
 
         let permissions = self
-            .authorization_service
+            .authorization_repository
             .get_user_permissions(user_id)
             .await
             .map_err(|_| Status::internal("Failed to get user permissions"))?;
