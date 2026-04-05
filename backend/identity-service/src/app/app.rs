@@ -14,12 +14,14 @@ use crate::service::authentication_service::AuthenticationService;
 use crate::service::authorization_service::AuthorizationService;
 use crate::service::permission_service::PermissionService;
 use crate::service::role_service::RoleService;
+use crate::service::session_cache_service::SessionCacheService;
 use crate::service::user_service::UserService;
 use std::sync::Arc;
+use std::time::Duration;
+use tokio::signal;
+use tokio_util::sync::CancellationToken;
 use tonic::transport::Server;
 use tonic_async_interceptor::async_interceptor;
-use tokio_util::sync::CancellationToken;
-use tokio::signal;
 
 pub struct App {
     config: Config,
@@ -31,6 +33,7 @@ impl App {
     }
 
     pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let shutdown_token = CancellationToken::new();
         let database = Database::new(&self.config.db.url).await?;
 
         let user_repository: Arc<dyn UserRepositoryTrait> =
@@ -38,6 +41,9 @@ impl App {
 
         let session_repository: Arc<dyn SessionRepositoryTrait> =
             Arc::new(SessionRepository::new(database.clone()));
+
+        let session_cache_service =
+            SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000);
 
         let authorization_repository: Arc<dyn AuthorizationRepositoryTrait> =
             Arc::new(AuthorizationRepository::new(database.clone()));
@@ -62,7 +68,6 @@ impl App {
             RoleService::new(authorization_repository.clone(), role_repository.clone());
 
         let interceptor = AuthInterceptor::new(self.config.auth.token.clone());
-        let shutdown_token = CancellationToken::new();
 
         let addr = format!("[::1]:{}", self.config.server_port).parse()?;
         println!("Server listening on {}", addr);

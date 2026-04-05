@@ -3,6 +3,7 @@ mod permission_repository;
 mod role_repository;
 mod session_repository;
 mod user_repository;
+mod cached_session_repository;
 
 pub use authorization_repository::{AuthorizationRepository, AuthorizationRepositoryTrait};
 pub use permission_repository::{PermissionRepository, PermissionRepositoryTrait};
