@@ -1,5 +1,7 @@
-use crate::db::repository_error::RepositoryError;
-use crate::db::{AuthorizationRepositoryTrait, RoleRepositoryTrait, UserRepositoryTrait};
+use crate::adapter::driven::database::repository_error::RepositoryError;
+use crate::adapter::driven::database::{
+    AuthorizationRepositoryTrait, RoleRepositoryTrait, UserRepositoryTrait,
+};
 use crate::proto::user::user_service_server::UserService as UserServiceTrait;
 use crate::proto::user::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,

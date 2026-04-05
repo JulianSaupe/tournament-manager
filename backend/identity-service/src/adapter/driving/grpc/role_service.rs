@@ -1,5 +1,5 @@
-use crate::db::repository_error::RepositoryError;
-use crate::db::{AuthorizationRepositoryTrait, RoleRepositoryTrait};
+use crate::adapter::driven::database::repository_error::RepositoryError;
+use crate::adapter::driven::database::{AuthorizationRepositoryTrait, RoleRepositoryTrait};
 use crate::proto::authorization::role_service_server::RoleService as RoleServiceTrait;
 use crate::proto::authorization::{
     AssignPermissionToRoleRequest, AssignPermissionToRoleResponse, CreateRoleRequest,

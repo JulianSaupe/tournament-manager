@@ -1,5 +1,5 @@
-use crate::db::PermissionRepositoryTrait;
-use crate::db::repository_error::RepositoryError;
+use crate::adapter::driven::database::PermissionRepositoryTrait;
+use crate::adapter::driven::database::repository_error::RepositoryError;
 use crate::proto::authorization::permission_service_server::PermissionService as PermissionServiceTrait;
 use crate::proto::authorization::{
     CreatePermissionRequest, CreatePermissionResponse, DeletePermissionRequest,

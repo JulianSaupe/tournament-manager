@@ -1,5 +1,5 @@
-use crate::db::SessionRepositoryTrait;
-use crate::db::repository_error::RepositoryError;
+use crate::adapter::driven::database::SessionRepositoryTrait;
+use crate::adapter::driven::database::repository_error::RepositoryError;
 use crate::models::session::Session;
 use crate::service::session_cache_service::SessionCacheServiceTrait;
 use std::sync::Arc;

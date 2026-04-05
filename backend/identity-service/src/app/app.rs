@@ -1,20 +1,20 @@
-use crate::config::Config;
-use crate::db::{
+use crate::adapter::driven::database::{
     AuthorizationRepository, AuthorizationRepositoryTrait, CachedSessionRepository, Database,
     PermissionRepository, PermissionRepositoryTrait, RoleRepository, RoleRepositoryTrait,
     SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
+use crate::adapter::driving::grpc::authentication_service::AuthenticationService;
+use crate::adapter::driving::grpc::authorization_service::AuthorizationService;
+use crate::adapter::driving::grpc::permission_service::PermissionService;
+use crate::adapter::driving::grpc::role_service::RoleService;
+use crate::adapter::driving::grpc::user_service::UserService;
+use crate::config::Config;
 use crate::interceptor::auth_interceptor::AuthInterceptor;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
 use crate::proto::authorization::authorization_service_server::AuthorizationServiceServer;
 use crate::proto::authorization::permission_service_server::PermissionServiceServer;
 use crate::proto::authorization::role_service_server::RoleServiceServer;
 use crate::proto::user::user_service_server::UserServiceServer;
-use crate::service::grpc::authentication_service::AuthenticationService;
-use crate::service::grpc::authorization_service::AuthorizationService;
-use crate::service::grpc::permission_service::PermissionService;
-use crate::service::grpc::role_service::RoleService;
-use crate::service::grpc::user_service::UserService;
 use crate::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
 use std::sync::Arc;
 use std::time::Duration;

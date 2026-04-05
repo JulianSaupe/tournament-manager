@@ -1,5 +1,5 @@
-use crate::db::repository_error::RepositoryError;
-use crate::db::{SessionRepositoryTrait, UserRepositoryTrait};
+use crate::adapter::driven::database::repository_error::RepositoryError;
+use crate::adapter::driven::database::{SessionRepositoryTrait, UserRepositoryTrait};
 use crate::proto::authentication::authentication_service_server::AuthenticationService as AuthenticationServiceTrait;
 use crate::proto::authentication::{
     LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, ValidateSessionRequest,
@@ -157,8 +157,8 @@ impl AuthenticationServiceTrait for AuthenticationService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::repository::session_repository::MockSessionRepositoryTrait;
-    use crate::db::repository::user_repository::MockUserRepositoryTrait;
+    use crate::adapter::driven::repository::session_repository::MockSessionRepositoryTrait;
+    use crate::adapter::driven::repository::user_repository::MockUserRepositoryTrait;
     use crate::models::session::Session;
     use chrono::Utc;
     use mockall::predicate::*;

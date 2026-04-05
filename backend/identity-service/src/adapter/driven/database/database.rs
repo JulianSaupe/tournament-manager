@@ -1,4 +1,4 @@
-use crate::db::DbPool;
+use crate::adapter::driven::database::DbPool;
 use sqlx::postgres::PgPoolOptions;
 
 #[derive(Clone)]
