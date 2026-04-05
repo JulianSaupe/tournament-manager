@@ -1,8 +1,8 @@
 use crate::config::Config;
 use crate::db::{
-    AuthorizationRepository, AuthorizationRepositoryTrait, Database, PermissionRepository,
-    PermissionRepositoryTrait, RoleRepository, RoleRepositoryTrait, SessionRepository,
-    SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
+    AuthorizationRepository, AuthorizationRepositoryTrait, CachedSessionRepository, Database,
+    PermissionRepository, PermissionRepositoryTrait, RoleRepository, RoleRepositoryTrait,
+    SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
 use crate::interceptor::auth_interceptor::AuthInterceptor;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
@@ -14,7 +14,7 @@ use crate::service::authentication_service::AuthenticationService;
 use crate::service::authorization_service::AuthorizationService;
 use crate::service::permission_service::PermissionService;
 use crate::service::role_service::RoleService;
-use crate::service::session_cache_service::SessionCacheService;
+use crate::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
 use crate::service::user_service::UserService;
 use std::sync::Arc;
 use std::time::Duration;
@@ -39,11 +39,14 @@ impl App {
         let user_repository: Arc<dyn UserRepositoryTrait> =
             Arc::new(UserRepository::new(database.clone()));
 
-        let session_repository: Arc<dyn SessionRepositoryTrait> =
-            Arc::new(SessionRepository::new(database.clone()));
+        let session_cache_service: Arc<dyn SessionCacheServiceTrait> =
+            Arc::new(SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000));
 
-        let session_cache_service =
-            SessionCacheService::new(Duration::from_mins(1), shutdown_token.clone(), 1000);
+        let session_repository: Arc<dyn SessionRepositoryTrait> =
+            Arc::new(CachedSessionRepository::new(
+                Arc::new(SessionRepository::new(database.clone())),
+                session_cache_service,
+            ));
 
         let authorization_repository: Arc<dyn AuthorizationRepositoryTrait> =
             Arc::new(AuthorizationRepository::new(database.clone()));

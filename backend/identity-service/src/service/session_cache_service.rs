@@ -6,6 +6,7 @@ use std::time::Duration;
 use tokio::select;
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
+use uuid::Uuid;
 
 pub struct SessionCacheService {
     sessions: Arc<RwLock<HashMap<String, Session>>>,
@@ -17,6 +18,8 @@ pub trait SessionCacheServiceTrait: Send + Sync {
     async fn get(&self, id: String) -> Option<Session>;
     async fn set(&self, id: String, session: Session);
     async fn remove(&self, id: String);
+    async fn remove_user_sessions(&self, user_id: Uuid);
+    async fn update_last_accessed(&self, id: String);
 }
 
 impl SessionCacheService {
@@ -94,5 +97,17 @@ impl SessionCacheServiceTrait for SessionCacheService {
     async fn remove(&self, id: String) {
         let mut sessions = self.sessions.write().await;
         sessions.remove(&id);
+    }
+
+    async fn remove_user_sessions(&self, user_id: Uuid) {
+        let mut sessions = self.sessions.write().await;
+        sessions.retain(|_, s| s.user_id != user_id);
+    }
+
+    async fn update_last_accessed(&self, id: String) {
+        let mut sessions = self.sessions.write().await;
+        if let Some(session) = sessions.get_mut(&id) {
+            session.last_accessed_at = Utc::now();
+        }
     }
 }

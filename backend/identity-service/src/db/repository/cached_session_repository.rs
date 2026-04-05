@@ -1,15 +1,19 @@
+use std::sync::Arc;
 use uuid::Uuid;
-use crate::db::{SessionRepository, SessionRepositoryTrait};
+use crate::db::SessionRepositoryTrait;
 use crate::models::session::Session;
-use crate::service::session_cache_service::{SessionCacheService, SessionCacheServiceTrait};
+use crate::service::session_cache_service::SessionCacheServiceTrait;
 
 pub struct CachedSessionRepository {
-    repository: SessionRepository,
-    cache_service: SessionCacheService,
+    repository: Arc<dyn SessionRepositoryTrait>,
+    cache_service: Arc<dyn SessionCacheServiceTrait>,
 }
 
 impl CachedSessionRepository {
-    pub fn new(repository: SessionRepository, cache_service: SessionCacheService) -> Self {
+    pub fn new(
+        repository: Arc<dyn SessionRepositoryTrait>,
+        cache_service: Arc<dyn SessionCacheServiceTrait>,
+    ) -> Self {
         Self { repository, cache_service }
     }
 }
@@ -33,7 +37,11 @@ impl SessionRepositoryTrait for CachedSessionRepository {
             return Ok(Some(session));
         }
 
-        self.repository.validate_session(session_id).await
+        let result = self.repository.validate_session(session_id).await?;
+        if let Some(ref session) = result {
+            self.cache_service.set(session_id.to_string(), session.clone()).await;
+        }
+        Ok(result)
     }
 
     async fn delete_session(&self, session_id: Uuid) -> Result<(), String> {
@@ -42,6 +50,7 @@ impl SessionRepositoryTrait for CachedSessionRepository {
     }
 
     async fn delete_user_sessions(&self, user_id: Uuid) -> Result<i64, String> {
+        self.cache_service.remove_user_sessions(user_id).await;
         self.repository.delete_user_sessions(user_id).await
     }
 
@@ -50,6 +59,7 @@ impl SessionRepositoryTrait for CachedSessionRepository {
     }
 
     async fn update_last_accessed(&self, session_id: Uuid) -> Result<(), String> {
+        self.cache_service.update_last_accessed(session_id.to_string()).await;
         self.repository.update_last_accessed(session_id).await
     }
 }
