@@ -4,7 +4,7 @@
 // 	protoc        v7.34.0
 // source: authentication.proto
 
-package authentication
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -406,7 +406,7 @@ const file_authentication_proto_rawDesc = "" +
 	"\x15AuthenticationService\x12D\n" +
 	"\x05Login\x12\x1c.authentication.LoginRequest\x1a\x1d.authentication.LoginResponse\x12b\n" +
 	"\x0fValidateSession\x12&.authentication.ValidateSessionRequest\x1a'.authentication.ValidateSessionResponse\x12G\n" +
-	"\x06Logout\x12\x1d.authentication.LogoutRequest\x1a\x1e.authentication.LogoutResponseB&Z$engine/internal/proto/authenticationb\x06proto3"
+	"\x06Logout\x12\x1d.authentication.LogoutRequest\x1a\x1e.authentication.LogoutResponseB\x17Z\x15engine/internal/protob\x06proto3"
 
 var (
 	file_authentication_proto_rawDescOnce sync.Once

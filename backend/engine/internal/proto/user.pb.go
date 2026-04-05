@@ -4,7 +4,7 @@
 // 	protoc        v7.34.0
 // source: user.proto
 
-package user
+package proto
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -336,7 +336,7 @@ const file_user_proto_rawDesc = "" +
 	"\vUserService\x123\n" +
 	"\x06Create\x12\x13.user.CreateRequest\x1a\x14.user.CreateResponse\x123\n" +
 	"\x06Delete\x12\x13.user.DeleteRequest\x1a\x14.user.DeleteResponse\x12H\n" +
-	"\rResetPassword\x12\x1a.user.ResetPasswordRequest\x1a\x1b.user.ResetPasswordResponseB\x1cZ\x1aengine/internal/proto/userb\x06proto3"
+	"\rResetPassword\x12\x1a.user.ResetPasswordRequest\x1a\x1b.user.ResetPasswordResponseB\x17Z\x15engine/internal/protob\x06proto3"
 
 var (
 	file_user_proto_rawDescOnce sync.Once

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package authentication;
 
-option go_package = "engine/internal/proto/authentication";
+option go_package = "engine/internal/proto";
 
 import "google/protobuf/timestamp.proto";
 

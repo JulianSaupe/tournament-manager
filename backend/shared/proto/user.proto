@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "engine/internal/proto/user";
+option go_package = "engine/internal/proto";
 
 service UserService {
   rpc Create(CreateRequest) returns (CreateResponse);
