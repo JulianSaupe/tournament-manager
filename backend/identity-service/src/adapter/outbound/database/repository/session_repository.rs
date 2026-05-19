@@ -1,5 +1,5 @@
-use crate::adapter::driven::database::Database;
-use crate::adapter::driven::database::repository_error::RepositoryError;
+use crate::adapter::outbound::database::Database;
+use crate::adapter::outbound::database::repository_error::RepositoryError;
 use crate::domain::models::session::Session;
 use chrono::{Duration, Utc};
 use uuid::Uuid;

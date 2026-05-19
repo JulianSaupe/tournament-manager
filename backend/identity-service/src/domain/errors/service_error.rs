@@ -1,4 +1,4 @@
-use crate::adapter::driven::repository_error::RepositoryError;
+use crate::adapter::outbound::repository_error::RepositoryError;
 
 #[derive(Debug)]
 pub enum ServiceError {

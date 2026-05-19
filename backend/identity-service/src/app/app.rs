@@ -1,14 +1,14 @@
-use crate::adapter::driven::database::{
+use crate::adapter::inbound::grpc::authentication_service::GrpcAuthenticationService;
+use crate::adapter::inbound::grpc::authorization_service::AuthorizationService;
+use crate::adapter::inbound::grpc::permission_service::PermissionService;
+use crate::adapter::inbound::grpc::role_service::RoleService;
+use crate::adapter::inbound::grpc::user_service::UserService;
+use crate::adapter::inbound::http::authentication_handler::AuthenticationHandler;
+use crate::adapter::outbound::database::{
     AuthorizationRepository, AuthorizationRepositoryTrait, CachedSessionRepository, Database,
     PermissionRepository, PermissionRepositoryTrait, RoleRepository, RoleRepositoryTrait,
     SessionRepository, SessionRepositoryTrait, UserRepository, UserRepositoryTrait,
 };
-use crate::adapter::driving::grpc::authentication_service::GrpcAuthenticationService;
-use crate::adapter::driving::grpc::authorization_service::AuthorizationService;
-use crate::adapter::driving::grpc::permission_service::PermissionService;
-use crate::adapter::driving::grpc::role_service::RoleService;
-use crate::adapter::driving::grpc::user_service::UserService;
-use crate::adapter::driving::http::authentication_handler::AuthenticationHandler;
 use crate::config::Config;
 use crate::interceptor::auth_interceptor::AuthInterceptor;
 use crate::proto::authentication::authentication_service_server::AuthenticationServiceServer;
@@ -61,19 +61,20 @@ impl App {
         let role_repository: Arc<dyn RoleRepositoryTrait> = Arc::new(RoleRepository::new(database));
 
         // Services
-        let authentication_service: Arc<dyn AuthenticationServiceTrait> = Arc::new(
-            AuthenticationService::new(user_repository.clone(), session_repository.clone()),
-        );
+        let authentication_service: Arc<dyn AuthenticationServiceTrait> =
+            Arc::new(AuthenticationService::new(
+                user_repository.clone(),
+                session_repository.clone(),
+                authorization_repository.clone(),
+                role_repository.clone(),
+            ));
 
         // Grpc Services
         let grpc_authentication_service =
             GrpcAuthenticationService::new(authentication_service.clone());
 
-        let user_service = UserService::new(
-            user_repository.clone(),
-            authorization_repository.clone(),
-            role_repository.clone(),
-        );
+        let user_service =
+            UserService::new(user_repository.clone(), authentication_service.clone());
 
         let authorization_service = AuthorizationService::new(authorization_repository.clone());
         let permission_service = PermissionService::new(permission_repository.clone());

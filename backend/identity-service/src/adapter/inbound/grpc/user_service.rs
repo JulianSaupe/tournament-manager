@@ -1,32 +1,28 @@
-use crate::adapter::driven::database::repository_error::RepositoryError;
-use crate::adapter::driven::database::{
-    AuthorizationRepositoryTrait, RoleRepositoryTrait, UserRepositoryTrait,
-};
+use crate::adapter::outbound::database::repository_error::RepositoryError;
+use crate::adapter::outbound::database::UserRepositoryTrait;
 use crate::proto::user::user_service_server::UserService as UserServiceTrait;
 use crate::proto::user::{
     CreateRequest, CreateResponse, DeleteRequest, DeleteResponse, ResetPasswordRequest,
     ResetPasswordResponse,
 };
+use crate::service::AuthenticationServiceTrait;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
 
 pub struct UserService {
     user_repository: Arc<dyn UserRepositoryTrait>,
-    authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
-    role_repository: Arc<dyn RoleRepositoryTrait>,
+    authentication_service: Arc<dyn AuthenticationServiceTrait>,
 }
 
 impl UserService {
     pub fn new(
         user_repository: Arc<dyn UserRepositoryTrait>,
-        authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
-        role_repository: Arc<dyn RoleRepositoryTrait>,
+        authentication_service: Arc<dyn AuthenticationServiceTrait>,
     ) -> Self {
         Self {
             user_repository,
-            authorization_repository,
-            role_repository,
+            authentication_service,
         }
     }
 }
@@ -40,22 +36,10 @@ impl UserServiceTrait for UserService {
         let create_req = request.into_inner();
 
         let user_id = self
-            .user_repository
-            .create_user(create_req.username, create_req.email, create_req.password)
+            .authentication_service
+            .register(create_req.username, create_req.email, create_req.password)
             .await
             .map_err(|_| Status::internal("Failed to create user"))?;
-
-        let role_id = self
-            .role_repository
-            .get_role_by_name("user")
-            .await
-            .unwrap()
-            .id;
-
-        self.authorization_repository
-            .assign_role(user_id, role_id)
-            .await
-            .unwrap();
 
         Ok(Response::new(CreateResponse {
             success: true,

@@ -1,7 +1,9 @@
-use crate::adapter::driven::{SessionRepositoryTrait, UserRepositoryTrait};
+use crate::adapter::outbound::{
+    AuthorizationRepositoryTrait, RoleRepositoryTrait, SessionRepositoryTrait, UserRepositoryTrait,
+};
 use crate::domain::errors::service_error::ServiceError;
 use crate::domain::models::session::Session;
-use crate::utils::{hash_string, verify_hash};
+use crate::utils::verify_hash;
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -10,16 +12,22 @@ const SESSION_DURATION_HOURS: i64 = 24;
 pub struct AuthenticationService {
     user_repository: Arc<dyn UserRepositoryTrait>,
     session_repository: Arc<dyn SessionRepositoryTrait>,
+    authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+    role_repository: Arc<dyn RoleRepositoryTrait>,
 }
 
 impl AuthenticationService {
     pub fn new(
         user_repository: Arc<dyn UserRepositoryTrait>,
         session_repository: Arc<dyn SessionRepositoryTrait>,
+        authorization_repository: Arc<dyn AuthorizationRepositoryTrait>,
+        role_repository: Arc<dyn RoleRepositoryTrait>,
     ) -> Self {
         Self {
             user_repository,
             session_repository,
+            authorization_repository,
+            role_repository,
         }
     }
 }
@@ -35,7 +43,12 @@ pub trait AuthenticationServiceTrait: Send + Sync {
     ) -> Result<Session, ServiceError>;
     async fn validate_session(&self, session_id: Uuid) -> Result<Session, ServiceError>;
     async fn logout(&self, session_id: Uuid) -> Result<(), ServiceError>;
-    async fn register(&self, username: String, email: String, password: String) -> Result<Uuid, ServiceError>;
+    async fn register(
+        &self,
+        username: String,
+        email: String,
+        password: String,
+    ) -> Result<Uuid, ServiceError>;
 }
 
 #[tonic::async_trait]
@@ -95,8 +108,22 @@ impl AuthenticationServiceTrait for AuthenticationService {
         Ok(())
     }
 
-    async fn register(&self, username: String, email: String, password: String) -> Result<Uuid, ServiceError> {
-        let user_id = self.user_repository.create_user(username, email, password).await?;
+    async fn register(
+        &self,
+        username: String,
+        email: String,
+        password: String,
+    ) -> Result<Uuid, ServiceError> {
+        let user_id = self
+            .user_repository
+            .create_user(username, email, password)
+            .await?;
+
+        let role_id = self.role_repository.get_role_by_name("user").await?.id;
+
+        self.authorization_repository
+            .assign_role(user_id, role_id)
+            .await?;
 
         Ok(user_id)
     }

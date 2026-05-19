@@ -1,5 +1,5 @@
-use crate::adapter::driven::database::AuthorizationRepositoryTrait;
-use crate::adapter::driven::database::repository_error::RepositoryError;
+use crate::adapter::outbound::database::AuthorizationRepositoryTrait;
+use crate::adapter::outbound::database::repository_error::RepositoryError;
 use crate::proto::authorization::authorization_service_server::AuthorizationService as AuthorizationServiceTrait;
 use crate::proto::authorization::{
     AssignRoleToUserRequest, AssignRoleToUserResponse, CheckPermissionRequest,

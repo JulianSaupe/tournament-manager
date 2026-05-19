@@ -1,5 +1,5 @@
-use crate::adapter::driven::database::Database;
-use crate::adapter::driven::database::repository::repository_error::RepositoryError;
+use crate::adapter::outbound::database::Database;
+use crate::adapter::outbound::database::repository::repository_error::RepositoryError;
 use crate::domain::models::permission::Permission;
 use uuid::Uuid;
 
