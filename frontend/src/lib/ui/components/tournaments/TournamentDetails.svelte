@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {tournamentForm, tournamentFormErrors} from '$lib/stores/tournamentForm';
+    import {tournamentForm, tournamentFormErrors} from '$lib/application/tournament-form-store';
 
     function updateName(name: string): void {
         $tournamentForm.name = name;
@@ -55,8 +55,8 @@
                 </label>
                 <input
                         class="input-bordered input w-full {$tournamentFormErrors.playerCount
-						? 'input-error'
-						: ''}"
+							? 'input-error'
+							: ''}"
                         id="playerCount"
                         min="1"
                         oninput={(e) => updatePlayerCount(parseInt(e.currentTarget.value) || 0)}
@@ -78,8 +78,8 @@
                 </label>
                 <textarea
                         class="textarea-bordered textarea w-full {$tournamentFormErrors.description
-						? 'textarea-error'
-						: ''}"
+							? 'textarea-error'
+							: ''}"
                         id="description"
                         oninput={(e) => updateDescription(e.currentTarget.value)}
                         placeholder="Enter tournament description"

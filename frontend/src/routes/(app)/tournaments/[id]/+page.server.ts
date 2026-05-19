@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import type { Tournament } from '$lib/types/tournament/tournament';
-import { TournamentStatus } from '$lib/types/tournament/tournament';
-import { type Qualifying, type QualifyingPlayer } from '$lib/types/tournament/qualifying';
+import type { Tournament } from '$lib/domain/tournament';
+import { TournamentStatus } from '$lib/domain/tournament';
+import { type Qualifying, type QualifyingPlayer } from '$lib/domain/qualifying';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	try {

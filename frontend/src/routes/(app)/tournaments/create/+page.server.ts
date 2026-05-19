@@ -1,5 +1,5 @@
 import { fail, redirect, type Actions } from '@sveltejs/kit';
-import { tournamentSchema, type TournamentFormData } from '$lib/validation/tournamentSchema';
+import { tournamentSchema, type TournamentFormData } from '$lib/application/tournament-validator';
 import { z } from 'zod';
 
 function zodErrorsToRecord(error: z.ZodError): Record<string, string> {

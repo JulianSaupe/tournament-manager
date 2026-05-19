@@ -82,7 +82,6 @@ export class WebSocketService {
 
 		this.subscribers.get(topic)!.add(callback);
 
-		// Return unsubscribe function
 		return () => this.unsubscribe(topic, callback);
 	}
 
@@ -162,7 +161,6 @@ export class WebSocketService {
 	}
 }
 
-// Singleton instance for the application
 let wsInstance: WebSocketService | null = null;
 
 export function getWebSocketService(): WebSocketService {

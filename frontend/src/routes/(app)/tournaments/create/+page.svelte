@@ -6,10 +6,10 @@
         tournamentForm,
         tournamentFormErrors,
         tournamentFormValid
-    } from '$lib/stores/tournamentForm';
+    } from '$lib/application/tournament-form-store';
 
-    import TournamentDetails from '$lib/components/tournaments/TournamentDetails.svelte';
-    import TournamentStructure from '$lib/components/tournaments/TournamentStructure.svelte';
+    import TournamentDetails from '$lib/ui/components/tournaments/TournamentDetails.svelte';
+    import TournamentStructure from '$lib/ui/components/tournaments/TournamentStructure.svelte';
 
     let isSubmitting = false;
     let submitError = '';

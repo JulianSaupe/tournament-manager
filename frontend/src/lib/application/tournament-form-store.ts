@@ -1,9 +1,8 @@
 import { writable } from 'svelte/store';
-import type { TournamentFormData } from '$lib/validation/tournamentSchema';
-import { tournamentSchema } from '$lib/validation/tournamentSchema';
+import type { TournamentFormData } from '$lib/application/tournament-validator';
+import { tournamentSchema } from '$lib/application/tournament-validator';
 import { z } from 'zod';
 
-// Initial form data with all required fields
 const initialFormData: TournamentFormData = {
 	name: '',
 	description: '',
@@ -14,16 +13,12 @@ const initialFormData: TournamentFormData = {
 	rounds: []
 };
 
-// Store for form data
 export const tournamentForm = writable<TournamentFormData>(initialFormData);
 
-// Store for validation errors
 export const tournamentFormErrors = writable<Record<string, string>>({});
 
-// Store for form validation state
 export const tournamentFormValid = writable<boolean>(false);
 
-// Validation function
 export function validateTournamentForm(data: TournamentFormData): {
 	isValid: boolean;
 	errors: Record<string, string>;
@@ -45,7 +40,6 @@ export function validateTournamentForm(data: TournamentFormData): {
 	}
 }
 
-// Function to reset form to initial state
 export function resetTournamentForm() {
 	tournamentForm.set(initialFormData);
 	tournamentFormErrors.set({});

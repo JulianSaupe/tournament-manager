@@ -1,12 +1,12 @@
-import type { TournamentProvider } from '$lib/ports/tournament-provider';
-import type { Tournament } from '$lib/types/tournament/tournament';
-import { TournamentApiSchema, TournamentListApiSchema } from '$lib/adapters/schemas/tournament';
-import type { Qualifying } from '$lib/types/tournament/qualifying';
-import { QualifyingApiSchema } from '$lib/adapters/schemas/qualifying';
-import { ApiErrorResult, type ApiResult, ApiSuccessResult } from '$lib/types/api-result';
+import type { TournamentProvider } from '$lib/ports/tournament-repository';
+import type { Tournament } from '$lib/domain/tournament';
+import { TournamentApiSchema, TournamentListApiSchema } from '$lib/adapters/http/schemas/tournament';
+import type { Qualifying } from '$lib/domain/qualifying';
+import { QualifyingApiSchema } from '$lib/adapters/http/schemas/qualifying';
+import { ApiErrorResult, type ApiResult, ApiSuccessResult } from '$lib/domain/api-result';
 import type { z } from 'zod';
 
-export class ApiClient implements TournamentProvider {
+export class TournamentHttpAdapter implements TournamentProvider {
 	constructor(private readonly baseUrl: string = 'http://localhost:3000/api') {}
 
 	async loadTournament(id: string): Promise<ApiResult<Tournament>> {

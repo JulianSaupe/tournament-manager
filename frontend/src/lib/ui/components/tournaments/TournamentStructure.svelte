@@ -1,7 +1,7 @@
 <script lang="ts">
-    import type {Round} from '$lib/types/tournament/tournament';
-    import {tournamentForm} from '$lib/stores/tournamentForm';
-    import type {TournamentRoundData} from '$lib/validation/tournamentSchema';
+    import type {Round} from '$lib/domain/tournament';
+    import {tournamentForm} from '$lib/application/tournament-form-store';
+    import type {TournamentRoundData} from '$lib/application/tournament-validator';
 
     // Simplified state - just rounds and auto-calculation mode
     let rounds: Round[] = $state([
@@ -251,10 +251,10 @@
                 <div class="stat-title text-xs">Status</div>
                 <div
                         class="stat-value text-lg {validationStatus === 'good'
-						? 'text-success'
-						: validationStatus === 'warning'
-							? 'text-warning'
-							: 'text-error'}"
+							? 'text-success'
+							: validationStatus === 'warning'
+								? 'text-warning'
+								: 'text-error'}"
                 >
                     {validationStatus === 'good' ? '✓ Valid' : '✗ Issues'}
                 </div>
@@ -269,11 +269,11 @@
                         <div class="mb-2 badge badge-sm">{round.name}</div>
                         <div
                                 class="min-w-[100px] rounded-lg bg-base-200 p-3 text-center {getValidationMessage(
-								round,
-								index
-							)
-								? 'border-2 border-error'
-								: ''}"
+									round,
+									index
+								)
+									? 'border-2 border-error'
+									: ''}"
                         >
                             <div class="text-lg font-bold">{round.groupCount}</div>
                             <div class="text-xs text-base-content/70">groups</div>
@@ -300,8 +300,8 @@
             {#each rounds as round, index (index)}
                 <div
                         class="bg-base-50 card border {getValidationMessage(round, index)
-						? 'border-error'
-						: 'border-base-300'}"
+							? 'border-error'
+							: 'border-base-300'}"
                 >
                     <div class="card-body p-4">
                         <!-- Round Header -->
@@ -352,22 +352,22 @@
                                             min="2"
                                             value={round.playersPerGroup}
                                             oninput={(e) =>
-											updateRoundField(
-												index,
-												'playersPerGroup',
-												parseInt(e.currentTarget.value) || 2
-											)}
+												updateRoundField(
+													index,
+													'playersPerGroup',
+													parseInt(e.currentTarget.value) || 2
+												)}
                                     />
 
                                     <button
                                             type="button"
                                             class="btn join-item px-2 btn-sm"
                                             onclick={() =>
-											updateRoundField(
-												index,
-												'playersPerGroup',
-												Math.max(2, round.playersPerGroup - 1)
-											)}
+												updateRoundField(
+													index,
+													'playersPerGroup',
+													Math.max(2, round.playersPerGroup - 1)
+												)}
                                     >
                                         −
                                     </button>
@@ -375,7 +375,7 @@
                                             type="button"
                                             class="btn join-item px-2 btn-sm"
                                             onclick={() =>
-											updateRoundField(index, 'playersPerGroup', round.playersPerGroup + 1)}
+												updateRoundField(index, 'playersPerGroup', round.playersPerGroup + 1)}
                                     >
                                         +
                                     </button>

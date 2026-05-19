@@ -6,6 +6,7 @@
         CircleQuestionMark,
         Clipboard,
         House,
+        LogOut,
         Menu,
         Plus,
         Settings,
@@ -13,8 +14,10 @@
         X
     } from 'lucide-svelte';
     import {page} from '$app/state'
+    import type { LayoutData } from './$types';
+    import type { Snippet } from 'svelte';
 
-    let {children} = $props();
+    let {children, data}: {children: Snippet, data: LayoutData} = $props();
     let sidebarOpen = $state(false);
     let currentPath = $derived(page.url.pathname);
 
@@ -62,6 +65,17 @@
             <a class="text-lg font-bold text-primary sm:text-xl" href="/">
                 Tournament Manager
             </a>
+
+            <!-- User menu -->
+            <div class="hidden lg:flex items-center gap-2">
+                <span class="text-sm text-base-content/70">User {data.user.id.slice(0, 8)}</span>
+                <form method="POST" action="/logout">
+                    <button type="submit" class="btn btn-ghost btn-sm gap-2">
+                        <LogOut class="h-4 w-4"/>
+                        Sign out
+                    </button>
+                </form>
+            </div>
 
             <!-- Right side spacer for mobile balance -->
             <div class="w-10 lg:hidden"></div>
@@ -230,6 +244,15 @@
                             <CircleQuestionMark class="h-5 w-5"/>
                             Help
                         </a>
+                        <form method="POST" action="/logout">
+                            <button
+                                type="submit"
+                                class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-base-200 text-base-content"
+                            >
+                                <LogOut class="h-5 w-5"/>
+                                Sign out
+                            </button>
+                        </form>
                     </div>
                 </nav>
             </div>

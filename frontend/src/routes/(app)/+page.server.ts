@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { type Tournament, TournamentStatus } from '$lib/types/tournament/tournament';
+import { type Tournament, TournamentStatus } from '$lib/domain/tournament';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	try {

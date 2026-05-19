@@ -1,6 +1,6 @@
-import { transform, z } from 'zod';
-import { BaseApiSchema } from '$lib/adapters/schemas/base';
-import { type Tournament, TournamentStatus } from '$lib/types/tournament/tournament';
+import { z } from 'zod';
+import { BaseApiSchema } from '$lib/adapters/http/schemas/base';
+import { type Tournament, TournamentStatus } from '$lib/domain/tournament';
 
 const TournamentSchema: z.ZodType<Tournament> = z
 	.object({

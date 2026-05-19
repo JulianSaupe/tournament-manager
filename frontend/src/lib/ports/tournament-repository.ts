@@ -1,6 +1,6 @@
-import type { Tournament } from '$lib/types/tournament/tournament';
-import type { Qualifying } from '$lib/types/tournament/qualifying';
-import type { ApiResult } from '$lib/types/api-result';
+import type { Tournament } from '$lib/domain/tournament';
+import type { Qualifying } from '$lib/domain/qualifying';
+import type { ApiResult } from '$lib/domain/api-result';
 
 export interface TournamentProvider {
 	loadTournament(id: string): Promise<ApiResult<Tournament>>;

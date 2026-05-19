@@ -1,4 +1,4 @@
-import { TournamentStatus } from '$lib/types/tournament/tournament';
+import { TournamentStatus } from '$lib/domain/tournament';
 
 type StatusConfig = {
 	name: string;
