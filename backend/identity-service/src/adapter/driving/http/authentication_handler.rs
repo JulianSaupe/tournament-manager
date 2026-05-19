@@ -29,6 +29,7 @@ impl AuthenticationHandler {
     pub fn router(self) -> Router {
         Router::new()
             .route("/login", post(login))
+            .route("/register", post(register))
             .route("/logout/:session_id", delete(logout))
             .route("/validate/:session_id", get(validate_session))
             .with_state(Arc::new(self))
@@ -46,6 +47,13 @@ pub struct LoginRequest {
     pub password: String,
     pub ip_address: Option<String>,
     pub user_agent: Option<String>,
+}
+
+#[derive(Deserialize)]
+pub struct RegisterRequest {
+    pub username: String,
+    pub email: String,
+    pub password: String,
 }
 
 async fn login(
@@ -88,6 +96,23 @@ async fn validate_session(
     {
         Ok(session) => (StatusCode::OK, Json(session)).into_response(),
         Err(e) => map_error(e),
+    }
+}
+
+async fn register(
+    State(handler): State<Arc<AuthenticationHandler>>,
+    Json(payload): Json<RegisterRequest>,
+) {
+    match handler
+        .authentication_service
+        .register(payload.username, payload.email, payload.password).await
+    {
+        Ok(user_id) => {
+            println!("User registered with ID: {}", user_id);
+        }
+        Err(e) => {
+            println!("Error registering user: {}", e);
+        }
     }
 }
 

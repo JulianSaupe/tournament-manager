@@ -1,7 +1,7 @@
 use crate::adapter::driven::{SessionRepositoryTrait, UserRepositoryTrait};
 use crate::domain::errors::service_error::ServiceError;
 use crate::domain::models::session::Session;
-use crate::utils::verify_hash;
+use crate::utils::{hash_string, verify_hash};
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -35,6 +35,7 @@ pub trait AuthenticationServiceTrait: Send + Sync {
     ) -> Result<Session, ServiceError>;
     async fn validate_session(&self, session_id: Uuid) -> Result<Session, ServiceError>;
     async fn logout(&self, session_id: Uuid) -> Result<(), ServiceError>;
+    async fn register(&self, username: String, email: String, password: String) -> Result<Uuid, ServiceError>;
 }
 
 #[tonic::async_trait]
@@ -92,5 +93,11 @@ impl AuthenticationServiceTrait for AuthenticationService {
             .map_err(ServiceError::from)?;
 
         Ok(())
+    }
+
+    async fn register(&self, username: String, email: String, password: String) -> Result<Uuid, ServiceError> {
+        let user_id = self.user_repository.create_user(username, email, password).await?;
+
+        Ok(user_id)
     }
 }

@@ -21,7 +21,7 @@ pub trait UserRepositoryTrait: Send + Sync {
         username: String,
         email: String,
         password: String,
-    ) -> Result<Uuid, String>;
+    ) -> Result<Uuid, RepositoryError>;
 
     async fn delete(&self, id: Uuid) -> Result<(), RepositoryError>;
 
@@ -35,7 +35,7 @@ impl UserRepositoryTrait for UserRepository {
         username: String,
         email: String,
         password: String,
-    ) -> Result<Uuid, String> {
+    ) -> Result<Uuid, RepositoryError> {
         let id: Uuid = sqlx::query_scalar(
             r#"
                 INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id
@@ -46,7 +46,7 @@ impl UserRepositoryTrait for UserRepository {
         .bind(hash_string(&password).unwrap())
         .fetch_one(self.database.pool())
         .await
-        .map_err(|_| "Failed to create user")?;
+        .map_err(RepositoryError::from)?;
 
         Ok(id)
     }
