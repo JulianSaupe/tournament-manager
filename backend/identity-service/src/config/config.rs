@@ -37,7 +37,6 @@ impl Config {
 
         let token = env::var("AUTH_TOKEN").unwrap_or_else(|_| "".to_string());
 
-        println!("token: {}", token);
         assert!(!token.is_empty(), "AUTH_TOKEN must be set");
 
         Ok(Config {

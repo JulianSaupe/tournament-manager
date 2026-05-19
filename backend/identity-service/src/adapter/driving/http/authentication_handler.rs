@@ -1,14 +1,18 @@
 use crate::domain::errors::service_error::ServiceError;
+use crate::middleware::auth_middleware;
 use crate::service::AuthenticationServiceTrait;
 use axum::{
     Json, Router,
     extract::{Path, State},
     http::StatusCode,
+    middleware::{self},
     response::{IntoResponse, Response},
     routing::{delete, get, post},
 };
 use serde::Deserialize;
 use std::sync::Arc;
+use tower::ServiceBuilder;
+use tower_http::trace::TraceLayer;
 use uuid::Uuid;
 
 pub struct AuthenticationHandler {
@@ -28,6 +32,11 @@ impl AuthenticationHandler {
             .route("/logout/:session_id", delete(logout))
             .route("/validate/:session_id", get(validate_session))
             .with_state(Arc::new(self))
+            .layer(
+                ServiceBuilder::new()
+                    .layer(middleware::from_fn(auth_middleware::authenticate))
+                    .layer(TraceLayer::new_for_http()),
+            )
     }
 }
 
