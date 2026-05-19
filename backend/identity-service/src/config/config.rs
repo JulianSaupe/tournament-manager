@@ -16,7 +16,7 @@ pub struct AuthConfig {
 
 impl Config {
     pub fn from_env() -> Result<Self, Box<dyn std::error::Error>> {
-        if let Err(e) = dotenvy::from_path("../../docker/.identity-service.env") {
+        if let Err(e) = dotenvy::dotenv() {
             eprintln!("Warning: Could not load .env file: {}", e);
         }
 
